@@ -23,6 +23,7 @@
  [series-length (Series -> Index)]
  [series-data (Series -> (U (Vectorof GenericType) FlVector (Vectorof Symbol) (Vectorof Fixnum) (Vectorof Boolean) (Vectorof Datetime)))]
  [series-iref (Series Index -> Any)]
+ [series-index-ref (Series IndexDataType -> Any)]
  [series-loc-boolean (Series (Listof Boolean) -> (U Any Series))]
  [series-loc (Series (U Label (Listof Label) (Listof Boolean)) -> (U Any Series))]
  [series-iloc (Series (U Index (Listof Index)) -> (U Any Series))]
