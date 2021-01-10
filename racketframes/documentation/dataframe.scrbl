@@ -7,61 +7,204 @@
 
 @author["Shubham Kahal"]
 
-@"\U2192" A DataFrame implementation in the spirit of Pandas or R data frames.
+@verbatim{================================================================================}
 
-@"\U2192" In this day and age procedural and functional programmers alike are working
-with large amounts of data. Many analytical libraries have been developed for many
-domains to work with such data. Python/Pandas, R or even the command prompt can be
-used to accomplish theses tasks, but this option is especially good if you are 1)
+@"\U2192" A DataFrame implementation in the spirit of Python Pandas and R DataFrames.
+
+@"\U2192" In these data centric times, procedural and functional programmers alike are working
+with large amounts of data. Many analytical libraries have been developed for a variety
+domains to work with such data. Languages like Python and R or even the command line can be
+used to accomplish analysis tasks, but RacketFrames is especially good if you are 1)
 using Racket already 2) may need to integrate your solution with other Racket applications
-in the future or 3) just plain love functional programming.
+in the future or 3) enjoy functional programming.
 
-@bold{Getting Started}
+@verbatim{================================================================================}
+
+@larger{@bold{Getting Started}}
+
+Import library.
 @codeblock|{
 (require RacketFrames)
-
+}|
+Define columns.
+@codeblock|{
 (define columns-mix
   (list
    (cons 'integer-col (new-ISeries (vector 1 2 3 4)
                             (build-index-from-list (list 'a 'b 'c 'd))))
    (cons 'categorical-col (new-CSeries (vector 'hello 'world 'fizz 'buzz)
                                        (build-index-from-list (list 'a 'b 'c 'd))))))
-
+}|
+Initialize DataFrame.
+@codeblock|{
 ; create new data-frame-mix
 (define data-frame-mix (new-data-frame columns-mix))
 
+; write data-frame-mix to stdout
 (data-frame-write-tab data-frame-mix (current-output-port))
+}|
 
+@tabular[#:sep @hspace[1] #:row-properties '(bottom-border) #:cell-properties '('(right-border))
+(list (list @bold{integer-col} @bold{categorical-col})
+(list "1" "hello")
+(list "2" "world")
+(list "3" "fizz")
+(list "4" "buzz"))]
+
+Initialize DataFrame from CSV file.
+
+@image["salary_date_csv.png"]
+
+@codeblock|{
 ; no schema
 (define salary-data-frame-csv-no-schema (load-csv-file "../sample-csv/salary_date.csv" #:schema #f))
 
 (data-frame-head salary-data-frame-csv-no-schema)
+}|
 
-(print salary-data-frame-csv-no-schema)
+@tabular[#:sep @hspace[1] #:row-properties '(bottom-border)
+(list (list @bold{first} @bold{last} @bold{age} @bold{dollar} @bold{phone} @bold{join_date})
+(list "Evan" "Lloyd"  "19" "$3839.78"  "(771) 255-1133"  "(Datetime (Date 2018 5 19) (Time 0 0 0 0 0))") 
+(list "Etta" "Griffith" "50" "$8158.60" "(523) 731-6388" "(Datetime (Date 2018 5 19) (Time 0 0 0 0 0))") 
+(list "William" "Conner" "50" "$9966.70" "(759) 504-6619"  "(Datetime (Date 2018 5 19) (Time 0 0 0 0 0))") 
+(list "Rhoda" "Guerrero" "20" "$6480.10" "(467) 431-4273"  "(Datetime (Date 2018 5 19) (Time 0 0 0 0 0))") 
+(list "Kyle" "Klein" "59" "$6106.13"  "(760) 829-2093"  "(Datetime (Date 2018 5 19) (Time 0 0 0 0 0))") 
+(list "Benjamin" "Patton" "59" "$3925.51" "(488) 673-5745" "(Datetime (Date 2018 5 19) (Time 0 0 0 0 0))") 
+(list "Georgie" "Hansen" "51" "$8809.92" "(579) 706-4402" "(Datetime (Date 2018 5 19) (Time 0 0 0 0 0))") 
+(list "Gregory" "Bowen" "36" "$5176.21" "(533) 506-3845"  "(Datetime (Date 2018 5 19) (Time 0 0 0 0 0))") 
+(list "Cornelia" "Peterson" "46" "$3626.31" "(861) 316-5672"  "(Datetime (Date 2018 5 19) (Time 0 0 0 0 0))") 
+(list "Samuel" "Cole" "37" "$7677.20" "(760) 406-6331" "(Datetime (Date 2018 5 19) (Time 0 0 0 0 0))"))]
 
-(displayln "DataFrame List of Column Names")
+@codeblock|{
+(displayln "List of Column Names")
 (data-frame-names salary-data-frame-csv-no-schema)
+}|
 
+@codeblock|{
 (displayln "DataFrame Dimensions")
 (data-frame-dim salary-data-frame-csv-no-schema)
+}|
 
+@verbatim|{
+DataFrame Dimensions
+(Dim 200 6)}|
+
+@codeblock|{
 (displayln "DataFrame Description")
 (show-data-frame-description (data-frame-description salary-data-frame-csv-no-schema))
+}|
 
+@verbatim|{
+DataFrame Description
+DataFrame::(Cols: 6, Rows: 200)
+  - first: CategoricalSeries
+  - last: CategoricalSeries
+  - age: IntegerSeries
+  - dollar: CategoricalSeries
+  - phone: CategoricalSeries
+  - join_date: DatetimeSeries}|
+
+@codeblock|{
 (displayln "DataFrame Remove")
 (data-frame-head (data-frame-remove salary-data-frame-csv-no-schema (list 'first 'age)))
+}|
 
+@verbatim|{
+DataFrame Remove
+     last           dollar           phone         join_date    
+Lloyd           $3839.78        (771) 255-1133  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Griffith        $8158.60        (523) 731-6388  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Conner          $9966.70        (759) 504-6619  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Guerrero        $6480.10        (467) 431-4273  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Klein           $6106.13        (760) 829-2093  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Patton          $3925.51        (488) 673-5745  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Hansen          $8809.92        (579) 706-4402  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Bowen           $5176.21        (533) 506-3845  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Peterson        $3626.31        (861) 316-5672  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Cole            $7677.20        (760) 406-6331  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0))
+}|
+
+@codeblock|{
 (displayln "DataFrame Project")
 (data-frame-head (data-frame-project salary-data-frame-csv-no-schema (list 'first 'last 'dollar)))
+}|
 
+@verbatim|{
+DataFrame Project
+     first           last           dollar      
+Evan            Lloyd           $3839.78        
+Etta            Griffith        $8158.60        
+William         Conner          $9966.70        
+Rhoda           Guerrero        $6480.10        
+Kyle            Klein           $6106.13        
+Benjamin        Patton          $3925.51        
+Georgie         Hansen          $8809.92        
+Gregory         Bowen           $5176.21        
+Cornelia        Peterson        $3626.31        
+Samuel          Cole            $7677.20
+}|
+
+@codeblock|{
 (displayln "DataFrame Replace")
 (data-frame-head (data-frame-replace salary-data-frame-csv-no-schema (cons 'salary (new-CSeries (make-vector 200 '$0.00) #f))))
+}|
 
+@verbatim|{
+DataFrame Replace
+     first           last             age           dollar           phone         join_date    
+Evan            Lloyd                        19 $3839.78        (771) 255-1133  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Etta            Griffith                     50 $8158.60        (523) 731-6388  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+William         Conner                       50 $9966.70        (759) 504-6619  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Rhoda           Guerrero                     20 $6480.10        (467) 431-4273  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Kyle            Klein                        59 $6106.13        (760) 829-2093  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Benjamin        Patton                       59 $3925.51        (488) 673-5745  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Georgie         Hansen                       51 $8809.92        (579) 706-4402  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Gregory         Bowen                        36 $5176.21        (533) 506-3845  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Cornelia        Peterson                     46 $3626.31        (861) 316-5672  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Samuel          Cole                         37 $7677.20        (760) 406-6331  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0))
+}|
+
+@codeblock|{
 (displayln "DataFrame Replace Non Existent Column")
 (data-frame-head (data-frame-replace salary-data-frame-csv-no-schema (cons 'dollar (new-CSeries (make-vector 200 '$0.00) #f))))
+}|
 
+@verbatim|{
+DataFrame Replace Non Existent Column
+     first           last             age           dollar           phone         join_date    
+Evan            Lloyd                        19 $0.00           (771) 255-1133  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Etta            Griffith                     50 $0.00           (523) 731-6388  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+William         Conner                       50 $0.00           (759) 504-6619  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Rhoda           Guerrero                     20 $0.00           (467) 431-4273  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Kyle            Klein                        59 $0.00           (760) 829-2093  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Benjamin        Patton                       59 $0.00           (488) 673-5745  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Georgie         Hansen                       51 $0.00           (579) 706-4402  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Gregory         Bowen                        36 $0.00           (533) 506-3845  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Cornelia        Peterson                     46 $0.00           (861) 316-5672  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 
+Samuel          Cole                         37 $0.00           (760) 406-6331  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0))
+}|
+
+@codeblock|{
 (displayln "DataFrame Extend")
-(data-frame-head (data-frame-extend salary-data-frame-csv-no-schema (cons 'state (new-CSeries (make-vector 200 'CA) #f))))}|
+(data-frame-head (data-frame-extend salary-data-frame-csv-no-schema (cons 'state (new-CSeries (make-vector 200 'CA) #f))))
+}|
+
+@verbatim|{
+DataFrame Extend
+     first           last             age           dollar           phone         join_date         state      
+Evan            Lloyd                        19 $3839.78        (771) 255-1133  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) CA              
+Etta            Griffith                     50 $8158.60        (523) 731-6388  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) CA              
+William         Conner                       50 $9966.70        (759) 504-6619  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) CA              
+Rhoda           Guerrero                     20 $6480.10        (467) 431-4273  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) CA              
+Kyle            Klein                        59 $6106.13        (760) 829-2093  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) CA              
+Benjamin        Patton                       59 $3925.51        (488) 673-5745  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) CA              
+Georgie         Hansen                       51 $8809.92        (579) 706-4402  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) CA              
+Gregory         Bowen                        36 $5176.21        (533) 506-3845  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) CA              
+Cornelia        Peterson                     46 $3626.31        (861) 316-5672  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) CA              
+Samuel          Cole                         37 $7677.20        (760) 406-6331  (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) CA
+}|
+
+@verbatim{================================================================================}
 
 @bold{Table of Contents}
 
@@ -2006,8 +2149,6 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 
 (data-frame-head salary-data-frame-csv-schema)
 
-(displayln "NO SCHEMA");
-
 ; no schema
 (define salary-data-frame-csv-no-schema (load-csv-file "../sample-csv/salary.csv" #:schema #f))
 
@@ -2029,11 +2170,7 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
             
 (define data-frame-from-sql-genres (data-frame-from-sql (sqlite3-connect #:database "db/chinook.db") #f "SELECT * FROM genres" empty))
 
-(data-frame-head data-frame-from-sql-genres)
-
-(define data-frame-from-sql-customers (data-frame-from-sql (sqlite3-connect #:database "db/chinook.db") #f "SELECT * FROM customers" empty))
-
-(data-frame-head data-frame-from-sql-customers) }|
+(data-frame-head data-frame-from-sql-genres) }|
 
 @tabular[#:sep @hspace[1]
 (list (list @bold{GenreId} @bold{Name})

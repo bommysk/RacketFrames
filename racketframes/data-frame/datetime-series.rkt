@@ -34,6 +34,7 @@
  [new-DatetimeSeries ((Vectorof Datetime) (Option (U (Listof IndexDataType) RFIndex)) -> DatetimeSeries)]
  [set-DatetimeSeries-index (DatetimeSeries (U (Listof IndexDataType) RFIndex) -> DatetimeSeries)]
  [datetime-series-iref (DatetimeSeries (Listof Index) -> (Listof Datetime))]
+ [datetime-series-index-ref (DatetimeSeries IndexDataType -> (Listof Datetime))]
  [datetime-series-loc-multi-index (DatetimeSeries (U (Listof String) ListofListofString) -> (U Datetime DatetimeSeries))]
  [datetime-series-loc-boolean (DatetimeSeries (Listof Boolean) -> (U Datetime DatetimeSeries))]
  [datetime-series-loc (DatetimeSeries (U Label (Listof Label) (Listof Boolean)) -> (U Datetime DatetimeSeries))]
@@ -165,6 +166,12 @@
 (: datetime-series-label-ref (DatetimeSeries Label -> (Listof Datetime)))
 (define (datetime-series-label-ref series label)
   (datetime-series-iref series (key->lst-idx (assert (DatetimeSeries-index series)) label)))
+
+; This function consumes a series and a Label and returns
+; the list of values at that Label in the series.
+(: datetime-series-index-ref (DatetimeSeries IndexDataType -> (Listof Datetime)))
+(define (datetime-series-index-ref series item)
+  (datetime-series-iref series (key->lst-idx (assert (DatetimeSeries-index series)) item)))
 
 ; This function consumes an integer series and returns the
 ; length of that series.

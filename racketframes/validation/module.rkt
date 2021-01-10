@@ -24,8 +24,6 @@
 
 (data-frame-head salary-data-frame-csv-no-schema)
 
-(print salary-data-frame-csv-no-schema)
-
 (displayln "DataFrame List of Column Names")
 (data-frame-names salary-data-frame-csv-no-schema)
 
