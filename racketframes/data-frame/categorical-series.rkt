@@ -14,6 +14,7 @@
  [cseries-index (CSeries -> (U False RFIndex))]
  [cseries-referencer (CSeries -> (Fixnum -> Label))]
  [cseries-iloc (CSeries (U Index (Listof Index)) -> (U Label CSeries))]
+ [cseries-index-ref (CSeries IndexDataType -> (Listof Label))]
  [cseries-print (CSeries Output-Port -> Void)]
  [cseries-loc-boolean (CSeries (Listof Boolean) -> (U Label CSeries))]
  [cseries-loc (CSeries (U Label (Listof Label) (Listof Boolean)) -> (U Label CSeries))]
@@ -35,14 +36,20 @@
   (let* ([data (CSeries-data cseries)]
 	 [nominals (CSeries-nominals cseries)]
 	 [len (vector-length data)])
-    (do ([i 0 (add1 i)])
-	((>= i len) (void))
-      (if (CSeries-index cseries)                  
-          (display (idx->key (CSeries-index cseries) (assert i index?)) port)
-          (display (assert i index?) port))
-      (display " " port)
-      (displayln  (vector-ref nominals (vector-ref data i))))))
-
+    (if (zero? len)
+	(displayln "Empty $CSeries" port)
+	(begin
+          (displayln "*********" port)
+          (displayln "$CSeries" port)
+          (displayln "*********" port)
+          (do ([i 0 (add1 i)])
+            ((>= i len) (void))
+            (if (CSeries-index cseries)                  
+                (display (idx->key (CSeries-index cseries) (assert i index?)) port)
+                (display (assert i index?) port))
+            (display " " port)
+            (displayln  (vector-ref nominals (vector-ref data i))))))))
+    
 (struct: CSeries ([index : (Option RFIndex)]
                   [data : (Vectorof Index)]
                   [nominals : (Vectorof Label)]))

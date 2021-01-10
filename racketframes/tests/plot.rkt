@@ -45,6 +45,7 @@
 ; Test Cases
 ;******************
 
+(displayln "\n")
 (displayln "plotting integer series")
 
 (make-scatter-plot (new-ISeries (vector 1 2 3 4 5) #f))
