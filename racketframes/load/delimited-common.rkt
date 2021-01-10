@@ -1,15 +1,13 @@
 #lang typed/racket
 
 (provide:
- [check-data-file-exists (FilePath -> Void)]
- [sample-formatted-file (FilePath Integer -> (Listof String))]
+ [check-data-file-exists (Path-String -> Void)]
+ [sample-formatted-file (Path-String Integer -> (Listof String))]
  [data-frame-builder-appenders (DataFrameBuilder -> (Listof (Line -> Void)))]
- [read-formatted-file (FilePath Boolean DataFrameBuilder LineParser -> (Listof Boolean))]
+ [read-formatted-file (Path-String Boolean DataFrameBuilder LineParser -> (Listof Boolean))]
  [read-sql-query ((Listof String) (Listof (Vectorof Any)) DataFrameBuilder -> (Listof Boolean))])
 
 (require
- (only-in "../util/filepath.rkt"
-	  FilePath FilePath->string)
  (only-in "../data-frame/series-builder.rkt"
 	  SeriesBuilder)
  (only-in "../data-frame/indexed-series.rkt"
@@ -97,16 +95,15 @@
        (DataFrameBuilder-builders data-frame-builder)))
 
 
-(: check-data-file-exists (FilePath -> Void))
-(define (check-data-file-exists fpath)
-  (unless (file-exists? (FilePath->string fpath))
-	  (error (format "File not found: ~s" (FilePath->string fpath)))))
+(: check-data-file-exists (Path-String -> Void))
+(define (check-data-file-exists path)
+  (unless (file-exists? path)
+	  (error (format "File not found: ~s" path))))
 
-(: read-formatted-file (FilePath Boolean DataFrameBuilder LineParser -> (Listof Boolean)))
-(define (read-formatted-file fpath headers? data-frame-builder line-parser)
-  (check-data-file-exists fpath)
-  (let* ((fpath (FilePath->string fpath))
-         (file-lines (if headers? (cdr (file->lines fpath)) (file->lines fpath))))
+(: read-formatted-file (Path-String Boolean DataFrameBuilder LineParser -> (Listof Boolean)))
+(define (read-formatted-file path headers? data-frame-builder line-parser)
+  (check-data-file-exists path)
+  (let* ((file-lines (if headers? (cdr (file->lines path)) (file->lines path))))
     (map (λ: ((line : Line))
            (append-data-fields (data-frame-builder-appenders data-frame-builder) (line-parser line))) file-lines)))
 
@@ -115,8 +112,7 @@
   (map (λ: ((row : (Vectorof Any)))
          (append-sql-data-fields (data-frame-builder-sql-appenders data-frame-builder) (vector->list row))) rows))
 
-(: sample-formatted-file (FilePath Integer -> (Listof String)))
-(define (sample-formatted-file fpath cnt)
-  (check-data-file-exists fpath)
-  (let ((fpath (FilePath->string fpath)))
-    (take (file->lines fpath) cnt)))
+(: sample-formatted-file (Path-String Integer -> (Listof String)))
+(define (sample-formatted-file path cnt)
+  (check-data-file-exists path)
+  (take (file->lines path) cnt))

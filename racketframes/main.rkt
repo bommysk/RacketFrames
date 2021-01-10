@@ -59,8 +59,6 @@
 	  alter-schema-no-headers)
  (only-in "data-frame/gen-nseries.rkt"
 	  generate-NSeries)
- (only-in "util/filepath.rkt"
-	  FilePath FilePath->string)
  racket/flonum)
 
 

@@ -1,14 +1,14 @@
 #lang typed/racket/base
 
+;; why roll your own? use the csv-reading package and delete this module.
+
 (provide
  parse-csv-line)
 
 (provide:
- [read-csv-file (FilePath Boolean DataFrameBuilder -> DataFrameBuilder)])
+ [read-csv-file (Path-String Boolean DataFrameBuilder -> DataFrameBuilder)])
 
 (require
- (only-in "../util/filepath.rkt"
-	  FilePath FilePath->string)
  (only-in "types.rkt"
 	  LineParser)
  (only-in "delimited-common.rkt"
@@ -147,7 +147,7 @@
 	  (loop (cons (read-field inp) fields))
 	  (reverse fields)))))
 
-(: read-csv-file (FilePath Boolean DataFrameBuilder -> DataFrameBuilder))
-(define (read-csv-file fpath header? data-frame-builder)
-  (begin (read-formatted-file fpath header? data-frame-builder parse-csv-line)
+(: read-csv-file (Path-String Boolean DataFrameBuilder -> DataFrameBuilder))
+(define (read-csv-file path header? data-frame-builder)
+  (begin (read-formatted-file path header? data-frame-builder parse-csv-line)
          data-frame-builder))

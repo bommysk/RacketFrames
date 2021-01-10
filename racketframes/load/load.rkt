@@ -1,9 +1,9 @@
 #lang typed/racket
 
 (provide:
- [determine-schema (FilePath Integer String -> Schema)]
- [load-csv-file (String [#:schema (Option Schema)] -> DataFrame)]
- [load-delimited-file (String String [#:schema (Option Schema)] -> DataFrame)]
+ [determine-schema (Path-String Integer String -> Schema)]
+ [load-csv-file (Path-String [#:schema (Option Schema)] -> DataFrame)]
+ [load-delimited-file (Path-String String [#:schema (Option Schema)] -> DataFrame)]
  [data-frame-from-sql (Connection Boolean String (Listof Any) -> DataFrame)])
 
 (require
@@ -11,8 +11,6 @@
  racket/match
  (only-in "../util/list.rkt"
 	  zip)
- (only-in "../util/filepath.rkt"
-	  FilePath FilePath->string)
  (only-in "schema.rkt"
 	  generate-anon-series-names
 	  Schema ColumnInfo SeriesTypes Schema-has-headers
@@ -130,30 +128,28 @@
 		       (anon-headers (length cols)))))
       (new-data-frame ((inst zip Symbol Series) headers cols)))))
 
-(: schema-if-needed ((Option Schema) FilePath (Option String) -> Schema))
-(define (schema-if-needed schema fpath delim)
+(: schema-if-needed ((Option Schema) Path-String (Option String) -> Schema))
+(define (schema-if-needed schema path delim)
   (define SAMPLE-SIZE 20)
-  (if schema schema (determine-schema fpath SAMPLE-SIZE (if delim delim ","))))
+  (if schema schema (determine-schema path SAMPLE-SIZE (if delim delim ","))))
 
 ; delimiter must be specified by user if no schema provided, need to still do this
-(: load-csv-file (String [#:schema (Option Schema)] -> DataFrame))
-(define (load-csv-file fpath-str #:schema [schema #f])
-  (let* ((fpath (FilePath fpath-str))
-         (schema (schema-if-needed schema fpath #f)))
-    (make-data-frame schema (read-csv-file fpath
-				      (Schema-has-headers schema)
-				      (new-DataFrameBuilder-from-Schema schema)))))
+(: load-csv-file (Path-String [#:schema (Option Schema)] -> DataFrame))
+(define (load-csv-file path #:schema [schema #f])
+  (let* ((schema (schema-if-needed schema path #f)))
+    (make-data-frame schema (read-csv-file path
+                                           (Schema-has-headers schema)
+                                           (new-DataFrameBuilder-from-Schema schema)))))
 
-(: load-delimited-file (String String [#:schema (Option Schema)] -> DataFrame))
-(define (load-delimited-file fpath-str delim #:schema [schema #f])
-  (let* ((fpath (FilePath fpath-str))
-         (schema (schema-if-needed schema fpath delim)))
-    (make-data-frame schema (read-delimited-file fpath
+(: load-delimited-file (Path-String String [#:schema (Option Schema)] -> DataFrame))
+(define (load-delimited-file path delim #:schema [schema #f])
+  (let* ((schema (schema-if-needed schema path delim)))
+    (make-data-frame schema (read-delimited-file path
                                                  (Schema-has-headers schema)
                                                  (new-DataFrameBuilder-from-Schema schema)
                                                  delim))))
 
-(: determine-schema (FilePath Integer String -> Schema))
+(: determine-schema (Path-String Integer String -> Schema))
 (define (determine-schema fpath cnt delim)
   (check-data-file-exists fpath)
   (determine-schema-from-sample (sample-formatted-file fpath cnt) delim))

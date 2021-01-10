@@ -1,8 +1,10 @@
 #lang typed/racket
 
-(require RacketFrames)
+(require RacketFrames
+         racket/runtime-path
+         typed/db)
 
-(require typed/db)
+(define-runtime-path sample-csv "../sample-csv/")
 
 ;******************
 ;data-frame-mix
@@ -20,7 +22,8 @@
 (data-frame-write-tab data-frame-mix (current-output-port))
 
 ; no schema
-(define salary-data-frame-csv-no-schema (load-csv-file "../sample-csv/salary_date.csv" #:schema #f))
+(define salary-data-frame-csv-no-schema
+  (load-csv-file (build-path sample-csv "salary_date.csv") #:schema #f))
 
 (data-frame-head salary-data-frame-csv-no-schema)
 
@@ -247,39 +250,50 @@
                                                    (ColumnInfo 'char 'GENERIC) (ColumnInfo 'float 'NUMERIC))))
 
 ; read csv
-(define salary-data-frame-csv-schema (load-csv-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/salary_date.csv" #:schema salary-date-schema))
+(define salary-data-frame-csv-schema
+  (load-csv-file (build-path sample-csv "salary_date.csv") #:schema salary-date-schema))
 
 (data-frame-head salary-data-frame-csv-schema)
 
-(define salary-no-date-data-frame-csv-schema (load-csv-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/salary_no_date.csv" #:schema salary-no-date-schema))
+(define salary-no-date-data-frame-csv-schema
+  (load-csv-file (build-path sample-csv "salary_no_date.csv") #:schema salary-no-date-schema))
 
 (data-frame-head salary-no-date-data-frame-csv-schema)
 
-(define salary-datetime-data-frame-csv-schema (load-csv-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/salary_datetime.csv" #:schema salary-datetime-schema))
+(define salary-datetime-data-frame-csv-schema
+  (load-csv-file (build-path sample-csv "salary_datetime.csv") #:schema salary-datetime-schema))
 
 (data-frame-head salary-datetime-data-frame-csv-schema)
 
-(define salary-datetime-date-data-frame-csv-schema (load-csv-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/salary_datetime_date.csv" #:schema salary-datetime-schema))
+(define salary-datetime-date-data-frame-csv-schema
+  (load-csv-file (build-path sample-csv "salary_datetime_date.csv") #:schema salary-datetime-schema))
 
 (data-frame-head salary-datetime-date-data-frame-csv-schema)
 
 
 ; read delimited
-(define random-demographic-data-frame-delimited (load-delimited-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/random_demographic.csv" "|" #:schema random-demographic-schema))
+(define random-demographic-data-frame-delimited
+  (load-delimited-file (build-path sample-csv "random_demographic.csv")
+                       "|" #:schema random-demographic-schema))
 
 (data-frame-head random-demographic-data-frame-delimited)
 
 (series-data (data-frame-series random-demographic-data-frame-delimited 'char))
 
 ; no schema
-(define random-demographic-data-frame-delimited-no-schema (load-delimited-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/random_demographic.csv" "|" #:schema #f))
+(define random-demographic-data-frame-delimited-no-schema
+  (load-delimited-file (build-path sample-csv "random_demographic.csv") "|" #:schema #f))
 
 (data-frame-head random-demographic-data-frame-delimited-no-schema)
 
-(define data-frame-from-sql-genres (data-frame-from-sql (sqlite3-connect #:database "db/chinook.db") #f "SELECT * FROM genres" empty))
+(define data-frame-from-sql-genres
+  (data-frame-from-sql (sqlite3-connect #:database "db/chinook.db")
+                       #f "SELECT * FROM genres" empty))
 
 (data-frame-head data-frame-from-sql-genres)
 
-(define data-frame-from-sql-customers (data-frame-from-sql (sqlite3-connect #:database "db/chinook.db") #f "SELECT * FROM customers" empty))
+(define data-frame-from-sql-customers
+  (data-frame-from-sql (sqlite3-connect #:database "db/chinook.db")
+                       #f "SELECT * FROM customers" empty))
 
 (data-frame-head data-frame-from-sql-customers)
