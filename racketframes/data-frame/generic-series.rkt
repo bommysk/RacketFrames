@@ -31,6 +31,7 @@
  [new-GenSeries ((Vectorof GenericType) (Option (U (Listof IndexDataType) RFIndex)) -> GenSeries)]
  [set-GenSeries-index (GenSeries (U (Listof IndexDataType) RFIndex) -> GenSeries)]
  [gen-series-iref (GenSeries (Listof Index) -> GenericType)]
+ [gen-series-index-ref (GenSeries IndexDataType -> (Listof GenericType))]
  [gen-series-label-ref (GenSeries Label -> GenericType)]
  [gen-series-range (GenSeries Index -> (Vectorof GenericType))]
  [gen-series-length (GenSeries -> Index)]
@@ -100,6 +101,12 @@
 (define (gen-series-iref series lst-idx)
   (map (lambda ((idx : Index)) (vector-ref (GenSeries-data series) idx))
        lst-idx))
+
+; This function consumes a series and a Label and returns
+; the list of values at that Label in the series.
+(: gen-series-index-ref (GenSeries IndexDataType -> (Listof GenericType)))
+(define (gen-series-index-ref series item)
+  (gen-series-iref series (key->lst-idx (assert (GenSeries-index series)) item)))
 
 ; This function consumes a generic series and an index and
 ; returns a vector of values in the range [0:index] in the series.
