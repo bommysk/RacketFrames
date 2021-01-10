@@ -44,7 +44,7 @@ Initialize DataFrame.
 (data-frame-write-tab data-frame-mix (current-output-port))
 }|
 
-@tabular[#:sep @hspace[1] #:row-properties '(bottom-border) #:cell-properties '('(right-border))
+@tabular[#:sep @hspace[1] #:row-properties '(bottom-border)
 (list (list @bold{integer-col} @bold{categorical-col})
 (list "1" "hello")
 (list "2" "world")
@@ -78,6 +78,10 @@ Initialize DataFrame from CSV file.
 @codeblock|{
 (displayln "List of Column Names")
 (data-frame-names salary-data-frame-csv-no-schema)
+}|
+
+@verbatim|{
+'(first last age dollar phone join_date)
 }|
 
 @codeblock|{
