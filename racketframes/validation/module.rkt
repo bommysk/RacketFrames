@@ -285,3 +285,6 @@
 (define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
 
 (data-frame-head data-frame-nba-csv)
+
+(get-schema "../sample-csv/nbaallelo.csv" ",")
+

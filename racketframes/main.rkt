@@ -25,7 +25,8 @@
  (only-in "load/load.rkt"
 	  load-csv-file
 	  load-delimited-file
-          data-frame-from-sql)
+          data-frame-from-sql
+          get-schema)
  "data-frame/types.rkt"
  "data-frame/data-frame.rkt"
  "data-frame/data-frame-ops.rkt"
