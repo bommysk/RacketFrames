@@ -53,11 +53,7 @@
  "plot/plot.rkt"
  ;"stats/tabulate.rkt"
  ;"stats/statistics.rkt"
- (only-in "load/schema.rkt"
-          Schema
-	  ColumnInfo
-	  alter-schema-columns
-	  alter-schema-no-headers)
+ (only-in "load/schema.rkt")
  (only-in "data-frame/gen-nseries.rkt"
 	  generate-NSeries)
  racket/flonum)

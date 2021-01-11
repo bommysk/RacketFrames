@@ -245,32 +245,32 @@
                                                    (ColumnInfo 'char 'GENERIC) (ColumnInfo 'float 'NUMERIC))))
 
 ; read csv
-(define salary-data-frame-csv-schema (load-csv-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/salary_date.csv" #:schema salary-date-schema))
+(define salary-data-frame-csv-schema (load-csv-file "../sample-csv/salary_date.csv" #:schema salary-date-schema))
 
 (data-frame-head salary-data-frame-csv-schema)
 
-(define salary-no-date-data-frame-csv-schema (load-csv-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/salary_no_date.csv" #:schema salary-no-date-schema))
+(define salary-no-date-data-frame-csv-schema (load-csv-file "../sample-csv/salary_no_date.csv" #:schema salary-no-date-schema))
 
 (data-frame-head salary-no-date-data-frame-csv-schema)
 
-(define salary-datetime-data-frame-csv-schema (load-csv-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/salary_datetime.csv" #:schema salary-datetime-schema))
+(define salary-datetime-data-frame-csv-schema (load-csv-file "../sample-csv/salary_datetime.csv" #:schema salary-datetime-schema))
 
 (data-frame-head salary-datetime-data-frame-csv-schema)
 
-(define salary-datetime-date-data-frame-csv-schema (load-csv-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/salary_datetime_date.csv" #:schema salary-datetime-schema))
+(define salary-datetime-date-data-frame-csv-schema (load-csv-file "../sample-csv/salary_datetime_date.csv" #:schema salary-datetime-schema))
 
 (data-frame-head salary-datetime-date-data-frame-csv-schema)
 
 
 ; read delimited
-(define random-demographic-data-frame-delimited (load-delimited-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/random_demographic.csv" "|" #:schema random-demographic-schema))
+(define random-demographic-data-frame-delimited (load-delimited-file "../sample-csv/random_demographic.csv" "|" #:schema random-demographic-schema))
 
 (data-frame-head random-demographic-data-frame-delimited)
 
 (series-data (data-frame-series random-demographic-data-frame-delimited 'char))
 
 ; no schema
-(define random-demographic-data-frame-delimited-no-schema (load-delimited-file "/Users/shubhamkahal/Documents/thesis/RacketFrames/racketframes/sample-csv/random_demographic.csv" "|" #:schema #f))
+(define random-demographic-data-frame-delimited-no-schema (load-delimited-file "../sample-csv/random_demographic.csv" "|" #:schema #f))
 
 (data-frame-head random-demographic-data-frame-delimited-no-schema)
 
@@ -286,5 +286,8 @@
 
 (data-frame-head data-frame-nba-csv)
 
-(get-schema "../sample-csv/nbaallelo.csv" ",")
+(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
+
+(Schema-headers nba-csv-schema)
+(Schema-SeriesTypes nba-csv-schema)
 
