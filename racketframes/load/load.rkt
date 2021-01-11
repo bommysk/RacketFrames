@@ -204,12 +204,3 @@
 
   ; return empty dataframe if query returned 0 results
   )
-
-;tests
-;(define data-frame-from-sql-invoices (data-frame-from-sql (sqlite3-connect #:database "/Users/shubhamkahal/Documents/RacketFrames/dataframe/validation/db/chinook.db") #f "SELECT * FROM invoices" empty))
-
-;(data-frame-head data-frame-from-sql-invoices)
-
-;(define data-frame-from-sql-customers (data-frame-from-sql (sqlite3-connect #:database "/Users/shubhamkahal/Documents/RacketFrames/dataframe/validation/db/chinook.db") #f "SELECT * FROM customers" empty))
-
-;(data-frame-head data-frame-from-sql-customers)
