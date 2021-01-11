@@ -53,7 +53,7 @@
  "plot/plot.rkt"
  ;"stats/tabulate.rkt"
  ;"stats/statistics.rkt"
- (only-in "load/schema.rkt")
+ "load/schema.rkt"
  (only-in "data-frame/gen-nseries.rkt"
 	  generate-NSeries)
  racket/flonum)

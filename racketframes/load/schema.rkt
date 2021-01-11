@@ -1,11 +1,13 @@
 #lang typed/racket
 
 (provide:
- [generate-anon-series-names (Integer -> (Listof String))])
+ [generate-anon-series-names (Integer -> (Listof String))]
+ [ alter-schema-columns (Schema (Listof (Pair Symbol ColumnInfo)) -> Schema)]
+ [schema-print (Schema Output-Port -> Void)]
+ [alter-schema-no-headers (Schema -> Schema)])
+ 
 
 (provide
- alter-schema-columns
- alter-schema-no-headers
  SeriesTypes
  (struct-out Schema)
  Schema-headers
@@ -23,10 +25,10 @@
 (define-type SeriesTypes (U 'GENERIC 'CATEGORICAL 'NUMERIC 'INTEGER 'BOOLEAN 'DATETIME))
 
 (struct: ColumnInfo ([name : Symbol]
-		     [type : SeriesTypes]))
+		     [type : SeriesTypes]) #:transparent)
 
 (struct: Schema ([has-headers : Boolean]
-		 [meta : (Listof ColumnInfo)]))
+		 [meta : (Listof ColumnInfo)])  #:transparent)
 
 ; This function consumes an Integer and produces a Listof String
 ; which represents anonymous series names simply created by appending
@@ -100,3 +102,13 @@
 					    accum))))))
 
   (struct-copy Schema schema [meta replaced-metas]))
+
+
+(: schema-print (Schema Output-Port -> Void))
+(define (schema-print schema port)
+  (begin
+    (displayln "*******" port)
+    (displayln "Schema" port)
+    (displayln "*******" port)
+    (displayln (Schema-headers schema) port)
+    (displayln (Schema-SeriesTypes schema) port)))
