@@ -4,7 +4,8 @@
  [determine-schema (Path-String Integer String -> Schema)]
  [load-csv-file (Path-String [#:schema (Option Schema)] -> DataFrame)]
  [load-delimited-file (Path-String String [#:schema (Option Schema)] -> DataFrame)]
- [data-frame-from-sql (Connection Boolean String (Listof Any) -> DataFrame)])
+ [data-frame-from-sql (Connection Boolean String (Listof Any) -> DataFrame)]
+ [get-schema (Path-String (Option String) -> Schema)])
 
 (require
   typed/db
@@ -127,6 +128,11 @@
 		       (Schema-headers schema)
 		       (anon-headers (length cols)))))
       (new-data-frame ((inst zip Symbol Series) headers cols)))))
+
+(: get-schema (Path-String (Option String) -> Schema))
+(define (get-schema path delim)
+  (define SAMPLE-SIZE 20)
+  (determine-schema path SAMPLE-SIZE (if delim delim ",")))
 
 (: schema-if-needed ((Option Schema) Path-String (Option String) -> Schema))
 (define (schema-if-needed schema path delim)
