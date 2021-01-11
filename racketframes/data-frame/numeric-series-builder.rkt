@@ -7,7 +7,7 @@
  [new-NSeriesBuilder (case->
 		      (-> NSeriesBuilder)
 		      (Index -> NSeriesBuilder))]
- [append-NSeriesBuilder   (NSeriesBuilder (U Float String) -> Void)]
+ [append-NSeriesBuilder   (NSeriesBuilder (U Flonum String) -> Void)]
  [complete-NSeriesBuilder (NSeriesBuilder -> NSeries)])
 
 (require
@@ -25,7 +25,7 @@
 (define (new-NSeriesBuilder [len base-len])
   (NSeriesBuilder 0 (make-flvector len +nan.0)))
 
-(: append-NSeriesBuilder (NSeriesBuilder (U Float String) -> Void))
+(: append-NSeriesBuilder (NSeriesBuilder (U Flonum String) -> Void))
 (define (append-NSeriesBuilder builder flo/str-value)
   
   (define-syntax bump
