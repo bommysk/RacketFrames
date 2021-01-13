@@ -1,6 +1,6 @@
 #lang typed/racket
 
-(require "../../main.rkt")
+(require "../main.rkt")
 
 (require typed/db)
 
@@ -285,3 +285,13 @@
 (data-frame-head data-frame-from-sql-customers)
 
 (hash 1 (list 2 2))
+
+
+(define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
+
+(data-frame-head data-frame-nba-csv)
+
+(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
+
+(Schema-headers nba-csv-schema)
+(Schema-SeriesTypes nba-csv-schema)
