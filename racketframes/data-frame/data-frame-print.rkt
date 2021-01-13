@@ -137,10 +137,10 @@
 
 (: format-nseries (NSeries Index -> String))
 (define (format-nseries nseries row)
-  (let ((n (nseries-iref nseries (list row))))
+  (let ((n (car (nseries-iref nseries (list row)))))
     (if (rational? n)
 	(~r n
-	    #:precision '(= 4)
+	    #:precision '(= 2)
 	    #:min-width WIDTH)
 	"+nan.0")))
 
@@ -152,7 +152,7 @@
 
 (: format-bseries (BSeries Index -> String))
 (define (format-bseries bseries row)
-  (~a (if (bseries-iref bseries (list row))
+  (~a (if (car (bseries-iref bseries (list row)))
           "#t"
           "#f")
       #:width WIDTH
