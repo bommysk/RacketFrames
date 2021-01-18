@@ -1,5 +1,6 @@
 #lang scribble/manual
 @(require scribble/core)
+@(require racket/runtime-path)
 
 @require[(for-label racket/contract)]
 
@@ -53,7 +54,8 @@ Initialize DataFrame.
 
 Initialize DataFrame from CSV file.
 
-@image["salary_date_csv.png"]
+@(define-runtime-path salary-date-csv-png "salary_date_csv.png")
+@image[salary-date-csv-png]
 
 @codeblock|{
 ; no schema
@@ -2198,7 +2200,8 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 
 (make-line-plot (new-ISeries (vector 1 2 3 4 5) #f)) }|
 
-@image["integer_scatter_line_plots.png"]
+@(define-runtime-path integer-scatter-line-plots-png "integer_scatter_line_plots.png")
+@image[integer-scatter-line-plots-png]
 
 @codeblock|{
 (define float-column (cons 'col1 (new-NSeries (flvector 1.5 2.5 3.5 4.5) #f)))
@@ -2209,7 +2212,8 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 
 (make-line-plot float-column)  }|
 
-@image["float_scatter_line_plots.png"]
+@(define-runtime-path float-scatter-line-plots-png "float_scatter_line_plots.png")
+@image[float-scatter-line-plots-png]
 
 @codeblock|{
 ;******************
@@ -2233,7 +2237,8 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 (make-scatter-plot integer-columns)
 }|
 
-@image["integer_columns_dataframe_plots.png"]
+@(define-runtime-path integer-columns-dataframe-plots-png "integer_columns_dataframe_plots.png")
+@image[integer-columns-dataframe-plots-png]
 
 @codeblock|{
 ;******************
