@@ -43,7 +43,7 @@ RacketFrames expects: (Sequenceof Label (Sequenceof Any)).
 
 (define data-frame-from-hash-vector (new-data-frame (hash 'a '#(1 2 3) 'b '#(3 5 6) 'c '#(3.4 5.5 6.7))))
 
-(show-data-frame-description (data-frame-description data-frame-from-vector))
+(show-data-frame-description (data-frame-description data-frame-from-hash-vector))
 }|
 
 @verbatim|{
