@@ -284,9 +284,6 @@
 
 (data-frame-head data-frame-from-sql-customers)
 
-(hash 1 (list 2 2))
-
-
 (define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
 
 (data-frame-head data-frame-nba-csv)

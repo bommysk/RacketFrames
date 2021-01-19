@@ -38,7 +38,7 @@
  Label Label? LabelProjection LabelProjection? LabelIndex? RFIndex? Datetime?
  RFIndex IndexDataType ListofIndex ListofIndex? ListofListofString ListofListofString?
  LabelIndex LabelIndex-index
- FIndex FlonumIndex
+ FIndex FlonumIndex ListofFixnum? ListofFlonum? ListofBoolean? ListofDatetime?
  ;(struct-out GSeries)
  ;new-GSeries 
  ;gseries-iref
@@ -70,6 +70,8 @@
 (define-predicate ListofIndex? (Listof Index))
 
 (define-predicate ListofFlonum? (Listof Flonum))
+
+(define-predicate ListofBoolean? (Listof Boolean))
 
 (define-predicate ListofDatetime? (Listof Datetime))
 
