@@ -3,6 +3,7 @@
 (require "../main.rkt")
 
 (require typed/db)
+(require racket/dict)
 
 ;******************
 ;data-frame-mix
@@ -295,3 +296,7 @@
 
 (Schema-headers nba-csv-schema)
 (Schema-SeriesTypes nba-csv-schema)
+
+(dict-for-each #hash((a . "apple") (b . "banana") (a . "orange"))
+                 (lambda (k v)
+                   (printf "~a = ~s\n" k v)))

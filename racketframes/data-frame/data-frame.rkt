@@ -49,7 +49,10 @@
 (require
  racket/flonum
  racket/set
+ racket/list
+ racket/sequence
  (only-in racket/vector
+          vector-empty?
 	  vector-copy)
  (only-in racket/set
 	  set-empty? set-member? set-subtract
@@ -132,27 +135,58 @@
 
 ; ***********************************************************
 
+(: seq->columns ((U Columns (Sequenceof Label (Sequenceof Any))) -> Columns))
+(define (seq->columns col/seq)
+  (if (Columns? col/seq)
+      col/seq
+      (let: ((hash : (HashTable Label (Listof Any)) (make-hash))
+             (cols : Columns '()))
+        (begin
+          (for ([([k : Label] [v : (Sequenceof Any)]) col/seq])              
+            (let*: ((h-ref : (Listof Any) (hash-ref hash k (λ () '())))
+                    (v-value : (Listof Any)
+                             (if (list? v)
+                                 v
+                                 (if (vector? v)
+                                     (vector->list v)
+                                     (if (sequence? v)
+                                         (sequence->list v)
+                                         (list v))))))
+              
+              (hash-set! hash k (append v-value h-ref))))
+        
+        
+          (hash-for-each hash
+                         (lambda ([k : Label] [v : Any])
+                           (let: ((h-ref : (Listof Any) (hash-ref hash k (λ () '()))))
+                             (set! cols (cons (cons k (new-GenSeries (list->vector h-ref) #f)) cols))))))
+        
+        cols)))
+
 ; ***********************************************************
 
 ; This function consumes a Listof Column and constructs a
 ; DataFrame from it. The function checks that all columns
 ; are of the same length and builds a LabelIndex and a
 ; Vectorof Series.
-(: new-data-frame (Columns -> DataFrame))
+(: new-data-frame ((U Columns (Sequenceof Label (Sequenceof Any))) -> DataFrame))
 (define (new-data-frame cols)
+
+  (: cols/seq->columns Columns)
+  (define cols/seq->columns (seq->columns cols))
   
   (define (check-equal-length)
-    (when  (pair? cols)
-	   (let ((len (if (null? cols) 
+    (when  (pair? cols/seq->columns)
+	   (let ((len (if (null? cols/seq->columns) 
 			  0 
-			  (series-length (cdr (car cols))))))
+			  (series-length (cdr (car cols/seq->columns))))))
              (unless (andmap (λ: ((s : (Pair Symbol Series)))
                                (eq? len (series-length (cdr s))))
-                             (cdr cols))
+                             (cdr cols/seq->columns))
                (error 'new-data-frame "Frame must have equal length series: ~a" 
                       (map (λ: ((s : (Pair Symbol Series)))
                              (series-description (car s) (cdr s)))
-                           cols))))))
+                           cols/seq->columns))))))
 
   (: are-all-unique? ((Listof Symbol) -> Boolean))
   (define are-all-unique?
@@ -165,15 +199,15 @@
   (check-equal-length)
 
   (when (not (are-all-unique? (map (λ: ((s : (Pair Symbol Series)))
-                                     (car s)) cols)))
+                                     (car s)) cols/seq->columns)))
     (error 'new-data-frame "Frame must have uniquely named series: ~a" (map (λ: ((s : (Pair Symbol Series)))
-                             (series-description (car s) (cdr s)))
-                           cols)))
+                                                                              (series-description (car s) (cdr s)))
+                                                                            cols/seq->columns)))
     
   
   (let ((index (build-index-from-labels ((inst map Label Column)
-                                         (inst car Label Series) cols)))
-        (data (apply vector ((inst map Series Column) cdr cols))))
+                                         (inst car Label Series) (assert cols/seq->columns Columns?))))
+        (data (apply vector ((inst map Series Column) cdr cols/seq->columns))))
     (DataFrame index data)))
 
 ; ***********************************************************
@@ -436,10 +470,10 @@
 (define (data-frame-replace data-frame new-col)
   (define name (column-heading new-col))
 
-  (new-data-frame (for/list ([col (data-frame-explode data-frame)])
+  (new-data-frame  (let ([cols : Columns (for/list ([col (data-frame-explode data-frame)])
 		       (if (eq? name (column-heading col))
 			   new-col
-			   col))))
+			   col))]) cols)))
 
 ; ***********************************************************
 
@@ -577,3 +611,5 @@
          (series-iloc (column-series col) idx)) #f)))
 
 ; ***********************************************************
+
+(show-data-frame-description (data-frame-description (new-data-frame (hash 'a (list 1 2 3) 'b (list 3 5 6)))))
