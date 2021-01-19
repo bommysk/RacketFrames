@@ -252,12 +252,12 @@
     [else (cons (flvector-ref flvec idx) (flvector->list flvec (unsafe-fx+ idx 1)))]))
 
 (: list->flvector ((Listof Flonum) -> FlVector))
-(define (list->flvector Flonum-list)
-  (define len : Index (length Flonum-list))
+(define (list->flvector flonum-list)
+  (define len : Index (length flonum-list))
 
   (define result-flvector (make-flvector len))
 
-  (for([flo Flonum-list]
+  (for([flo flonum-list]
      [i (in-range len)])
     (flvector-set! result-flvector i flo))
 

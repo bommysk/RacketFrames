@@ -68,13 +68,16 @@
  [apply-stat-is (Symbol ISeries -> Real)]
  [iseries-print (ISeries Output-Port -> Void)]
  [iseries-filter (ISeries (Fixnum -> Boolean) -> ISeries)]
- [iseries-filter-not (ISeries (Fixnum -> Boolean) -> ISeries)])
+ [iseries-filter-not (ISeries (Fixnum -> Boolean) -> ISeries)]
+ [fxvector->list (FxVector Fixnum -> (Listof Fixnum))]
+ [list->fxvector ((Listof Fixnum) -> FxVector)])
 ; ***********************************************************
 
 ; ***********************************************************
 ; use build-index-from-labels function and Label, SIndex and
 ; LabelIndex structs from indexed-series.
 (require
+ racket/fixnum
  racket/unsafe/ops
  racket/pretty
  (only-in "indexed-series.rkt"
@@ -111,7 +114,7 @@
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a ISeries
 ; struct object.
-(: new-ISeries ((Vectorof Fixnum) (Option (U (Listof IndexDataType) RFIndex)) -> ISeries))
+(: new-ISeries ((Vectorof Fixnum)(Option (U (Listof IndexDataType) RFIndex)) -> ISeries))
 (define (new-ISeries data labels)
 
   (: check-mismatch (RFIndex -> Void))
@@ -211,6 +214,26 @@
 (: iseries-length (ISeries -> Index))
 (define (iseries-length series)
   (vector-length (ISeries-data series)))
+
+(: fxvector->list (FxVector Fixnum -> (Listof Fixnum)))
+(define (fxvector->list fxvec idx)
+  (cond
+    [(= idx (fxvector-length fxvec)) null]
+    [else (cons (fxvector-ref fxvec idx) (fxvector->list fxvec (unsafe-fx+ idx 1)))]))
+
+(: list->fxvector ((Listof Fixnum) -> FxVector))
+(define (list->fxvector fixnum-list)
+  (define len : Index (length fixnum-list))
+
+  (define result-fxvector (make-fxvector len))
+
+  (for([fix fixnum-list]
+     [i (in-range len)])
+    (fxvector-set! result-fxvector i (assert fix fixnum?)))
+
+  result-fxvector)
+
+
 ; ***********************************************************
 
 ; ***********************************************************

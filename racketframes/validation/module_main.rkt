@@ -3,7 +3,6 @@
 (require "../main.rkt")
 
 (require typed/db)
-(require racket/dict)
 
 ;******************
 ;data-frame-mix
@@ -285,9 +284,6 @@
 
 (data-frame-head data-frame-from-sql-customers)
 
-(hash 1 (list 2 2))
-
-
 (define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
 
 (data-frame-head data-frame-nba-csv)
@@ -296,7 +292,3 @@
 
 (Schema-headers nba-csv-schema)
 (Schema-SeriesTypes nba-csv-schema)
-
-(dict-for-each #hash((a . "apple") (b . "banana") (a . "orange"))
-                 (lambda (k v)
-                   (printf "~a = ~s\n" k v)))

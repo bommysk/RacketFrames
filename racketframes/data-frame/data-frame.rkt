@@ -47,7 +47,6 @@
 ; ***********************************************************
 
 (require
- racket/flonum
  racket/set
  racket/list
  racket/sequence
@@ -60,7 +59,8 @@
  (only-in "types.rkt"
           Dim Dim-rows Dim-cols)
  (only-in "indexed-series.rkt"
-	  RFIndex label-sort-positional ListofLabel? LabelIndex?
+	  RFIndex label-sort-positional ListofLabel? Label? LabelIndex?
+          ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime?
           Label LabelProjection LabelProjection? LabelIndex LabelIndex-index
           build-index-from-labels build-index-from-list label-index idx->key
           idx->label)
@@ -81,17 +81,27 @@
  (only-in "numeric-series.rkt"
           NSeries NSeries? 
           NSeries-data
-          new-NSeries)
+          new-NSeries
+          list->flvector)
  (only-in "integer-series.rkt"
 	  ISeries ISeries?
 	  ISeries-data
-	  new-ISeries)
+	  new-ISeries
+          list->fxvector)
  (only-in "boolean-series.rkt"
 	  BSeries BSeries?
 	  BSeries-data
 	  new-BSeries)
+ (only-in "datetime-series.rkt"
+	  DatetimeSeries DatetimeSeries?
+	  DatetimeSeries-data
+	  new-DatetimeSeries)
  (only-in  "../util/datetime.rkt"
-           Datetime))
+           Datetime)
+ (only-in "../load/sample.rkt"
+          guess-series-type)
+ (only-in "../load/schema.rkt"
+          SeriesTypes))
 
 ; ***********************************************************
 
@@ -134,7 +144,7 @@
   (cdr col))
 
 ; ***********************************************************
-
+; Support Multiple-Valued Sequences like hashtables
 (: seq->columns ((U Columns (Sequenceof Label (Sequenceof Any))) -> Columns))
 (define (seq->columns col/seq)
   (if (Columns? col/seq)
@@ -155,13 +165,28 @@
               
               (hash-set! hash k (append v-value h-ref))))
         
-        
+        ;(define-type SeriesTypes (U 'GENERIC 'CATEGORICAL 'NUMERIC 'INTEGER 'BOOLEAN 'DATETIME))
           (hash-for-each hash
-                         (lambda ([k : Label] [v : Any])
-                           (let: ((h-ref : (Listof Any) (hash-ref hash k (λ () '()))))
-                             (set! cols (cons (cons k (new-GenSeries (list->vector h-ref) #f)) cols))))))
+                         (lambda ([k : Label] [v : (Listof Any)])
+                           (let*: ((h-ref : (Listof Any) (hash-ref hash k (λ () '())))
+                                   (h-ref-series-type : SeriesTypes (guess-series-type (map ~a h-ref))))
+                             (set! cols (cons (cons k
+                                                    (cond                                                      
+                                                      [(eq? h-ref-series-type 'CATEGORICAL)
+                                                       (new-CSeries (list->vector (assert h-ref ListofLabel?)) #f)]
+                                                      [(eq? h-ref-series-type 'NUMERIC)
+                                                       (new-NSeries (list->flvector (assert h-ref ListofFlonum?)) #f)]
+                                                      [(eq? h-ref-series-type 'INTEGER)
+                                                       (new-ISeries (list->vector (assert h-ref ListofFixnum?)) #f)]
+                                                      [(eq? h-ref-series-type 'BOOLEAN)
+                                                       (new-BSeries (list->vector (assert h-ref ListofBoolean?)) #f)]
+                                                      [(eq? h-ref-series-type 'DATETIME)
+                                                       (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)) #f)]
+                                                      [else
+                                                       (new-GenSeries (list->vector h-ref) #f)])) cols))))))
         
         cols)))
+
 
 ; ***********************************************************
 
@@ -611,5 +636,3 @@
          (series-iloc (column-series col) idx)) #f)))
 
 ; ***********************************************************
-
-(show-data-frame-description (data-frame-description (new-data-frame (hash 'a (list 1 2 3) 'b (list 3 5 6)))))
