@@ -29,7 +29,7 @@
  [iseries-loc (ISeries (U Label (Listof Label) (Listof Boolean)) -> (U Fixnum ISeries))]
  [iseries-loc-multi-index (ISeries (U (Listof String) ListofListofString) -> (U Fixnum ISeries))]
  [iseries-iloc (ISeries (U Index (Listof Index)) -> (U Fixnum ISeries))]
- [iseries-index-ref (ISeries IndexDataType -> (Listof Integer))]
+ [iseries-index-ref (ISeries IndexDataType -> (Listof Fixnum))]
  [iseries-range (ISeries Index -> (Vectorof Fixnum))]
  [iseries-length (ISeries -> Index)]
  [iseries-referencer (ISeries -> (Index -> Fixnum))]
@@ -203,9 +203,9 @@
 (define (iseries-index series)
   (ISeries-index series))
 
-; This function consumes a series and a Label and returns
-; the list of values at that Label in the series.
-(: iseries-index-ref (ISeries IndexDataType -> (Listof Integer)))
+; This function consumes a series and an IndexDataType and returns
+; the list of values at that index in the series.
+(: iseries-index-ref (ISeries IndexDataType -> (Listof Fixnum)))
 (define (iseries-index-ref series item)
   (iseries-iref series (key->lst-idx (assert (ISeries-index series)) item)))
 
@@ -626,7 +626,7 @@
             (vector-ref vals 0)
             (new-ISeries vals (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
 
-; index based
+; vector 0..n index based
 (: iseries-iloc (ISeries (U Index (Listof Index)) -> (U Fixnum ISeries)))
 (define (iseries-iloc iseries idx)
   (let ((referencer (iseries-referencer iseries)))
@@ -636,11 +636,20 @@
       ; sub-vector the data vector to get the data and create a new-ISeries
       (new-ISeries
        (for/vector: : (Vectorof Fixnum) ([i idx])
-         (vector-ref (iseries-data iseries) i))
+         (referencer (assert i index?)))
        (if (not (ISeries-index iseries))
-           (build-index-from-list (range (length idx)))
+           #f
            (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (ISeries-index iseries)) i)) idx))))
       (referencer idx))))
+
+(: iseries-iloc-range (ISeries Index Index -> ISeries))
+(define (iseries-iloc-range iseries start end)
+  ; use vector-copy library method
+  (new-ISeries
+   (vector-copy (iseries-data iseries) start end)
+   (if (not (ISeries-index iseries))
+       #f
+       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (ISeries-index iseries)) i)) (range start end))))))
 
 ; ***********************************************************
 ;; ISeries groupby
