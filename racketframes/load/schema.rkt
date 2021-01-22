@@ -2,30 +2,28 @@
 
 (provide:
  [generate-anon-series-names (Integer -> (Listof String))]
- [ alter-schema-columns (Schema (Listof (Pair Symbol ColumnInfo)) -> Schema)]
+ [alter-schema-columns (Schema (Listof (Pair Symbol ColumnInfo)) -> Schema)]
  [schema-print (Schema Output-Port -> Void)]
  [alter-schema-no-headers (Schema -> Schema)])
  
 
 (provide
- SeriesTypes
+ SeriesType
  (struct-out Schema)
  Schema-headers
  Schema-SeriesTypes
  (struct-out ColumnInfo))
 
 (require
- racket/set)
+ racket/set
+ (only-in "../data-frame/series-description.rkt" SeriesType))
 
 ;; Schema definition of a data file.
 ;; May be defined as meta information along with the data file
 ;; OR
 ;; Dynamically determined by sampling the data files.
-
-(define-type SeriesTypes (U 'GENERIC 'CATEGORICAL 'NUMERIC 'INTEGER 'BOOLEAN 'DATETIME))
-
 (struct: ColumnInfo ([name : Symbol]
-		     [type : SeriesTypes]) #:transparent)
+		     [type : SeriesType]) #:transparent)
 
 (struct: Schema ([has-headers : Boolean]
 		 [meta : (Listof ColumnInfo)])  #:transparent)
@@ -47,9 +45,9 @@
 	   (ColumnInfo-name meta))
        (Schema-meta schema)))
 
-; This function consumes a Schema struct and returns of Listof SeriesTypes
+; This function consumes a Schema struct and returns of Listof SeriesType
 ; which represents the series types of the schema.
-(: Schema-SeriesTypes (Schema -> (Listof SeriesTypes)))
+(: Schema-SeriesTypes (Schema -> (Listof SeriesType)))
 (define (Schema-SeriesTypes schema)
   (map (λ: ((meta : ColumnInfo))
 	   (ColumnInfo-type meta))

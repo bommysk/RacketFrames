@@ -110,9 +110,18 @@
 #| def time_iloc_slice(self, index):
         self.data.iloc[:800000] |#
 
+(: iseries-iloc-range (ISeries Index Index -> ISeries))
+(define (iseries-iloc-range iseries start end)
+  ; use vector-copy library method
+  (new-ISeries
+   (vector-copy (iseries-data iseries) start end)
+   (if (not (ISeries-index iseries))
+       #f
+       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (ISeries-index iseries)) i)) (range start end))))))
+
 (define i-iloc-range-80000-before (now))
-(define iseries-iloc-range-80000 (iseries-iloc series-integer (range 80000)))
-;(iseries-iloc-range series-integer 0 80000)
+;(define iseries-iloc-range-80000 (iseries-iloc series-integer (range 80000)))
+(iseries-iloc-range series-integer 0 80000)
 (define i-iloc-range-80000-after (- (now) i-list-like-bench-before))
 
 (fprintf (current-output-port)

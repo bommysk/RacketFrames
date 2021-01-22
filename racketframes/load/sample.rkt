@@ -6,21 +6,23 @@
  [determine-schema-from-sample ((Listof String) String -> Schema)]
  [determine-schema-from-sql-sample ((Listof String) (Listof (Vectorof Any)) -> Schema)]
  [canonicalize-to-string-or-num ((Listof String) -> (Listof (U Number String)))]
- [guess-series-type ((Listof String) -> SeriesTypes)]
+ [guess-series-type ((Listof String) -> SeriesType)]
  [guess-if-headers ((Listof String) -> Boolean)]
  [guess-series-meta ((Listof String) (Listof (Listof String)) -> (Listof ColumnInfo))]
  [transpose-rows-to-cols ((Listof (Listof String)) -> (Listof (Listof String)))])
 
 (require
  (only-in "schema.rkt"
-	  Schema ColumnInfo SeriesTypes Schema-headers Schema-SeriesTypes
+	  Schema ColumnInfo Schema-headers Schema-SeriesTypes
 	  generate-anon-series-names)
  (only-in "delimited.rkt"
 	 set-delimiter)
  (only-in "../util/datetime/parse.rkt"
 	 is-valid-date? is-valid-datetime? parse-date parse-datetime)
  (only-in "types.rkt"
-	  ListofString ListofString?))
+	  ListofString ListofString?)
+ (only-in "../data-frame/series-description.rkt"
+          SeriesType))
 
 (: canonicalize-to-string-or-num ((Listof String) -> (Listof (U Number String))))
 (define (canonicalize-to-string-or-num strs)
@@ -36,33 +38,33 @@
 (define (guess-if-headers fields)
   (andmap string? (canonicalize-to-string-or-num fields)))
 
-(: guess-series-type ((Listof String) -> SeriesTypes))
+(: guess-series-type ((Listof String) -> SeriesType))
 (define (guess-series-type col)
   (cond
    ((andmap exact-integer? (canonicalize-to-string-or-num col))
-    'INTEGER)
+    'IntegerSeries)
    ((andmap number? (canonicalize-to-string-or-num col))
-    'NUMERIC)
+    'NumericSeries)
    ((andmap string? (canonicalize-to-string-or-num col))
     (cond
-      [(andmap is-valid-datetime? col) 'DATETIME]
-      [(andmap is-valid-date? col) 'DATETIME]
-      [else 'CATEGORICAL]))
-   (else 'GENERIC)))
+      [(andmap is-valid-datetime? col) 'DatetimeSeries]
+      [(andmap is-valid-date? col) 'DatetimeSeries]
+      [else 'CategoricalSeries]))
+   (else 'GenericSeries)))
 
-(: guess-series-type-sql ((Listof Any) -> SeriesTypes))
+(: guess-series-type-sql ((Listof Any) -> SeriesType))
 (define (guess-series-type-sql col)
   (cond
    ((andmap exact-integer? col)
-    'INTEGER)
+    'IntegerSeries)
    ((andmap real? col)
-    'NUMERIC)
+    'NumericSeries)
    ((andmap string? col)
     (cond
-      [(andmap is-valid-datetime? col) 'DATETIME]
-      [(andmap is-valid-date? col) 'DATETIME]
-      [else 'CATEGORICAL]))
-   (else 'GENERIC)))
+      [(andmap is-valid-datetime? col) 'DatetimeSeries]
+      [(andmap is-valid-date? col) 'DatetimeSeries]
+      [else 'CategoricalSeries]))
+   (else 'GenericSeries)))
 
 (: guess-series-meta ((Listof String) (Listof (Listof String)) -> (Listof ColumnInfo)))
 (define (guess-series-meta headers cols)

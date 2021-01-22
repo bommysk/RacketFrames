@@ -8,7 +8,7 @@
 
 (require "../load/sample.rkt"
          (only-in "../load/schema.rkt"
-	  Schema ColumnInfo SeriesTypes Schema-headers Schema-SeriesTypes
+	  Schema ColumnInfo Schema-headers Schema-SeriesTypes
 	  generate-anon-series-names)
          (only-in "../load/delimited.rkt"
 	 set-delimiter))
@@ -18,7 +18,7 @@
 
 (check-equal? (Schema-headers schema-1) (list 'header1 'header2 'header3 'header4))
 
-(check-equal? (Schema-SeriesTypes schema-1) (list 'CATEGORICAL 'CATEGORICAL 'CATEGORICAL 'CATEGORICAL))
+(check-equal? (Schema-SeriesTypes schema-1) (list 'CategoricalSeries 'CategoricalSeries 'CategoricalSeries 'CategoricalSeries))
 
 ; this function gets the string split on the delimter (Listof (Listof String)) 
 ;(transpose-rows-to-cols (list (list "header1" "header2" "header3" "header4") (list "hello" "world" "fizz" "buzz") (list "hello" "world" "fizz" "buzz") (list "hello, world, fizz, buzz") (list "hello, world, fizz, buzz") (list "hello" "world" "fizz" "buzz")))

@@ -23,7 +23,7 @@
  [set-BSeries-index (BSeries (U (Listof Label) RFIndex) -> BSeries)]
  [bseries-iref (BSeries (Listof Index) -> (Listof Boolean))]
  [bseries-index-ref (BSeries IndexDataType -> (Listof Boolean))]
- [bseries-range (BSeries Index -> (Vectorof Boolean))]
+ [bseries-range (BSeries Index Index -> (Vectorof Boolean))]
  [bseries-length (BSeries -> Index)]
  [bseries-referencer (BSeries -> (Index -> Boolean))]
  [bseries-data (BSeries -> (Vectorof Boolean))]
@@ -33,6 +33,7 @@
  [bseries-loc (BSeries (U Label (Listof Label) (Listof Boolean)) -> (U Boolean BSeries))]
  [bseries-loc-multi-index (BSeries (U (Listof String) ListofListofString) -> (U Boolean BSeries))]
  [bseries-iloc (BSeries (U Index (Listof Index)) -> (U Boolean BSeries))]
+ [bseries-iloc-range (BSeries Index Index -> BSeries)]
  [bseries-not (BSeries -> BSeries)]
  [bseries-print (BSeries Output-Port -> Void)])
 ; ***********************************************************
@@ -109,9 +110,9 @@
 
 ; This function consumes an integer series and an index and
 ; returns a vector of values in the range [0:index] in the series.
-(: bseries-range (BSeries Index -> (Vectorof Boolean)))
-(define (bseries-range series pos)
-   (vector-take (BSeries-data series) pos))
+(: bseries-range (BSeries Index Index -> (Vectorof Boolean)))
+(define (bseries-range series start end)
+   (vector-copy (BSeries-data series) start end))
 
 ; This function consumes an integer series and returns its
 ; data vector.
@@ -257,12 +258,20 @@
       ; sub-vector the data vector to get the data and create a new-BSeries
       (new-BSeries
        (for/vector: : (Vectorof Boolean) ([i idx])
-         (vector-ref (bseries-data bseries) i))
-
+         (referencer (assert i index?)))
        (if (not (BSeries-index bseries))
-           (build-index-from-list (range (length idx)))
+           #f
            (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (BSeries-index bseries)) i)) idx))))
       (referencer idx))))
+
+(: bseries-iloc-range (BSeries Index Index -> BSeries))
+(define (bseries-iloc-range bseries start end)
+  ; use vector-copy library method
+  (new-BSeries
+   (vector-copy (bseries-data bseries) start end)
+   (if (not (BSeries-index bseries))
+       #f
+       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (BSeries-index bseries)) i)) (range start end))))))
 
 ; ***********************************************************
 
