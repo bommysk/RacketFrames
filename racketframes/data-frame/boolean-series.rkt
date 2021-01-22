@@ -19,7 +19,7 @@
  (struct-out BSeries))
 
 (provide:
- [new-BSeries ((Vectorof Boolean) (Option (U (Listof Label) RFIndex)) -> BSeries)]
+ [new-BSeries ((Vectorof Boolean) (Option (U (Listof IndexDataType) RFIndex)) -> BSeries)]
  [set-BSeries-index (BSeries (U (Listof Label) RFIndex) -> BSeries)]
  [bseries-iref (BSeries (Listof Index) -> (Listof Boolean))]
  [bseries-index-ref (BSeries IndexDataType -> (Listof Boolean))]

@@ -35,7 +35,7 @@
   (let ((len (gen-series-length gen-series))
         (k (current-continuation-marks)))
     (if (zero? len)
-	(raise (make-exn:fail:contract "iseries can't be empty on groupby." k))
+	(raise (make-exn:fail:contract "genseries can't be empty on groupby." k))
 	(begin          
 	  (do ((i 0 (add1 i)))
 	      ((>= i len) group-index)

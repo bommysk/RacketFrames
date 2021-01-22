@@ -112,6 +112,7 @@
 
 (define i-iloc-range-80000-before (now))
 (define iseries-iloc-range-80000 (iseries-iloc series-integer (range 80000)))
+;(iseries-iloc-range series-integer 0 80000)
 (define i-iloc-range-80000-after (- (now) i-list-like-bench-before))
 
 (fprintf (current-output-port)

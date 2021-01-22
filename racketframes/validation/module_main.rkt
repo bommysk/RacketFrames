@@ -284,11 +284,42 @@
 
 (data-frame-head data-frame-from-sql-customers)
 
-(define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
+;(define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
 
-(data-frame-head data-frame-nba-csv)
+;(data-frame-head data-frame-nba-csv)
 
-(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
+;(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
 
-(Schema-headers nba-csv-schema)
-(Schema-SeriesTypes nba-csv-schema)
+;(Schema-headers nba-csv-schema)
+;(Schema-SeriesTypes nba-csv-schema)
+
+; series constructors
+(define int-series (new-series (list 1 2 3 4 5 6) #f))
+(define gen-series (new-series (vector 'a 1 2 'c 'd 5.6) #f))
+
+(series-iref int-series 3)
+(series-print int-series (current-output-port))
+
+(series-iref gen-series 5)
+(series-print gen-series (current-output-port))
+
+(define int-series-with-index (new-series (list 1 2 3 4 5 6) (list 'a 'b 'c 'd 'e 'f)))
+(define gen-series-with-index (new-series (vector 'a 1 2 'c 'd 5.6) (list 6 5 4 3 2 1)))
+
+(series-index-ref int-series-with-index 'e)
+(series-print int-series-with-index (current-output-port))
+
+(series-index-ref gen-series-with-index 5)
+(series-print gen-series (current-output-port))
+
+; dataframe constructors
+(define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3) 'b (list 3 5 6)  'c (list 3.4 5.5 6.7) 'd (list 'fizz 'buzz 'baz))))
+
+(show-data-frame-description (data-frame-description data-frame-from-hash))
+
+(define data-frame-from-hash-vector (new-data-frame (hash 'a '#(1 2 3) 'b '#(3 5 6) 'c '#(3.4 5.5 6.7))))
+
+(show-data-frame-description (data-frame-description data-frame-from-hash-vector))
+
+(data-frame-head data-frame-from-hash)
+
