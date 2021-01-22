@@ -33,17 +33,17 @@ We can explicity define the Columns structure to initialize from
 or we can use the more pleasant Multiple-Valued Sequences. In the same way that a function
 or expression can produce multiple values, individual iterations of a sequence can produce
 multiple elements well suited to construct a DataFrame i.e. (column-name data). For example,
-a hash table as a sequence generates two values for each iteration: a key and a value. A vector
-with an even number of elements can do the same. RacketFrames expects: (Sequenceof Label (Sequenceof Any)).
+a hash table as a sequence generates two values for each iteration: a key and a value.
+RacketFrames expects: (Sequenceof Label (Sequenceof Any)).
 
 @codeblock|{
 (define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3) 'b (list 3 5 6)  'c (list 3.4 5.5 6.7) 'd (list 'fizz 'buzz 'baz))))
 
 (show-data-frame-description (data-frame-description data-frame-from-hash))
 
-(define data-frame-from-vector (new-data-frame (hash 'a '#(1 2 3) 'b '#(3 5 6) 'c '#(3.4 5.5 6.7))))
+(define data-frame-from-hash-vector (new-data-frame (hash 'a '#(1 2 3) 'b '#(3 5 6) 'c '#(3.4 5.5 6.7))))
 
-(show-data-frame-description (data-frame-description data-frame-from-vector))
+(show-data-frame-description (data-frame-description data-frame-from-hash-vector))
 }|
 
 @verbatim|{
