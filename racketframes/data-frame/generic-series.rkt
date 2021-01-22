@@ -33,7 +33,7 @@
  [gen-series-iref (GenSeries (Listof Index) -> GenericType)]
  [gen-series-index-ref (GenSeries IndexDataType -> (Listof GenericType))]
  [gen-series-label-ref (GenSeries Label -> GenericType)]
- [gen-series-range (GenSeries Index -> (Vectorof GenericType))]
+ [gen-series-range (GenSeries Index Index -> (Vectorof GenericType))]
  [gen-series-length (GenSeries -> Index)]
  [gen-series-referencer (GenSeries -> (Index -> GenericType))]
  [gen-series-data (GenSeries -> (Vectorof GenericType))]
@@ -42,6 +42,7 @@
  [gen-series-loc (GenSeries (U Label (Listof Label) (Listof Boolean)) -> (U GenericType GenSeries))]
  [gen-series-loc-multi-index (GenSeries (U (Listof String) ListofListofString) -> (U GenericType GenSeries))]
  [gen-series-iloc (GenSeries (U Index (Listof Index)) -> (U GenericType GenSeries))]
+ [gen-series-iloc-range (GenSeries Index Index -> GenSeries)]
  [map/gen-s (GenSeries (GenericType -> GenericType) -> GenSeries)]
  [gen-series-print (GenSeries Output-Port -> Void)])
 
@@ -110,9 +111,9 @@
 
 ; This function consumes a generic series and an index and
 ; returns a vector of values in the range [0:index] in the series.
-(: gen-series-range (GenSeries Index -> (Vectorof GenericType)))
-(define (gen-series-range series pos)
-   (vector-take (GenSeries-data series) pos))
+(: gen-series-range (GenSeries Index Index -> (Vectorof GenericType)))
+(define (gen-series-range series start end)
+   (vector-copy (GenSeries-data series) start end))
 
 ; This function consumes a generic series and returns its
 ; data vector.
@@ -260,9 +261,18 @@
        (for/vector: : (Vectorof GenericType) ([i idx])
          (vector-ref (gen-series-data gen-series) i))
        (if (not (GenSeries-index gen-series))
-           (build-index-from-list (range (length idx)))
+           #f
            (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (GenSeries-index gen-series)) i)) idx))))
       (referencer idx))))
+
+(: gen-series-iloc-range (GenSeries Index Index -> GenSeries))
+(define (gen-series-iloc-range gen-series start end)
+  ; use vector-copy library method
+  (new-GenSeries
+   (vector-copy (gen-series-data gen-series) start end)
+   (if (not (GenSeries-index gen-series))
+       #f
+       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (GenSeries-index gen-series)) i)) (range start end))))))
 
 ; ***********************************************************
 

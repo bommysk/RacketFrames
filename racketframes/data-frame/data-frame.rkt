@@ -66,7 +66,7 @@
           idx->label)
  (only-in "series-description.rkt"
 	  series-description series-length series-type series-data
-          Series Series?
+          Series Series? SeriesType
           SeriesDescription SeriesDescription-name
           SeriesDescription-type SeriesDescription-length
           set-series-index series-loc-boolean series-loc series-iloc)
@@ -99,9 +99,7 @@
  (only-in  "../util/datetime.rkt"
            Datetime)
  (only-in "../load/sample.rkt"
-          guess-series-type)
- (only-in "../load/schema.rkt"
-          SeriesTypes))
+          guess-series-type))
 
 ; ***********************************************************
 
@@ -165,22 +163,21 @@
               
               (hash-set! hash k (append v-value h-ref))))
         
-        ;(define-type SeriesTypes (U 'GENERIC 'CATEGORICAL 'NUMERIC 'INTEGER 'BOOLEAN 'DATETIME))
           (hash-for-each hash
                          (lambda ([k : Label] [v : (Listof Any)])
                            (let*: ((h-ref : (Listof Any) (hash-ref hash k (λ () '())))
-                                   (h-ref-series-type : SeriesTypes (guess-series-type (map ~a h-ref))))
+                                   (h-ref-series-type : SeriesType (guess-series-type (map ~a h-ref))))
                              (set! cols (cons (cons k
                                                     (cond                                                      
-                                                      [(eq? h-ref-series-type 'CATEGORICAL)
+                                                      [(eq? h-ref-series-type 'CategoricalSeries)
                                                        (new-CSeries (list->vector (assert h-ref ListofLabel?)) #f)]
-                                                      [(eq? h-ref-series-type 'NUMERIC)
+                                                      [(eq? h-ref-series-type 'NumericSeries)
                                                        (new-NSeries (list->flvector (assert h-ref ListofFlonum?)) #f)]
-                                                      [(eq? h-ref-series-type 'INTEGER)
+                                                      [(eq? h-ref-series-type 'IntegerSeries)
                                                        (new-ISeries (list->vector (assert h-ref ListofFixnum?)) #f)]
-                                                      [(eq? h-ref-series-type 'BOOLEAN)
+                                                      [(eq? h-ref-series-type 'BooleanSeries)
                                                        (new-BSeries (list->vector (assert h-ref ListofBoolean?)) #f)]
-                                                      [(eq? h-ref-series-type 'DATETIME)
+                                                      [(eq? h-ref-series-type 'DatetimeSeries)
                                                        (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)) #f)]
                                                       [else
                                                        (new-GenSeries (list->vector h-ref) #f)])) cols))))))

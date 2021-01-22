@@ -34,6 +34,7 @@
  "data-frame/data-frame-print.rkt"
  "data-frame/data-frame-join.rkt"
  "data-frame/indexed-series.rkt"
+ "data-frame/series.rkt"
  "data-frame/series-description.rkt"
  "data-frame/generic-series.rkt"
  "data-frame/integer-series.rkt"
@@ -65,6 +66,7 @@
  (all-from-out "load/schema-syntax.rkt")
  (all-from-out "load/schema.rkt")
  (all-from-out "data-frame/indexed-series.rkt")
+ (all-from-out "data-frame/series.rkt")
  (all-from-out "data-frame/series-description.rkt")
  (all-from-out "data-frame/series-iter.rkt")
  (all-from-out "data-frame/data-frame.rkt")

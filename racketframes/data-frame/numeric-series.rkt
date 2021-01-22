@@ -25,6 +25,7 @@
  [nseries-loc (NSeries (U Label (Listof Label) (Listof Boolean)) -> (U Flonum NSeries))]
  [nseries-loc-multi-index (NSeries (U (Listof String) ListofListofString) -> (U Flonum NSeries))]
  [nseries-iloc (NSeries (U Index (Listof Index)) -> (U Flonum NSeries))]
+ [nseries-iloc-range (NSeries Index Index -> NSeries)]
  [nseries-index-ref (NSeries IndexDataType -> (Listof Flonum))]
  [nseries-range (NSeries Index -> FlVector)]
  [nseries-referencer (NSeries -> (Index -> Flonum))]
@@ -759,12 +760,20 @@
         ; sub-vector the data vector to get the data and create a new-BSeries
         (new-NSeries
          (list->flvector (for/list: : (Listof Flonum) ([i idx])
-                           (flvector-ref (nseries-data nseries) i)))
-
+                           (referencer (assert i index?))))
          (if (not (NSeries-index nseries))
-           (build-index-from-list (range (length idx)))
+           #f
            (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (NSeries-index nseries)) i)) idx))))
         (referencer idx))))
+
+(: nseries-iloc-range (NSeries Index Index -> NSeries))
+(define (nseries-iloc-range nseries start end)
+  ; use vector-copy library method
+  (new-NSeries
+   (flvector-copy (nseries-data nseries) start end)
+   (if (not (NSeries-index nseries))
+       #f
+       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (NSeries-index nseries)) i)) (range start end))))))
 
 ; ***********************************************************
 

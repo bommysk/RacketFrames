@@ -29,8 +29,9 @@
  [iseries-loc (ISeries (U Label (Listof Label) (Listof Boolean)) -> (U Fixnum ISeries))]
  [iseries-loc-multi-index (ISeries (U (Listof String) ListofListofString) -> (U Fixnum ISeries))]
  [iseries-iloc (ISeries (U Index (Listof Index)) -> (U Fixnum ISeries))]
+ [iseries-iloc-range (ISeries Index Index -> ISeries)]
  [iseries-index-ref (ISeries IndexDataType -> (Listof Fixnum))]
- [iseries-range (ISeries Index -> (Vectorof Fixnum))]
+ [iseries-range (ISeries Index Index -> (Vectorof Fixnum))]
  [iseries-length (ISeries -> Index)]
  [iseries-referencer (ISeries -> (Index -> Fixnum))]
  [iseries-data (ISeries -> (Vectorof Fixnum))]
@@ -187,9 +188,9 @@
 
 ; This function consumes an integer series and an index and
 ; returns a vector of values in the range [0:index] in the series.
-(: iseries-range (ISeries Index -> (Vectorof Fixnum)))
-(define (iseries-range series pos)
-   (vector-take (ISeries-data series) pos))
+(: iseries-range (ISeries Index Index -> (Vectorof Fixnum)))
+(define (iseries-range series start end)
+   (vector-copy (ISeries-data series) start end))
 
 ; This function consumes an integer series and returns its
 ; data vector.

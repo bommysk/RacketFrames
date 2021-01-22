@@ -230,21 +230,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Dataframe Load Test Cases;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define salary-date-schema (Schema #t (list (ColumnInfo 'first 'CATEGORICAL) (ColumnInfo 'last 'CATEGORICAL)
-                                       (ColumnInfo 'age 'INTEGER) (ColumnInfo 'dollar 'CATEGORICAL)
-                                       (ColumnInfo 'phone 'CATEGORICAL) (ColumnInfo 'join_date 'DATETIME))))
+(define salary-date-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                       (ColumnInfo 'age 'IntegerSeries) (ColumnInfo 'dollar 'CategoricalSeries)
+                                       (ColumnInfo 'phone 'CategoricalSeries) (ColumnInfo 'join_date 'DatetimeSeries))))
 
-(define salary-no-date-schema (Schema #t (list (ColumnInfo 'first 'CATEGORICAL) (ColumnInfo 'last 'CATEGORICAL)
-                                       (ColumnInfo 'age 'INTEGER) (ColumnInfo 'dollar 'CATEGORICAL)
-                                       (ColumnInfo 'phone 'CATEGORICAL))))
+(define salary-no-date-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                       (ColumnInfo 'age 'IntegerSeries) (ColumnInfo 'dollar 'CategoricalSeries)
+                                       (ColumnInfo 'phone 'CategoricalSeries))))
 
-(define salary-datetime-schema (Schema #t (list (ColumnInfo 'first 'CATEGORICAL) (ColumnInfo 'last 'CATEGORICAL)
-                                       (ColumnInfo 'age 'INTEGER) (ColumnInfo 'dollar 'CATEGORICAL)
-                                       (ColumnInfo 'phone 'CATEGORICAL) (ColumnInfo 'join_datetime 'DATETIME))))
+(define salary-datetime-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                       (ColumnInfo 'age 'IntegerSeries) (ColumnInfo 'dollar 'CategoricalSeries)
+                                       (ColumnInfo 'phone 'CategoricalSeries) (ColumnInfo 'join_datetime 'DatetimeSeries))))
 
-(define random-demographic-schema (Schema #t (list (ColumnInfo 'first 'CATEGORICAL) (ColumnInfo 'last 'CATEGORICAL)
-                                                   (ColumnInfo 'gender 'CATEGORICAL) (ColumnInfo 'yn 'CATEGORICAL)
-                                                   (ColumnInfo 'char 'GENERIC) (ColumnInfo 'float 'NUMERIC))))
+(define random-demographic-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                                   (ColumnInfo 'gender 'CategoricalSeries) (ColumnInfo 'yn 'CategoricalSeries)
+                                                   (ColumnInfo 'char 'GenericSeries) (ColumnInfo 'float 'NumericSeries))))
 
 ; read csv
 (define salary-data-frame-csv-schema (load-csv-file "../sample-csv/salary_date.csv" #:schema salary-date-schema))
@@ -322,4 +322,3 @@
 (show-data-frame-description (data-frame-description data-frame-from-hash-vector))
 
 (data-frame-head data-frame-from-hash)
-

@@ -14,7 +14,7 @@
 	  zip)
  (only-in "schema.rkt"
 	  generate-anon-series-names
-	  Schema ColumnInfo SeriesTypes Schema-has-headers
+	  Schema ColumnInfo Schema-has-headers
 	  Schema-SeriesTypes Schema-headers)
  (only-in "../data-frame/series-builder.rkt"
 	  SeriesBuilder)
@@ -53,7 +53,7 @@
 	  complete-DatetimeSeriesBuilder
 	  append-DatetimeSeriesBuilder)
  (only-in "../data-frame/series-description.rkt"
-	  Series)
+	  Series SeriesType)
  (only-in "../data-frame/data-frame.rkt"
 	  DataFrame
 	  new-data-frame
@@ -84,17 +84,17 @@
 (: new-DataFrameBuilder-from-Schema (Schema -> DataFrameBuilder))
 (define (new-DataFrameBuilder-from-Schema schema)
 
-  (: determine-SeriesBuilder (SeriesTypes -> SeriesBuilder))
+  (: determine-SeriesBuilder (SeriesType -> SeriesBuilder))
   (define (determine-SeriesBuilder stypes)
     (match stypes
-      ['GENERIC (new-GenSeriesBuilder)]
-      ['CATEGORICAL (new-CSeriesBuilder)]
-      ['INTEGER     (new-ISeriesBuilder)]
-      ['NUMERIC     (new-NSeriesBuilder)]
-      ['BOOLEAN     (new-BSeriesBuilder)]
-      ['DATETIME    (new-DatetimeSeriesBuilder)]))
+      ['GenericSeries     (new-GenSeriesBuilder)]
+      ['CategoricalSeries (new-CSeriesBuilder)]
+      ['IntegerSeries     (new-ISeriesBuilder)]
+      ['NumericSeries     (new-NSeriesBuilder)]
+      ['BooleanSeries     (new-BSeriesBuilder)]
+      ['DatetimeSeries    (new-DatetimeSeriesBuilder)]))
 
-  (DataFrameBuilder ((inst map SeriesBuilder SeriesTypes)
+  (DataFrameBuilder ((inst map SeriesBuilder SeriesType)
 		 determine-SeriesBuilder
 		 (Schema-SeriesTypes schema))))
 

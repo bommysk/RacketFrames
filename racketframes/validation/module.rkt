@@ -24,6 +24,8 @@
 
 (data-frame-head salary-data-frame-csv-no-schema)
 
+(print salary-data-frame-csv-no-schema)
+
 (displayln "DataFrame List of Column Names")
 (data-frame-names salary-data-frame-csv-no-schema)
 
@@ -228,21 +230,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Dataframe Load Test Cases;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define salary-date-schema (Schema #t (list (ColumnInfo 'first 'CATEGORICAL) (ColumnInfo 'last 'CATEGORICAL)
-                                       (ColumnInfo 'age 'INTEGER) (ColumnInfo 'dollar 'CATEGORICAL)
-                                       (ColumnInfo 'phone 'CATEGORICAL) (ColumnInfo 'join_date 'DATETIME))))
+(define salary-date-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                       (ColumnInfo 'age 'IntegerSeries) (ColumnInfo 'dollar 'CategoricalSeries)
+                                       (ColumnInfo 'phone 'CategoricalSeries) (ColumnInfo 'join_date 'DatetimeSeries))))
 
-(define salary-no-date-schema (Schema #t (list (ColumnInfo 'first 'CATEGORICAL) (ColumnInfo 'last 'CATEGORICAL)
-                                       (ColumnInfo 'age 'INTEGER) (ColumnInfo 'dollar 'CATEGORICAL)
-                                       (ColumnInfo 'phone 'CATEGORICAL))))
+(define salary-no-date-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                       (ColumnInfo 'age 'IntegerSeries) (ColumnInfo 'dollar 'CategoricalSeries)
+                                       (ColumnInfo 'phone 'CategoricalSeries))))
 
-(define salary-datetime-schema (Schema #t (list (ColumnInfo 'first 'CATEGORICAL) (ColumnInfo 'last 'CATEGORICAL)
-                                       (ColumnInfo 'age 'INTEGER) (ColumnInfo 'dollar 'CATEGORICAL)
-                                       (ColumnInfo 'phone 'CATEGORICAL) (ColumnInfo 'join_datetime 'DATETIME))))
+(define salary-datetime-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                       (ColumnInfo 'age 'IntegerSeries) (ColumnInfo 'dollar 'CategoricalSeries)
+                                       (ColumnInfo 'phone 'CategoricalSeries) (ColumnInfo 'join_datetime 'DatetimeSeries))))
 
-(define random-demographic-schema (Schema #t (list (ColumnInfo 'first 'CATEGORICAL) (ColumnInfo 'last 'CATEGORICAL)
-                                                   (ColumnInfo 'gender 'CATEGORICAL) (ColumnInfo 'yn 'CATEGORICAL)
-                                                   (ColumnInfo 'char 'GENERIC) (ColumnInfo 'float 'NUMERIC))))
+(define random-demographic-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                                   (ColumnInfo 'gender 'CategoricalSeries) (ColumnInfo 'yn 'CategoricalSeries)
+                                                   (ColumnInfo 'char 'GenericSeries) (ColumnInfo 'float 'NumericSeries))))
 
 ; read csv
 (define salary-data-frame-csv-schema (load-csv-file "../sample-csv/salary_date.csv" #:schema salary-date-schema))
@@ -282,12 +284,41 @@
 
 (data-frame-head data-frame-from-sql-customers)
 
-(define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
+;(define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
 
-(data-frame-head data-frame-nba-csv)
+;(data-frame-head data-frame-nba-csv)
 
-(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
+;(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
 
-(Schema-headers nba-csv-schema)
-(Schema-SeriesTypes nba-csv-schema)
+;(Schema-headers nba-csv-schema)
+;(Schema-SeriesTypes nba-csv-schema)
 
+; series constructors
+(define int-series (new-series (list 1 2 3 4 5 6) #f))
+(define gen-series (new-series (vector 'a 1 2 'c 'd 5.6) #f))
+
+(series-iref int-series 3)
+(series-print int-series (current-output-port))
+
+(series-iref gen-series 5)
+(series-print gen-series (current-output-port))
+
+(define int-series-with-index (new-series (list 1 2 3 4 5 6) (list 'a 'b 'c 'd 'e 'f)))
+(define gen-series-with-index (new-series (vector 'a 1 2 'c 'd 5.6) (list 6 5 4 3 2 1)))
+
+(series-index-ref int-series-with-index 'e)
+(series-print int-series-with-index (current-output-port))
+
+(series-index-ref gen-series-with-index 5)
+(series-print gen-series (current-output-port))
+
+; dataframe constructors
+(define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3) 'b (list 3 5 6)  'c (list 3.4 5.5 6.7) 'd (list 'fizz 'buzz 'baz))))
+
+(show-data-frame-description (data-frame-description data-frame-from-hash))
+
+(define data-frame-from-hash-vector (new-data-frame (hash 'a '#(1 2 3) 'b '#(3 5 6) 'c '#(3.4 5.5 6.7))))
+
+(show-data-frame-description (data-frame-description data-frame-from-hash-vector))
+
+(data-frame-head data-frame-from-hash)
