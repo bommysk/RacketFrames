@@ -125,6 +125,8 @@ Given a list of Columns we can construct the DataFrame struct. Where the LabelIn
 for fast Column access.
 @codeblock|{ (struct: DataFrame LabelIndex ([series : (Vectorof Series)])) }|
 
+@verbatim{================================================================================}
+
 Import library.
 @codeblock|{
 (require RacketFrames)
