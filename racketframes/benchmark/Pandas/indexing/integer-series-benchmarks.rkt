@@ -90,7 +90,7 @@
 #| def time_getitem_slice(self, index):
         self.data[:800000] |#
 (define i-range-bench-before (now))
-(define iseries-range-80000 (iseries-range series-integer 80000))
+(define iseries-range-80000 (iseries-range series-integer 0 80000))
 (define i-range-bench-after (- (now) i-range-bench-before))
 
 (fprintf (current-output-port)

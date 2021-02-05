@@ -15,7 +15,7 @@
  (only-in racket/vector
 	  vector-copy)
  (only-in "integer-series.rkt"
-          ISeries))
+          new-ISeries ISeries))
 
 (struct: ISeriesBuilder ([index  : Index]
 			 [data : (Vectorof Fixnum)]) #:mutable)
@@ -54,6 +54,7 @@
   (if (< (ISeriesBuilder-index builder)         
          (vector-length (ISeriesBuilder-data builder)))
       (let ((num (if (string? int/str-value)
+                     ; if the string is not a valid number, we fill NAN, 0 in this case
 		     (let ((num (string->number (string-trim int/str-value))))                      
                        (if num (assert num fixnum?) 0))
 		     int/str-value)))
@@ -68,4 +69,4 @@
 (define (complete-ISeriesBuilder builder)  
   (let* ((data (ISeriesBuilder-data builder))
          (len (ISeriesBuilder-index builder)))
-    (ISeries #f (vector-copy data 0 len))))
+    (new-ISeries (vector-copy data 0 len) #f)))

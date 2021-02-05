@@ -51,6 +51,7 @@
   (if (< (NSeriesBuilder-index builder)         
          (flvector-length (NSeriesBuilder-data builder)))
       (let ((num (if (string? flo/str-value)
+                     ; if the string is not a valid number, we fill NAN
 		     (let ((num (string->number (string-trim flo/str-value))))
 		       (if num (assert (exact->inexact num) flonum?) +nan.0))
 		     flo/str-value)))

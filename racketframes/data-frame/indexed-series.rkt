@@ -24,9 +24,8 @@
  [is-labeled? (LabelIndex -> Boolean)]
  [label-sort-positional (LabelIndex [#:project LabelProjection] -> Labeling)]
  [label-sort-lexical (LabelIndex -> Labeling)]
- ;[gseries-length (GSeries -> Index)]
- ;[gseries-data (All (A) (GSeries A) -> (Vectorof A))]
  [build-multi-index-from-list ((Listof (Listof GenericType)) -> LabelIndex)]
+ [build-index-from-sequence ((Sequenceof IndexDataType) -> RFIndex)]
  [build-index-from-list ((Listof IndexDataType) -> RFIndex)]
  [labeling (LabelIndex -> (Listof (Pair Label (Listof Index))))]
  [get-index (RFIndex IndexDataType -> (Listof Index))]
@@ -39,16 +38,13 @@
  RFIndex IndexDataType ListofIndex ListofIndex? ListofListofString ListofListofString?
  LabelIndex LabelIndex-index
  FIndex FlonumIndex ListofFixnum? ListofFlonum? ListofBoolean? ListofDatetime?
- ;(struct-out GSeries)
- ;new-GSeries 
- ;gseries-iref
- ;map/GSeries 
  build-index-from-labels label-index key->lst-idx label->lst-idx idx->key idx->label)
 ; ***********************************************************
 
 ; ***********************************************************
 (require
   "../util/datetime.rkt"
+  racket/sequence
   (only-in racket/flonum
            make-flvector flvector? flvector
            flvector-ref flvector-set!
@@ -120,6 +116,12 @@
 ; ***********************************************************
 ; This function consumes a list of Labels and produces a
 ; SIndex which is a HashTable Label to Index.
+
+(: build-index-from-sequence ((Sequenceof IndexDataType) -> RFIndex))
+(define (build-index-from-sequence seq)
+  (build-index-from-list (sequence->list seq)))
+
+
 (: build-index-from-list ((Listof IndexDataType) -> RFIndex))
 (define (build-index-from-list lst)
   (cond
@@ -582,6 +584,9 @@ N nanoseconds
           (display key-delimiter outp)))
       (get-output-string outp))))
 
+(: build-multi-index-from-sequence ((Sequenceof (Sequenceof GenericType)) -> LabelIndex))
+(define (build-multi-index-from-sequence seq)
+  (build-multi-index-from-list (sequence->list (sequence-map (lambda ([s : (Sequenceof GenericType)]) (sequence->list s)) seq))))
 
 (: build-multi-index-from-list ((Listof (Listof GenericType)) -> LabelIndex))
 (define (build-multi-index-from-list nested-label-lst)

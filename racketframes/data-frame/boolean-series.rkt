@@ -19,8 +19,9 @@
  (struct-out BSeries))
 
 (provide:
- [new-BSeries ((Vectorof Boolean) (Option (U (Listof IndexDataType) RFIndex)) -> BSeries)]
- [set-BSeries-index (BSeries (U (Listof Label) RFIndex) -> BSeries)]
+ [new-BSeries ((Vectorof Boolean) (Option (U (Listof IndexDataType) RFIndex)) [#:fill-null Boolean] -> BSeries)]
+ [set-BSeries-index (BSeries (U (Listof IndexDataType) RFIndex) -> BSeries)]
+ [set-BSeries-null-value (BSeries Boolean -> BSeries)]
  [bseries-iref (BSeries (Listof Index) -> (Listof Boolean))]
  [bseries-index-ref (BSeries IndexDataType -> (Listof Boolean))]
  [bseries-range (BSeries Index Index -> (Vectorof Boolean))]
@@ -28,6 +29,7 @@
  [bseries-referencer (BSeries -> (Index -> Boolean))]
  [bseries-data (BSeries -> (Vectorof Boolean))]
  [bseries-index (BSeries -> (U False RFIndex))]
+ [bseries-groupby (BSeries [#:by-value Boolean] -> GroupHash)]
  [map/bs (BSeries (Boolean -> Boolean) -> BSeries)]
  [bseries-loc-boolean (BSeries (Listof Boolean) -> (U Boolean BSeries))]
  [bseries-loc (BSeries (U Label (Listof Label) (Listof Boolean)) -> (U Boolean BSeries))]
@@ -54,13 +56,17 @@
 
 ; ***********************************************************
 ;; Boolean series.
-(struct BSeries ([index : (Option RFIndex)] [data : (Vectorof Boolean)]))
+(struct BSeries ([index : (Option RFIndex)]
+                 [data : (Vectorof Boolean)]
+                 [null-value : Boolean])  
+  #:mutable
+  #:transparent)
 
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a ISeries
 ; struct object.
-(: new-BSeries ((Vectorof Boolean) (Option (U (Listof IndexDataType) RFIndex)) -> BSeries))
-(define (new-BSeries data labels)
+(: new-BSeries ((Vectorof Boolean) (Option (U (Listof IndexDataType) RFIndex)) [#:fill-null Boolean] -> BSeries))
+(define (new-BSeries data labels #:fill-null [null-value #f])
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -76,18 +82,22 @@
   (if (RFIndex? labels)
       (begin
 	(check-mismatch labels)
-	(BSeries labels data))
+	(BSeries labels data null-value))
       (if labels
 	  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
 	    (check-mismatch index)
-	    (BSeries index data))
-	  (BSeries #f data))))
+	    (BSeries index data null-value))
+	  (BSeries #f data null-value))))
 ; ***********************************************************
 
 ; ***********************************************************
 (: set-BSeries-index (BSeries (U (Listof IndexDataType) RFIndex) -> BSeries))
 (define (set-BSeries-index bseries labels)
   (new-BSeries (bseries-data bseries) labels))
+
+(: set-BSeries-null-value (BSeries Boolean -> BSeries))
+(define (set-BSeries-null-value bseries null-value)
+  (new-BSeries (bseries-data bseries) (bseries-index bseries) #:fill-null null-value))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -145,7 +155,7 @@
   (let ((old-data (BSeries-data series)))
     (BSeries #f (build-vector (vector-length old-data)
                               (λ: ((idx : Natural))
-                                (fn (vector-ref old-data idx)))))))
+                                (fn (vector-ref old-data idx)))) (BSeries-null-value series))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -276,6 +286,47 @@
 ; ***********************************************************
 
 ; ***********************************************************
+;; BSeries groupby
+(define-type Key String)
+(define-type GroupHash (HashTable Key (Listof Boolean)))
+
+; This function is self-explanatory, it consumes no arguments
+; and creates a hash map which will represent a JoinHash.
+(: make-group-hash (-> GroupHash))
+(define (make-group-hash)
+  (make-hash))
+
+; Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index.
+; The Series VALUES will be used to determine the groups.
+(: bseries-groupby (BSeries [#:by-value Boolean] -> GroupHash))
+(define (bseries-groupby bseries #:by-value [by-value #f])
+  (define: group-index : GroupHash (make-group-hash))
+  
+  (let ((len (bseries-length bseries))
+        (k (current-continuation-marks)))
+    (if (zero? len)
+        (raise (make-exn:fail:contract "bseries can't be empty on groupby." k))
+        (begin
+          (do ((i 0 (add1 i)))
+            ((>= i len) group-index)
+            (let* ((bool-val : (U Boolean BSeries) (bseries-iloc bseries (assert i index?)))
+                   (bool-list : (Listof Boolean) (if (boolean? bool-val) (list bool-val) (vector->list (BSeries-data bool-val))))
+                   (key (if by-value
+                            (bseries-iloc bseries (assert i index?))
+                            (if (BSeries-index bseries)
+                                (idx->key (assert (BSeries-index bseries)) (assert i index?))
+                                (assert i index?))))
+                   (key-str : String (cond
+                                       [(symbol? key) (symbol->string key)]
+                                       [(number? key) (number->string key)]
+                                       ; pretty-format anything else
+                                       [else (pretty-format key)])))  
+              (hash-update! group-index key-str
+                            (λ: ((val : (Listof Boolean)))                                
+                              (append bool-list val))
+                            (λ () (list)))))))))
+
+; ***********************************************************
 (: bseries-print (BSeries Output-Port -> Void))
 (define (bseries-print bseries port)
   (define v (bseries-data bseries))
@@ -291,7 +342,7 @@
 	      ((>= i len) (void))
 	    (let ((val (vector-ref v i)))
               (if (BSeries-index bseries)
-                  (display (idx->key (BSeries-index bseries) (assert i index?)) port)
+                  (display (idx->key (assert (BSeries-index bseries)) (assert i index?)) port)
                   (display (assert i index?) port))
               (display " " port)
               (displayln val port)))))))

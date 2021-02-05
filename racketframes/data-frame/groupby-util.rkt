@@ -4,6 +4,8 @@
 
 ; Provide functions in this file to other files.
 (provide:
+ [gen-series-groupby (GenSeries -> GroupHash)]
+ [apply-agg-gen-series (Symbol GroupHash -> GenSeries)]
  [make-group-hash (-> GroupHash)]
  [make-agg-value-hash-sindex ((Listof (Pair String GenericType)) -> SIndex)]
  [agg-value-hash-to-gen-series (AggValueHash -> GenSeries)])
@@ -27,7 +29,8 @@
 (define (make-group-hash)
   (make-hash))
 
-;Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index. The Series VALUES will be used to determine the groups.
+; Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index.
+; The Series VALUES will be used to determine the groups.
 (: gen-series-groupby (GenSeries -> GroupHash))
 (define (gen-series-groupby gen-series)
   (define: group-index : GroupHash (make-group-hash))  

@@ -26,7 +26,7 @@
  [data-frame-extend  (DataFrame (U Column Columns DataFrame) -> DataFrame)]
  [data-frame-description (DataFrame [#:project LabelProjection] -> DataFrameDescription)]
  [show-data-frame-description (DataFrameDescription -> Void)]
- [data-frame-set-index (DataFrame (U (Listof Label) (Listof Fixnum) (Listof Flonum) (Listof Datetime) RFIndex) -> DataFrame)]
+ [data-frame-set-index (DataFrame (U (Sequenceof Label) (Sequenceof Fixnum) (Sequenceof Flonum) (Sequenceof Datetime) RFIndex Series) -> DataFrame)]
  [data-frame-loc (DataFrame (U Label (Listof Label) (Listof Boolean)) LabelProjection -> (U Series DataFrame))]
  [data-frame-iloc (DataFrame (U Index (Listof Index)) (U Index (Listof Index)) -> (U Series DataFrame))]
  [data-frame-iloc-label (DataFrame (U Index (Listof Index)) LabelProjection -> (U Series DataFrame))]
@@ -62,14 +62,14 @@
 	  RFIndex label-sort-positional ListofLabel? Label? LabelIndex?
           ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime?
           Label LabelProjection LabelProjection? LabelIndex LabelIndex-index
-          build-index-from-labels build-index-from-list label-index idx->key
-          idx->label)
+          build-index-from-labels build-index-from-list build-index-from-sequence
+          label-index idx->key idx->label)
  (only-in "series-description.rkt"
 	  series-description series-length series-type series-data
           Series Series? SeriesType
           SeriesDescription SeriesDescription-name
           SeriesDescription-type SeriesDescription-length
-          set-series-index series-loc-boolean series-loc series-iloc)
+          series-set-index series-get-index series-loc-boolean series-loc series-iloc)
  (only-in "generic-series.rkt"
          GenSeries GenericType GenSeries?
          GenSeries-data
@@ -520,7 +520,11 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: data-frame-set-index (DataFrame (U (Listof Label) (Listof Fixnum) (Listof Flonum) (Listof Datetime) RFIndex) -> DataFrame))
+; Set index of all Series in data-frame.
+; Loops through columns and calls the set-series-index method on each Series.
+; Returns new DataFrame allowing previous one to be garbage collected.
+; (: data-frame-set-index (DataFrame (U (Listof IndexDataType) RFIndex) -> DataFrame))
+(: data-frame-set-index (DataFrame (U (Sequenceof Label) (Listof Fixnum) (Listof Flonum) (Listof Datetime) RFIndex Series) -> DataFrame))
 (define (data-frame-set-index data-frame new-index)
   (define src-series (DataFrame-series data-frame))
   (define src-column-names (map column-heading (data-frame-explode data-frame)))
@@ -528,18 +532,20 @@
   (: new-RFIndex RFIndex)
   (define new-RFIndex (LabelIndex (hash)))
 
-  ; convert new-index to SIndex
-  (if (list? new-index)
-    (set! new-RFIndex (build-index-from-list (assert new-index list?)))
-    (set! new-RFIndex new-index))
+  (let ((new-RFIndex : RFIndex
+                     ; convert new-index to RFIndex
+                     (if (sequence? new-index)
+                         (set! new-RFIndex (build-index-from-list-sequence new-index))
+                         (if series? new-index (build-index-from-sequence (series-data new-index))
+                             (set! new-RFIndex new-index)))))
 
-  (: new-columns Columns)
-  (define new-columns
-    (for/list ([pos (in-range (vector-length src-series))])
-      ; define new column
-      (cons (list-ref src-column-names pos) (set-series-index (vector-ref src-series pos) new-RFIndex))))
+    (: new-columns Columns)
+    (define new-columns
+      (for/list ([pos (in-range (vector-length src-series))])
+        ; define new column, set index for each series
+        (cons (list-ref src-column-names pos) (series-set-index (vector-ref src-series pos) new-RFIndex))))
 
-  (new-data-frame new-columns))
+    (new-data-frame new-columns)))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -564,7 +570,6 @@
          (series-loc (column-series col) label)) #f)))
 
 ; doesn't preserve index currently, just gives new Range index
-
 (: data-frame-iloc (DataFrame (U Index (Listof Index)) (U Index (Listof Index)) -> (U Series DataFrame)))
 (define (data-frame-iloc data-frame idx-row idx-col)
   (if (and (list? idx-row) (list? idx-col))

@@ -1,7 +1,7 @@
 #lang typed/racket/base
 
 (provide:
- [date->string (Datetime (Option String) -> String)])
+ [datetime->string (Datetime (Option String) -> String)])
 
 (require
  racket/fixnum
@@ -14,8 +14,7 @@
 	  Instant Instant? 
 	  Datetime Datetime? Datetime-date Datetime-time
 	  Date Date? Date-day Date-month Date-year
-	  Time Time? Time-offset Time-hour Time-minute Time-second Time-milli
-	  )
+	  Time Time? Time-offset Time-hour Time-minute Time-second Time-milli)
  (only-in "convert.rkt"
 	  Datetime->InstantUTC)
  (only-in "date.rkt"
@@ -181,13 +180,13 @@
 					  format-string str-len port))))))))))))
 
 
-(: date->string (Datetime (Option String) -> String))
-(define (date->string date format-string)
+(: datetime->string (Datetime (Option String) -> String))
+(define (datetime->string dt format-string)
   (let ((format-string (if format-string format-string "~c")))
     (unless (string? format-string)
-	    (raise-type-error 'date->string "string" 1 date format-string))
+	    (raise-type-error 'datetime->string "string" 1 dt format-string))
     (let ( (str-port (open-output-string)) )
-      (date-printer date 0 format-string (string-length format-string) str-port)
+      (date-printer dt 0 format-string (string-length format-string) str-port)
       (get-output-string str-port))))
 
 (define-type DatetimeFormatter (Datetime (Option Char) Output-Port -> Void))
@@ -214,13 +213,13 @@
 		      (display (locale-long-month (assert (Date-month (Datetime-date date)) index?))
 			       port)))
    (cons #\c (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date (localized-message locale-date-time-format)) port)))
+		      (display (datetime->string date (localized-message locale-date-time-format)) port)))
    (cons #\d (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
 		      (display (padding (Date-day (Datetime-date date))
 					#\0 2)
 			       port)))
    (cons #\D (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date "~m/~d/~y") port)))
+		      (display (datetime->string date "~m/~d/~y") port)))
    (cons #\e (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
 		      (display (padding (Date-day (Datetime-date date))
 					#\Space 2)
@@ -233,7 +232,7 @@
 			      (display (localized-message locale-number-separator) port)
 			      (display f port)))))
    (cons #\h (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date "~b") port)))
+		      (display (datetime->string date "~b") port)))
    (cons #\H (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
 		      (display (padding (Time-hour (Datetime-time date))
 					pad-with 2)
@@ -276,7 +275,7 @@
    (cons #\p (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
 		      (display (locale-am/pm (Time-hour (Datetime-time date))) port)))
    (cons #\r (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date "~I:~M:~S ~p") port)))
+		      (display (datetime->string date "~I:~M:~S ~p") port)))
    (cons #\s (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
 		      (display (instant-seconds (Datetime->InstantUTC date)) port)))
    (cons #\S (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
@@ -286,7 +285,7 @@
    (cons #\t (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
 		      (display #\Tab port)))
    (cons #\T (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date "~H:~M:~S") port)))
+		      (display (datetime->string date "~H:~M:~S") port)))
    (cons #\U (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
 		      (if (> (days-before-first-week (Datetime-date date) 0) 0)
 			  (display (padding (+ (week-number (Datetime-date date) 0) 1)
@@ -299,9 +298,9 @@
    (cons #\w (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
 		      (display (week-day (Datetime-date date)) port)))
    (cons #\x (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date (localized-message locale-short-date-format)) port)))
+		      (display (datetime->string date (localized-message locale-short-date-format)) port)))
    (cons #\X (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date (localized-message locale-time-format)) port)))
+		      (display (datetime->string date (localized-message locale-time-format)) port)))
    (cons #\W (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
 		      (if (> (days-before-first-week (Datetime-date date) 1) 0)
 			  (display (padding (+ (week-number (Datetime-date date) 1) 1)
@@ -321,15 +320,15 @@
    (cons #\Z (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
 		      (locale-print-time-zone date port)))
    (cons #\1 (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date "~Y-~m-~d") port)))
+		      (display (datetime->string date "~Y-~m-~d") port)))
    (cons #\2 (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date "~k:~M:~S~z") port)))
+		      (display (datetime->string date "~k:~M:~S~z") port)))
    (cons #\3 (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date "~k:~M:~S") port)))
+		      (display (datetime->string date "~k:~M:~S") port)))
    (cons #\4 (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date "~Y-~m-~dT~k:~M:~S~z") port)))
+		      (display (datetime->string date "~Y-~m-~dT~k:~M:~S~z") port)))
    (cons #\5 (lambda: ([date : Datetime] [pad-with : (Option Char)] [port : Output-Port])
-		      (display (date->string date "~Y-~m-~dT~k:~M:~S") port)))))
+		      (display (datetime->string date "~Y-~m-~dT~k:~M:~S") port)))))
 
 (: get-formatter (Char -> (Option DatetimeFormatter)))
 (define (get-formatter char)

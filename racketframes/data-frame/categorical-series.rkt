@@ -14,6 +14,7 @@
  [cseries-index (CSeries -> (U False RFIndex))]
  [cseries-referencer (CSeries -> (Fixnum -> Label))]
  [cseries-iloc (CSeries (U Index (Listof Index)) -> (U Label CSeries))]
+ [cseries-groupby (CSeries [#:by-value Boolean] -> GroupHash)]
  [cseries-index-ref (CSeries IndexDataType -> (Listof Label))]
  [cseries-print (CSeries Output-Port -> Void)]
  [cseries-loc-boolean (CSeries (Listof Boolean) -> (U Label CSeries))]
@@ -22,7 +23,7 @@
 
 (require
  (only-in "indexed-series.rkt"
-	  RFIndex RFIndex? Label idx->key key->lst-idx extract-index build-index-from-list
+	  RFIndex RFIndex? Label Label? idx->key key->lst-idx extract-index build-index-from-list
           build-multi-index-from-list LabelIndex LabelIndex-index is-labeled? IndexDataType
           ListofIndex? ListofListofString ListofListofString?))
 
@@ -260,3 +261,44 @@
   (if (= (vector-length new-data) 1)
       (vector-ref new-data 0)
       (new-CSeries new-data #f)))
+
+;; CSeries groupby
+
+(define-type Key String)
+(define-type GroupHash (HashTable Key (Listof Label)))
+
+; This function is self-explanatory, it consumes no arguments
+; and creates a hash map which will represent a JoinHash.
+(: make-group-hash (-> GroupHash))
+(define (make-group-hash)
+  (make-hash))
+
+; Used to determine the groups for the groupby on each value of the series index by default.
+; The Series VALUES will be used to determine the groups if by-value is set to true.
+(: cseries-groupby (CSeries [#:by-value Boolean] -> GroupHash))
+(define (cseries-groupby cseries #:by-value [by-value #f])
+  (define: group-index : GroupHash (make-group-hash))
+
+  (let ((len (cseries-length cseries))
+        (k (current-continuation-marks)))
+    (if (zero? len)
+	(raise (make-exn:fail:contract "cseries can't be empty on groupby." k))
+	(begin          
+	  (do ((i 0 (add1 i)))
+	      ((>= i len) group-index)
+	    (let* ((label-val : (U Label CSeries) (cseries-iloc cseries (assert i index?)))
+                   (label-list : (Listof Label) (if (Label? label-val) (list label-val) (vector->list (cseries-data label-val))))
+                   (key (if by-value
+                            (cseries-iloc cseries (assert i index?))
+                            (if (CSeries-index cseries)
+                                (idx->key (CSeries-index cseries) (assert i index?))
+                                (assert i index?))))
+                  (key-str : String (cond
+                                      [(symbol? key) (symbol->string key)]
+                                      [(number? key) (number->string key)]
+                                      ; pretty-format anything else
+                                      [else (pretty-format key)])))              
+              (hash-update! group-index key-str
+			      (λ: ((val : (Listof Label)))                                
+				  (append label-list val))
+			      (λ () (list)))))))))

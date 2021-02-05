@@ -9,9 +9,10 @@
 
 (require
  (only-in "../util/datetime.rkt"
-          Datetime Date Time datetime-date datetime-time
+          Datetime Datetime? Date Time datetime-date datetime-time
           rf-date-year rf-date-month rf-date-day
-          time-offset time-hour time-minute time-second time-milli)
+          time-offset time-hour time-minute time-second time-milli
+          datetime->string)
  racket/unsafe/ops
  (only-in "indexed-series.rkt"
 	  RFIndex RFIndex? build-index-from-list
@@ -21,7 +22,7 @@
           idx->key is-indexed? ListofIndexDataType? ListofIndex?
           ListofListofString ListofListofString?)
  (only-in "boolean-series.rkt"
-          BSeries))
+          new-BSeries BSeries))
 
 ;(date->seconds (date 1 2 3 4 5 1971 5 8 #f 0))
 
@@ -39,8 +40,9 @@
  [datetime-series-loc-boolean (DatetimeSeries (Listof Boolean) -> (U Datetime DatetimeSeries))]
  [datetime-series-loc (DatetimeSeries (U Label (Listof Label) (Listof Boolean)) -> (U Datetime DatetimeSeries))]
  [datetime-series-iloc (DatetimeSeries (U Index (Listof Index)) -> (U Datetime DatetimeSeries))]
+ [datetime-series-iloc-range (DatetimeSeries Index Index -> DatetimeSeries)]
  [datetime-series-label-ref (DatetimeSeries Label -> (Listof Datetime))]
- [datetime-series-range (DatetimeSeries Index -> (Vectorof Datetime))]
+ [datetime-series-range (DatetimeSeries Index Index -> (Vectorof Datetime))]
  [datetime-series-length (DatetimeSeries -> Index)]
  [datetime-series-referencer (DatetimeSeries -> (Index -> Datetime))]
  [datetime-series-data (DatetimeSeries -> (Vectorof Datetime))]
@@ -157,9 +159,9 @@
 
 ; This function consumes an integer series and an index and
 ; returns a vector of values in the range [0:index] in the series.
-(: datetime-series-range (DatetimeSeries Index -> (Vectorof Datetime)))
-(define (datetime-series-range series pos)
-   (vector-take (datetime-series-data series) pos))
+(: datetime-series-range (DatetimeSeries Index Index -> (Vectorof Datetime)))
+(define (datetime-series-range series start end)
+   (vector-copy (datetime-series-data series) start end))
 
 ; This function consumes a series and a Label and returns
 ; the list of values at that Label in the series.
@@ -248,9 +250,18 @@
        (for/vector: : (Vectorof Datetime) ([i idx])
          (vector-ref (datetime-series-data datetime-series) i))
        (if (not (DatetimeSeries-index datetime-series))
-           (build-index-from-list (range (length idx)))
+           #f
            (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (DatetimeSeries-index datetime-series)) i)) idx))))
       (referencer idx))))
+
+(: datetime-series-iloc-range (DatetimeSeries Index Index -> DatetimeSeries))
+(define (datetime-series-iloc-range datetime-series start end)
+  ; use vector-copy library method
+  (new-DatetimeSeries
+   (vector-copy (datetime-series-data datetime-series) start end)
+   (if (not (DatetimeSeries-index datetime-series))
+       #f
+       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (DatetimeSeries-index datetime-series)) i)) (range start end))))))
 
 
 ; label based
@@ -346,7 +357,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (BSeries #f v-comp))
+       ((= idx len) (new-BSeries v-comp #f))
        (vector-set! v-comp idx (comp (vector-ref v1 idx)
 				   (vector-ref v2 idx)))))
 ; ***********************************************************
@@ -516,6 +527,48 @@
 ;(datetime-range (Datetime (Date 2018 5 19) (Time 0 0 0 0 0)) 'MO 2 (Datetime (Date 2018 10 23) (Time 0 0 0 0 0)))
 
 ;(datetime-range (Datetime (Date 1975 1 1) (Time 0 0 0 0 0)) 'MO 100 #f)
+
+; ***********************************************************
+;;DatetimeSeries groupby
+
+(define-type Key String)
+(define-type GroupHash (HashTable Key (Listof Datetime)))
+
+; This function is self-explanatory, it consumes no arguments
+; and creates a hash map which will represent a JoinHash.
+(: make-group-hash (-> GroupHash))
+(define (make-group-hash)
+  (make-hash))
+
+; Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index.
+; The Series VALUES will be used to determine the groups if by-value is set to true.
+(: datetime-series-groupby (DatetimeSeries [#:by-value Boolean] -> GroupHash))
+(define (datetime-series-groupby datetime-series #:by-value [by-value #f])
+  (define: group-index : GroupHash (make-group-hash))  
+
+  (let ((len (datetime-series-length datetime-series))
+        (k (current-continuation-marks)))
+    (if (zero? len)
+	(raise (make-exn:fail:contract "datetime-series can't be empty on groupby." k))
+	(begin          
+	  (do ((i 0 (add1 i)))
+	      ((>= i len) group-index)
+	    (let* ((datetime-val : (U Datetime DatetimeSeries) (datetime-series-iloc datetime-series (assert i index?)))
+                   (datetime-list : (Listof Datetime) (if (Datetime? datetime-val) (list datetime-val) (vector->list (DatetimeSeries-data datetime-val))))
+                   (key (if by-value
+                            (datetime->string (assert (datetime-series-iloc datetime-series (assert i index?)) Datetime?) #f)
+                            (if (DatetimeSeries-index datetime-series)
+                                (idx->key (DatetimeSeries-index datetime-series) (assert i index?))
+                                (assert i index?))))
+                  (key-str : String (cond
+                                      [(symbol? key) (symbol->string key)]
+                                      [(number? key) (number->string key)]
+                                      ; pretty-format anything else
+                                      [else (pretty-format key)])))              
+              (hash-update! group-index key-str
+			      (λ: ((val : (Listof Datetime)))                                
+				  (append datetime-list val))
+			      (λ () (list)))))))))
 
 ; ***********************************************************
 

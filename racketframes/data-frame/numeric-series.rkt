@@ -19,7 +19,7 @@
 ; Provide functions in this file to other files.
 
 (provide:
- [set-NSeries-index (NSeries (U (Listof Label) RFIndex) -> NSeries)]
+ [set-NSeries-index (NSeries (U (Listof IndexDataType) RFIndex) -> NSeries)]
  [nseries-iref (NSeries (Listof Index) -> (Listof Flonum))]
  [nseries-loc-boolean (NSeries (Listof Boolean) -> (U Flonum NSeries))] 
  [nseries-loc (NSeries (U Label (Listof Label) (Listof Boolean)) -> (U Flonum NSeries))]
@@ -31,7 +31,7 @@
  [nseries-referencer (NSeries -> (Index -> Flonum))]
  [nseries-length (NSeries -> Index)]
  [nseries-data (NSeries -> FlVector)]
- [nseries-groupby (NSeries -> GroupHash)]
+ [nseries-groupby (NSeries [#:by-value Boolean] -> GroupHash)]
  [apply-agg-nseries (Symbol GroupHash -> GenSeries)]
  [nseries-index (NSeries -> (U False RFIndex))]
  [map/ns (NSeries (Flonum -> Flonum) -> NSeries)]
@@ -103,7 +103,7 @@
           is-labeled? ListofIndexDataType? ListofIndex?
           ListofListofString ListofListofString?)
  (only-in "boolean-series.rkt"
-          BSeries BSeries-data)
+          new-BSeries BSeries BSeries-data)
  (only-in "integer-series.rkt"
           ISeries ISeries-data)
  (only-in "generic-series.rkt"
@@ -190,7 +190,7 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: set-NSeries-index (NSeries (U (Listof Label) RFIndex) -> NSeries))
+(: set-NSeries-index (NSeries (U (Listof IndexDataType) RFIndex) -> NSeries))
 (define (set-NSeries-index nseries labels)
   (new-NSeries (nseries-data nseries) labels))
 ; ***********************************************************
@@ -459,7 +459,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (BSeries #f v-comp))
+       ((= idx len) (new-BSeries v-comp #f))
        (vector-set! v-comp idx (comp (flvector-ref v1 idx)
 				   (flvector-ref v2 idx)))))
 
@@ -521,7 +521,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (BSeries #f v-comp))
+       ((= idx len) (new-BSeries v-comp #f))
        (vector-set! v-comp idx (comp (flvector-ref v1 idx)
 				   (exact->inexact (vector-ref v2 idx))))))
 
@@ -582,7 +582,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (BSeries #f v-comp))
+       ((= idx len) (new-BSeries v-comp #f))
        (vector-set! v-comp idx (comp (exact->inexact (vector-ref v1 idx))
 				   (flvector-ref v2 idx)))))
 
@@ -790,8 +790,8 @@
   (make-hash))
 
 ;Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index. The Series VALUES will be used to determine the groups.
-(: nseries-groupby (NSeries -> GroupHash))
-(define (nseries-groupby nseries)
+(: nseries-groupby (NSeries [#:by-value Boolean] -> GroupHash))
+(define (nseries-groupby nseries #:by-value [by-value #f])
   (define: group-index : GroupHash (make-group-hash))  
 
   (let ((len (nseries-length nseries))
@@ -802,19 +802,24 @@
 	  (do ((i 0 (add1 i)))
 	      ((>= i len) group-index)
 	    (let* ((flonum-val : (U Flonum NSeries) (nseries-iloc nseries (assert i index?)))
-                   (flonum-list : (Listof Flonum) (if (flonum? flonum-val) (list flonum-val) (flvector->list (NSeries-data (assert flonum-val NSeries?)) (flvector-length (NSeries-data (assert flonum-val NSeries?))))))
-                  (key (if (NSeries-index nseries)
-                                   (idx->key (NSeries-index nseries) (assert i index?))
-                                   (assert i index?)))
-                  (key-str : String (cond
-                                      [(symbol? key) (symbol->string key)]
-                                      [(number? key) (number->string key)]
-                                      ; pretty-format anything else
-                                      [else (pretty-format key)])))              
+                   (flonum-list : (Listof Flonum) (if (flonum? flonum-val)
+                                                      (list flonum-val)
+                                                      (flvector->list (NSeries-data (assert flonum-val NSeries?))
+                                                                      (flvector-length (NSeries-data (assert flonum-val NSeries?))))))
+                   (key (if by-value
+                            (nseries-iloc nseries (assert i index?))
+                            (if (NSeries-index nseries)
+                                (idx->key (NSeries-index nseries) (assert i index?))
+                                (assert i index?))))
+                   (key-str : String (cond
+                                       [(symbol? key) (symbol->string key)]
+                                       [(number? key) (number->string key)]
+                                       ; pretty-format anything else
+                                       [else (pretty-format key)])))              
               (hash-update! group-index key-str
-			      (λ: ((val : (Listof Flonum)))                                
-				  (append flonum-list val))
-			      (λ () (list)))))))))
+                            (λ: ((val : (Listof Flonum)))                                
+                              (append flonum-list val))
+                            (λ () (list)))))))))
 
 ; ***********************************************************
 ;; NSeries agg ops

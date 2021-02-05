@@ -59,6 +59,9 @@
  (only-in "generic-series.rkt"
 	  GenSeries GenSeries? GenericType gen-series-iref new-GenSeries
 	  gen-series-referencer)
+ (only-in "categorical-series.rkt"
+	  cseries-referencer cseries-length cseries-iref
+	  CSeries CSeries? new-CSeries)
  (only-in "numeric-series.rkt"
 	  NSeries NSeries? nseries-iref new-NSeries
           nseries-referencer)
@@ -68,24 +71,18 @@
  (only-in "boolean-series.rkt"
 	  BSeries BSeries? bseries-iref new-BSeries
 	  bseries-referencer)
- (only-in "categorical-series.rkt"
-	  cseries-referencer cseries-length cseries-iref
-	  CSeries CSeries? new-CSeries)
+ (only-in "datetime-series.rkt"
+          DatetimeSeries DatetimeSeries? datetime-series-iref
+          new-DatetimeSeries datetime-series-referencer)
+ (only-in "../util/datetime/types.rkt"
+          Datetime Datetime? Date Time)
  (only-in "series-builder.rkt"
 	  SeriesBuilder)
  (only-in "generic-series-builder.rkt"
 	  GenSeriesBuilder GenSeriesBuilder?
 	  append-GenSeriesBuilder complete-GenSeriesBuilder
 	  new-GenSeriesBuilder)
- (only-in "integer-series-builder.rkt"
-	  ISeriesBuilder ISeriesBuilder?
-	  append-ISeriesBuilder complete-ISeriesBuilder
-	  new-ISeriesBuilder)
- (only-in "boolean-series-builder.rkt"
-	  BSeriesBuilder BSeriesBuilder?
-	  append-BSeriesBuilder complete-BSeriesBuilder
-	  new-BSeriesBuilder)
- (only-in "categorical-series-builder.rkt"
+  (only-in "categorical-series-builder.rkt"
 	  CSeriesBuilder CSeriesBuilder?
 	  append-CSeriesBuilder complete-CSeriesBuilder
 	  new-CSeriesBuilder)
@@ -95,10 +92,23 @@
 	  NSeriesBuilder NSeriesBuilder?
 	  append-NSeriesBuilder complete-NSeriesBuilder
 	  new-NSeriesBuilder)
+ (only-in "integer-series-builder.rkt"
+	  ISeriesBuilder ISeriesBuilder?
+	  append-ISeriesBuilder complete-ISeriesBuilder
+	  new-ISeriesBuilder)
+ (only-in "boolean-series-builder.rkt"
+	  BSeriesBuilder BSeriesBuilder?
+	  append-BSeriesBuilder complete-BSeriesBuilder
+	  new-BSeriesBuilder)
+ (only-in "datetime-series-builder.rkt"
+	  DatetimeSeriesBuilder DatetimeSeriesBuilder?
+	  append-DatetimeSeriesBuilder complete-DatetimeSeriesBuilder
+	  new-DatetimeSeriesBuilder)
  (only-in "data-frame-print.rkt"
           data-frame-write-tab)
  (only-in "groupby-util.rkt"
-          make-agg-value-hash-sindex agg-value-hash-to-gen-series GroupHash AggValueHash))
+          make-agg-value-hash-sindex agg-value-hash-to-gen-series GroupHash
+          AggValueHash))
 
 ; ***********************************************************
 
@@ -151,6 +161,8 @@
 	       ((CategoricalSeries) (new-CSeriesBuilder len))
 	       ((NumericSeries)     (new-NSeriesBuilder len))
 	       ((IntegerSeries)     (new-ISeriesBuilder len))
+               ((BooleanSeries)     (new-BSeriesBuilder len))
+               ((DatetimeSeries)    (new-DatetimeSeriesBuilder len))
 	       (else (error 'dest-mapping-series-builders
 			    "Unknown series type ~a."
 			    (SeriesDescription-type series))))))
@@ -305,8 +317,6 @@
 ; from the given Vectorof Series into the given Vectorof SeriesBuilders.
 (: copy-column-row ((Vectorof Series) (Vectorof SeriesBuilder) Index -> Void))
 (define (copy-column-row src-series dest-builders row-id)
-;;  (when (zero? (modulo row-id 10000))
-;;	(displayln (format "Copy row: ~a" row-id)))
   (for ([col (in-range (vector-length src-series))])
     ; Loop through each column and get the associated series and series builder.
        (let ((series (vector-ref src-series col))
@@ -334,6 +344,16 @@
             (let: ((num : Fixnum (car (iseries-iref series (list row-id)))))
               (if (ISeriesBuilder? builder)
                   (append-ISeriesBuilder builder num)
+                  (copy-column-row-error series col))))
+           ((BSeries? series)
+            (let: ((bool : Boolean (car (bseries-iref series (list row-id)))))
+              (if (BSeriesBuilder? builder)
+                  (append-BSeriesBuilder builder bool)
+                  (copy-column-row-error series col))))
+           ((DatetimeSeries? series)
+            (let: ((dt : Datetime (car (datetime-series-iref series (list row-id)))))
+              (if (DatetimeSeriesBuilder? builder)
+                  (append-DatetimeSeriesBuilder builder dt)
                   (copy-column-row-error series col))))))))
 
 ; This functions consumes a Vectorof Series and Vectorof SeriesBuilder
@@ -341,8 +361,6 @@
 ; from the given Vectorof Series into the given Vectorof SeriesBuilders.
 (: copy-null-to-row ((Vectorof Series) (Vectorof SeriesBuilder) -> Void))
 (define (copy-null-to-row src-series dest-builders)
-;;  (when (zero? (modulo row-id 10000))
-;;	(displayln (format "Copy row: ~a" row-id)))
   (for ([col (in-range (vector-length src-series))])
     ; Loop through each column and get the associated series and series builder.
        (let ((series (vector-ref src-series col))
@@ -359,13 +377,21 @@
             (if (CSeriesBuilder? builder)
                 (append-CSeriesBuilder builder 'null)
                 (copy-column-row-error series col)))
-           ((ISeries? series)
-            (if (ISeriesBuilder? builder)
-                (append-ISeriesBuilder builder 0)
-                (copy-column-row-error series col)))
            ((NSeries? series)
             (if (NSeriesBuilder? builder)
                 (append-NSeriesBuilder builder +nan.0)
+                (copy-column-row-error series col)))
+           ((ISeries? series)
+            (if (ISeriesBuilder? builder)
+                (append-ISeriesBuilder builder 0)
+                (copy-column-row-error series col)))           
+           ((BSeries? series)
+            (if (BSeriesBuilder? builder)
+                (append-BSeriesBuilder builder #f)
+                (copy-column-row-error series col)))
+           ((DatetimeSeries? series)
+            (if (DatetimeSeriesBuilder? builder)
+                (append-DatetimeSeriesBuilder builder (Datetime (Date 0 0 0) (Time 0 0 0 0 0)))
                 (copy-column-row-error series col)))))))
 
 ; ***********************************************************
@@ -530,15 +556,18 @@
 
   (define: dfa-keyfn : (Index -> Key)
     (key-fn (key-cols-series (key-cols-sort-lexical (data-frame-cols dfa join-cols)))))
-  
-  ; Get series builders of default length 10 for all columns in fa.
-  (define: dest-builders-a : (Vectorof SeriesBuilder)
-    (list->vector (dest-mapping-series-builders (data-frame-description dfa) 10)))
 
-  ; Get series builders of default length 10 for only non-key-fb columns in fb.
+  (: base-len Index)
+  (define base-len 512)
+  
+  ; Get series builders of default length 512 for all columns in fa.
+  (define: dest-builders-a : (Vectorof SeriesBuilder)
+    (list->vector (dest-mapping-series-builders (data-frame-description dfa) base-len)))
+
+  ; Get series builders of default length 512 for only non-key-fb columns in fb.
   (define: dest-builders-b : (Vectorof SeriesBuilder)
     (list->vector
-     (dest-mapping-series-builders (data-frame-description dfb #:project non-key-dfb) 10)))
+     (dest-mapping-series-builders (data-frame-description dfb #:project non-key-dfb) base-len)))
   
   (do-join-build-left/right (src-series dfa-cols) (src-series dfb-cols) (src-series dfb-cols-match)
 		 dest-builders-a dest-builders-b
@@ -611,14 +640,17 @@
   (define: dfb-keyfn : (Index -> Key)
     (key-fn (key-cols-series (key-cols-sort-lexical (data-frame-cols dfb join-cols)))))
 
-  ; Get series builders of default length 10 for all columns in fb.
-  (define: dest-builders-b : (Vectorof SeriesBuilder)
-    (list->vector (dest-mapping-series-builders (data-frame-description dfb) 10)))
+  (: base-len Index)
+  (define base-len 512)
 
-  ; Get series builders of default length 10 for only non-key-fb columns in fa.
+  ; Get series builders of default length 512 for all columns in fb.
+  (define: dest-builders-b : (Vectorof SeriesBuilder)
+    (list->vector (dest-mapping-series-builders (data-frame-description dfb) base-len)))
+
+  ; Get series builders of default length 512 for only non-key-fb columns in fa.
   (define: dest-builders-a : (Vectorof SeriesBuilder)
     (list->vector
-     (dest-mapping-series-builders (data-frame-description dfa #:project non-key-dfa) 10)))
+     (dest-mapping-series-builders (data-frame-description dfa #:project non-key-dfa) base-len)))
 
   (do-join-build-left/right (src-series dfb-cols) (src-series dfa-cols) (src-series dfa-cols-match)
 		 dest-builders-b dest-builders-a
@@ -699,14 +731,17 @@
   (define: dfa-keyfn : (Index -> Key)
     (key-fn (key-cols-series (key-cols-sort-lexical (data-frame-cols dfa join-cols)))))
 
-  ; Get series builders of default length 10 for all columns in fa.
+  (: base-len Index)
+  (define base-len 512)
+  
+  ; Get series builders of default length 512 for all columns in fa.
   (define: dest-builders-a : (Vectorof SeriesBuilder)
-    (list->vector (dest-mapping-series-builders (data-frame-description dfa) 10)))
+    (list->vector (dest-mapping-series-builders (data-frame-description dfa) base-len)))
 
-  ; Get series builders of default length 10 for only non-key-fb columns in fb.
+  ; Get series builders of default length 512 for only non-key-fb columns in fb.
   (define: dest-builders-b : (Vectorof SeriesBuilder)
     (list->vector
-     (dest-mapping-series-builders (data-frame-description dfb) 10)))
+     (dest-mapping-series-builders (data-frame-description dfb) base-len)))
 
   (do-join-build-inner (src-series dfa-cols) (src-series dfb-cols)
 		 dest-builders-a dest-builders-b
@@ -784,14 +819,17 @@
   (define: dfb-keyfn : (Index -> Key)
     (key-fn (key-cols-series (key-cols-sort-lexical (data-frame-cols dfb join-cols)))))
 
-  ; Get series builders of default length 10 for all columns in fa.
-  (define: dest-builders-a : (Vectorof SeriesBuilder)
-    (list->vector (dest-mapping-series-builders (data-frame-description dfa) 10)))
+  (: base-len Index)
+  (define base-len 512)
 
-  ; Get series builders of default length 10 for only non-key-fb columns in fb.
+  ; Get series builders of default length 512 for all columns in fa.
+  (define: dest-builders-a : (Vectorof SeriesBuilder)
+    (list->vector (dest-mapping-series-builders (data-frame-description dfa) base-len)))
+
+  ; Get series builders of default length 512 for only non-key-fb columns in fb.
   (define: dest-builders-b : (Vectorof SeriesBuilder)
     (list->vector
-     (dest-mapping-series-builders (data-frame-description dfb) 10)))
+     (dest-mapping-series-builders (data-frame-description dfb) base-len)))
 
   (do-join-build-outer (src-series dfa-cols) (src-series dfb-cols)
 		 dest-builders-a dest-builders-b

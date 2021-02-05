@@ -54,7 +54,7 @@
 	  cseries-referencer cseries-length cseries-iref
 	  CSeries CSeries?)
  (only-in "../util/datetime/format.rkt"
-          date->string))
+          datetime->string))
 
 ; ***********************************************************
 
@@ -160,7 +160,7 @@
 
 (: format-datetime-series (DatetimeSeries Index -> String))
 (define (format-datetime-series datetime-series row)
-  ;(~a (date->string (car (datetime-series-iref datetime-series (list row))) "~5")
+  ;(~a (datetime->string (car (datetime-series-iref datetime-series (list row))) "~5")
       ;#:width WIDTH
       ;#:align 'left))
   (pretty-format (car (datetime-series-iref datetime-series (list row)))))

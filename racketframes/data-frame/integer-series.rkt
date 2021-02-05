@@ -4,8 +4,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 #lang typed/racket
-(require math/statistics)
-
 ; ***********************************************************
 ; One-dimensional array like structure with axis labels. Labels
 ; must be unique and must be a hashable type. The series object
@@ -22,8 +20,9 @@
  ISeries-index)
 
 (provide:
- [new-ISeries ((Vectorof Fixnum) (Option (U (Listof IndexDataType) RFIndex)) -> ISeries)]
- [set-ISeries-index (ISeries (U (Listof Label) RFIndex) -> ISeries)]
+ [new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex)) [#:fill-null Fixnum] -> ISeries)]
+ [set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries)]
+ [set-ISeries-null-value (ISeries Fixnum -> ISeries)]
  [iseries-iref (ISeries (Listof Index) -> (Listof Fixnum))]
  [iseries-loc-boolean (ISeries (Listof Boolean) -> (U Fixnum ISeries))]
  [iseries-loc (ISeries (U Label (Listof Label) (Listof Boolean)) -> (U Fixnum ISeries))]
@@ -36,7 +35,7 @@
  [iseries-referencer (ISeries -> (Index -> Fixnum))]
  [iseries-data (ISeries -> (Vectorof Fixnum))]
  [iseries-index (ISeries -> (U False RFIndex))]
- [iseries-groupby (ISeries -> GroupHash)]
+ [iseries-groupby (ISeries [#:by-value Boolean] -> GroupHash)]
  [apply-agg-iseries (Symbol GroupHash -> GenSeries)]
  [map/is (ISeries (Fixnum -> Fixnum) -> ISeries)]
  [bop/is (ISeries ISeries (Fixnum Fixnum -> Fixnum) -> ISeries)]
@@ -78,9 +77,10 @@
 ; use build-index-from-labels function and Label, SIndex and
 ; LabelIndex structs from indexed-series.
 (require
- racket/fixnum
- racket/unsafe/ops
- racket/pretty
+  racket/pretty
+  racket/fixnum
+  racket/unsafe/ops
+  math/statistics
  (only-in "indexed-series.rkt"
 	  build-index-from-list build-multi-index-from-list         
           RFIndex RFIndex? IndexDataType
@@ -91,7 +91,7 @@
           idx->key is-labeled? ListofIndexDataType?
           is-indexed? ListofIndex? ListofListofString ListofListofString?)
  (only-in "boolean-series.rkt"
-          BSeries)
+          new-BSeries BSeries)
  (only-in "generic-series.rkt"
 	  GenSeries GenSeries? GenericType gen-series-iref new-GenSeries
 	  gen-series-referencer)
@@ -110,13 +110,17 @@
 ; speed improvement.
 
 ;; Integer series optimized with use of Fixnum.
-(struct ISeries ([index : (Option RFIndex)] [data : (Vectorof Fixnum)]))
+(struct ISeries ([index : (Option RFIndex)]
+                 [data : (Vectorof Fixnum)]
+                 [null-value : Fixnum])  
+  #:mutable
+  #:transparent)
 
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a ISeries
 ; struct object.
-(: new-ISeries ((Vectorof Fixnum)(Option (U (Listof IndexDataType) RFIndex)) -> ISeries))
-(define (new-ISeries data labels)
+(: new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex)) [#:fill-null Fixnum] -> ISeries))
+(define (new-ISeries data labels #:fill-null [null-value 0])
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -132,18 +136,22 @@
   (if (RFIndex? labels)
       (begin
 	;(check-mismatch labels)
-	(ISeries labels data))
+	(ISeries labels data null-value))
       (if labels
 	  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
 	    (check-mismatch index)
-	    (ISeries index data))
-	  (ISeries #f data))))
+	    (ISeries index data null-value))
+	  (ISeries #f data null-value))))
 ; ***********************************************************
 
 ; ***********************************************************
-(: set-ISeries-index (ISeries (U (Listof IndexDataType) RFIndex) -> ISeries))
+(: set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries))
 (define (set-ISeries-index iseries labels)
-  (new-ISeries (iseries-data iseries) labels))
+  (new-ISeries (iseries-data iseries) labels #:fill-null (iseries-null-value iseries)))
+
+(: set-ISeries-null-value (ISeries Fixnum -> ISeries))
+(define (set-ISeries-null-value iseries null-value)
+  (new-ISeries (iseries-data iseries) (iseries-index iseries) #:fill-null null-value))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -162,7 +170,7 @@
 	      ((>= i len) (void))
 	    (let ((num (vector-ref v i)))
               (if (ISeries-index iseries)
-                  (display (idx->key (ISeries-index iseries) (assert i index?)) port)
+                  (display (idx->key (assert (ISeries-index iseries)) (assert i index?)) port)
                   (display (assert i index?) port))
               (display " " port)
               (displayln num port)))))))
@@ -183,7 +191,7 @@
 ; returns the value at that index in the series.
 (: iseries-iref (ISeries (Listof Index) -> (Listof Fixnum)))
 (define (iseries-iref series lst-idx)
-  (map (lambda ((idx : Index)) (vector-ref (ISeries-data series) idx))
+  (map (lambda ((idx : Index)) (vector-ref (iseries-data series) idx))
        lst-idx))
 
 ; This function consumes an integer series and an index and
@@ -199,16 +207,22 @@
   (ISeries-data series))
 
 ; This function consumes an integer series and returns its
-; data vector.
+; index.
 (: iseries-index (ISeries -> (U False RFIndex)))
 (define (iseries-index series)
   (ISeries-index series))
+
+; This function consumes an integer series and returns its
+; data vector.
+(: iseries-null-value (ISeries -> Fixnum))
+(define (iseries-null-value series)
+  (ISeries-null-value series))
 
 ; This function consumes a series and an IndexDataType and returns
 ; the list of values at that index in the series.
 (: iseries-index-ref (ISeries IndexDataType -> (Listof Fixnum)))
 (define (iseries-index-ref series item)
-  (iseries-iref series (key->lst-idx (assert (ISeries-index series)) item)))
+  (iseries-iref series (key->lst-idx (assert (iseries-index series)) item)))
 
 ; This function consumes an integer series and returns the
 ; length of that series.
@@ -243,7 +257,7 @@
   (let ((old-data (ISeries-data series)))
     (ISeries #f (build-vector (vector-length old-data)
                               (λ: ((idx : Natural))
-                                (fn (vector-ref old-data idx)))))))
+                                (fn (vector-ref old-data idx)))) (ISeries-null-value series))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -271,7 +285,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : ISeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (ISeries #f v-bop))
+       ((= idx len) (new-ISeries v-bop #f))
        (vector-set! v-bop idx (bop (vector-ref v1 idx)
 				   (vector-ref v2 idx)))))
 ; ***********************************************************
@@ -335,7 +349,7 @@
   (define: v-bop : (Vectorof Fixnum) ((inst make-vector Fixnum) len #{0 : Fixnum}))
 
   (do: : ISeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (ISeries #f v-bop))
+       ((= idx len) (new-ISeries v-bop #f))
        (vector-set! v-bop idx (bop #{(vector-ref v1 idx) : Fixnum} fx))))
 
 ; ***********************************************************
@@ -396,7 +410,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (BSeries #f v-comp))
+       ((= idx len) (new-BSeries v-comp #f))
        (vector-set! v-comp idx (comp (vector-ref v1 idx)
 				   (vector-ref v2 idx)))))
 
@@ -450,7 +464,7 @@
   (define: v-bop : (Vectorof Boolean) (make-vector len #f))
 
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (BSeries #f v-bop))
+       ((= idx len) (new-BSeries v-bop #f))
        (vector-set! v-bop idx (comp #{(vector-ref v1 idx) : Fixnum} fx))))
 
 ; ***********************************************************
@@ -488,11 +502,11 @@
 ; ***********************************************************
 (: iseries-filter (ISeries (Fixnum -> Boolean) -> ISeries))
 (define (iseries-filter iseries filter-function)
-  (ISeries #f (vector-filter filter-function (ISeries-data iseries))))
+  (new-ISeries (vector-filter filter-function (ISeries-data iseries)) #f))
 
 (: iseries-filter-not (ISeries (Fixnum -> Boolean) -> ISeries))
 (define (iseries-filter-not iseries filter-function)
-  (ISeries #f (vector-filter-not filter-function (ISeries-data iseries))))
+  (new-ISeries (vector-filter-not filter-function (ISeries-data iseries)) #f))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -504,8 +518,8 @@
 (define (apply-agg-is function-name series)
   (cond 
     [(eq? function-name 'sum) (apply + (vector->list (ISeries-data series)))]
-    [(eq? function-name 'mean) (mean (vector->list (ISeries-data series)))]
-    ;[(eq? function-name 'median) (median (vector->list (ISeries-data series)))]
+    [(eq? function-name 'mean) (mean (ISeries-data series))]
+    [(eq? function-name 'median) (median < (ISeries-data series))]
     ;[(eq? function-name 'mode) (mode (vector->list (ISeries-data series)))]
     [(eq? function-name 'count) (iseries-length series)]
     [(eq? function-name 'min) (vector-argmin (lambda ([x : Fixnum]) x) (ISeries-data series))]
@@ -664,9 +678,10 @@
 (define (make-group-hash)
   (make-hash))
 
-;Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index. The Series VALUES will be used to determine the groups.
-(: iseries-groupby (ISeries -> GroupHash))
-(define (iseries-groupby iseries)
+; Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index.
+; The Series VALUES will be used to determine the groups if by-value is set to true.
+(: iseries-groupby (ISeries [#:by-value Boolean] -> GroupHash))
+(define (iseries-groupby iseries #:by-value [by-value #f])
   (define: group-index : GroupHash (make-group-hash))  
 
   (let ((len (iseries-length iseries))
@@ -678,9 +693,11 @@
 	      ((>= i len) group-index)
 	    (let* ((fixnum-val : (U Fixnum ISeries) (iseries-iloc iseries (assert i index?)))
                    (fixnum-list : (Listof Fixnum) (if (fixnum? fixnum-val) (list fixnum-val) (vector->list (ISeries-data fixnum-val))))
-                  (key (if (ISeries-index iseries)
-                                   (idx->key (ISeries-index iseries) (assert i index?))
-                                   (assert i index?)))
+                   (key (if by-value
+                            (assert (iseries-iloc iseries (assert i index?)) fixnum?)
+                            (if (ISeries-index iseries)
+                                (idx->key (assert (ISeries-index iseries)) (assert i index?))
+                                (assert i index?))))
                   (key-str : String (cond
                                       [(symbol? key) (symbol->string key)]
                                       [(number? key) (number->string key)]
@@ -695,7 +712,7 @@
 ;; ISeries agg ops
 
 ; Applies the aggregate function specificed by function-name to the values in
-; the column-name column. Currently supports 3: sum, avg, count.
+; the column-name column. Currently supports 5: sum, mean, median, count.
 (: apply-agg-iseries (Symbol GroupHash -> GenSeries))
 (define (apply-agg-iseries function-name group-hash)
   (define len (hash-count group-hash))
@@ -712,7 +729,7 @@
                                 (cond 
                                   [(eq? function-name 'sum) (apply + val)]
                                   [(eq? function-name 'mean) (mean val)]
-                                  ;[(eq? function-name 'median) (median (vector->list (ISeries-data series)))]
+                                  [(eq? function-name 'median) (median (lambda ([val1 : Fixnum] [val2 : Fixnum]) (< val1 val2)) val)]
                                   ;[(eq? function-name 'mode) (mode (vector->list (ISeries-data series)))]
                                   [(eq? function-name 'count) (length val)]
                                   [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) val)]
