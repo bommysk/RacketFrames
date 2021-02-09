@@ -63,6 +63,8 @@
 
 (define-predicate ListofFixnum? (Listof Fixnum))
 
+(define-predicate SetofIndex? (Setof Index))
+
 (define-predicate ListofIndex? (Listof Index))
 
 (define-predicate ListofFlonum? (Listof Flonum))

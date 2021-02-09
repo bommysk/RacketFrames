@@ -113,14 +113,14 @@
 (struct ISeries ([index : (Option RFIndex)]
                  [data : (Vectorof Fixnum)]
                  [null-value : (Boxof GenericType)])
-                 ;[non-null-index-set : (Setof Index)])
+                 ;[sparse-index-set : (Setof Index)] USE vector-index-of to build this set, null-value indexes are always included)
   #:mutable
   #:transparent)
 
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a ISeries
 ; struct object.
-(: new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex)) [#:fill-null Any] -> ISeries))
+(: new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex)) [#:fill-null GenericType] -> ISeries))
 (define (new-ISeries data labels #:fill-null [null-value 0])
 
   (: check-mismatch (RFIndex -> Void))
@@ -213,7 +213,7 @@
 
 ; This function consumes an integer series and returns its
 ; data vector.
-(: iseries-null-value (ISeries -> Any))
+(: iseries-null-value (ISeries -> GenericType))
 (define (iseries-null-value series)
   (unbox (ISeries-null-value series)))
 
@@ -692,7 +692,7 @@
 	      ((>= i len) group-index)
 	    (let* ((fixnum-val : (U Fixnum ISeries) (iseries-iloc iseries (assert i index?)))
                    (fixnum-list : (Listof Fixnum) (if (fixnum? fixnum-val) (list fixnum-val) (vector->list (ISeries-data fixnum-val))))
-                   (key (if by-value
+                   (key (if (assert by-value)
                             (assert (iseries-iloc iseries (assert i index?)) fixnum?)
                             (if (ISeries-index iseries)
                                 (idx->key (assert (ISeries-index iseries)) (assert i index?))
