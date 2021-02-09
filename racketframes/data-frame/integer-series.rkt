@@ -112,14 +112,15 @@
 ;; Integer series optimized with use of Fixnum.
 (struct ISeries ([index : (Option RFIndex)]
                  [data : (Vectorof Fixnum)]
-                 [null-value : Fixnum])  
+                 [null-value : (Boxof GenericType)])
+                 ;[non-null-index-set : (Setof Index)])
   #:mutable
   #:transparent)
 
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a ISeries
 ; struct object.
-(: new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex)) [#:fill-null Fixnum] -> ISeries))
+(: new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex)) [#:fill-null Any] -> ISeries))
 (define (new-ISeries data labels #:fill-null [null-value 0])
 
   (: check-mismatch (RFIndex -> Void))
@@ -133,15 +134,13 @@
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
 
-  (if (RFIndex? labels)
-      (begin
-	;(check-mismatch labels)
-	(ISeries labels data null-value))
+  (if (RFIndex? labels)      
+      (ISeries labels data (box null-value))
       (if labels
 	  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
 	    (check-mismatch index)
-	    (ISeries index data null-value))
-	  (ISeries #f data null-value))))
+	    (ISeries index data (box null-value)))
+	  (ISeries #f data (box null-value)))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -214,9 +213,9 @@
 
 ; This function consumes an integer series and returns its
 ; data vector.
-(: iseries-null-value (ISeries -> Fixnum))
+(: iseries-null-value (ISeries -> Any))
 (define (iseries-null-value series)
-  (ISeries-null-value series))
+  (unbox (ISeries-null-value series)))
 
 ; This function consumes a series and an IndexDataType and returns
 ; the list of values at that index in the series.

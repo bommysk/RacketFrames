@@ -161,7 +161,9 @@
 
 ;; An NSeries is an optimized Series for computation over vectors of Flonum
 ;; i.e., NSeries should be faster then (Series Flonum)
-(struct: NSeries ([index : (Option RFIndex)] [data : FlVector]))
+(struct: NSeries ([index : (Option RFIndex)] [data : FlVector])
+  #:mutable
+  #:transparent)
 
 (: new-NSeries (FlVector (Option (U (Listof IndexDataType) RFIndex)) -> NSeries))
 (define (new-NSeries data labels)
@@ -809,7 +811,7 @@
                    (key (if by-value
                             (nseries-iloc nseries (assert i index?))
                             (if (NSeries-index nseries)
-                                (idx->key (NSeries-index nseries) (assert i index?))
+                                (idx->key (assert (NSeries-index nseries)) (assert i index?))
                                 (assert i index?))))
                    (key-str : String (cond
                                        [(symbol? key) (symbol->string key)]
