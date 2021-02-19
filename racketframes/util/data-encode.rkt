@@ -7,11 +7,19 @@
  [run-length-encode ((Listof Any) -> LengthEncodeType)]
  [scale-cdr (LengthEncodeType Positive-Integer -> (Listof NormalizedPair))]
  [elem-percent ((Listof Any) -> (Listof NormalizedPair))]
+ [elem-percent> ((Listof Any) -> (Listof NormalizedPair))]
  [max-elem-percent ((Listof Any) -> NormalizedPair)]
  [max-elem ((Listof Any) -> Any)]
  [most-frequent-element-list ((Sequenceof Any) -> (Listof (Pairof Any Real)))]
  [most-frequent-element-count ((Sequenceof Any) -> (Pairof Any Real))]
+ [most-frequent-elements ((Listof (Pairof Any Real)) -> (Listof Any))]
  [most-frequent-element ((Sequenceof Any) -> Any)]
+ [min-elem-percent ((Listof Any) -> NormalizedPair)]
+ [min-elem ((Listof Any) -> Any)]
+ [least-frequent-element-list ((Sequenceof Any) -> (Listof (Pairof Any Real)))]
+ [least-frequent-elements-sorted ((Listof (Pairof Any Real)) -> (Listof Any))]
+ [least-frequent-element-count ((Sequenceof Any) -> (Pairof Any Real))]
+ [least-frequent-element ((Sequenceof Any) -> Any)]
  [append-element ((Listof Any) Any -> (Listof Any))]
  [vector-indexes-of ((Vectorof Any) Any -> (Listof Index))]
  [vector-indexes-of-map ((Vectorof Any) -> (HashTable Any (Listof Index)))]
@@ -50,7 +58,6 @@
       (reverse (rle (cdr lst) (car lst) 1 '()))
       '()))
 
-
 (: scale-cdr (LengthEncodeType Positive-Integer -> (Listof NormalizedPair)))
 (define (scale-cdr count-list total-count)
   (: normalize (LengthEncodePair -> NormalizedPair))
@@ -64,6 +71,16 @@
                                             (if (and (real? val1) (real? val2))
                                                 (< val1 val2)
                                                 (string<? (~v val1) (~v val2))))))
+             ; doesn't make sense to run length encode on empty list
+             (assert (length lst) exact-positive-integer?)))
+
+; like elem-percent but in reverse order, i.e. >
+(: elem-percent> ((Listof Any) -> (Listof NormalizedPair)))
+(define (elem-percent> lst)
+  (scale-cdr (run-length-encode (sort lst (lambda (val1 val2)
+                                            (if (and (real? val1) (real? val2))
+                                                (> val1 val2)
+                                                (string>? (~v val1) (~v val2))))))
              ; doesn't make sense to run length encode on empty list
              (assert (length lst) exact-positive-integer?)))
 
@@ -82,6 +99,10 @@
   (for [(x xs)] (hash-update! ht x (λ ((b : Real)) (assert (add1 b) real?)) (λ () 0))) 
   (hash->list ht))
 
+(: most-frequent-elements((Listof (Pairof Any Real)) -> (Listof Any)))
+(define (most-frequent-elements element-counts)
+  (map (λ ((x : (Pairof Any Real))) (car x)) element-counts))
+
 (: most-frequent-element-count ((Sequenceof Any) -> (Pairof Any Real)))
 (define (most-frequent-element-count xs)
   (argmax (λ ((x : (Pairof Any Real))) (cdr x)) 
@@ -90,6 +111,34 @@
 (: most-frequent-element ((Sequenceof Any) -> Any))
 (define (most-frequent-element xs)
   (car (most-frequent-element-count xs)))
+
+(: min-elem-percent ((Listof Any) -> NormalizedPair))
+(define (min-elem-percent lst)
+  (argmin (lambda ((p : NormalizedPair)) (cdr p)) (assert (elem-percent lst) ListofNormalizedPair?)))
+
+(: min-elem ((Listof Any) -> Any))
+(define (min-elem lst)
+  (car (min-elem-percent lst)))
+
+(: least-frequent-element-list ((Sequenceof Any) -> (Listof (Pairof Any Real))))
+(define (least-frequent-element-list xs)
+  (: ht (HashTable Any Real))
+  (define ht (make-hash))
+  (for [(x xs)] (hash-update! ht x (λ ((b : Real)) (assert (add1 b) real?)) (λ () 0))) 
+  (hash->list ht))
+
+(: least-frequent-elements-sorted ((Listof (Pairof Any Real)) -> (Listof Any)))
+(define (least-frequent-elements-sorted element-counts)
+  (map (λ ((x : (Pairof Any Real))) (car x)) element-counts))
+
+(: least-frequent-element-count ((Sequenceof Any) -> (Pairof Any Real)))
+(define (least-frequent-element-count xs)
+  (argmin (λ ((x : (Pairof Any Real))) (cdr x)) 
+          (least-frequent-element-list xs)))
+
+(: least-frequent-element ((Sequenceof Any) -> Any))
+(define (least-frequent-element xs)
+  (car (least-frequent-element-count xs)))
 
 (: append-element ((Listof Any) Any -> (Listof Any)))
 (define (append-element lst elem)

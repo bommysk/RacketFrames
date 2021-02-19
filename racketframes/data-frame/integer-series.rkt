@@ -20,7 +20,8 @@
  ISeries-index)
 
 (provide:
- [new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex)) [#:fill-null Fixnum] -> ISeries)]
+ [new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex))
+                                 [#:fill-null Fixnum] [#:sort Boolean] [#:set-sparse-index Boolean] -> ISeries)]
  [set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries)]
  [set-ISeries-null-value (ISeries Fixnum -> ISeries)]
  [iseries-iref (ISeries (Listof Index) -> (Listof Fixnum))]
@@ -77,26 +78,28 @@
 ; use build-index-from-labels function and Label, SIndex and
 ; LabelIndex structs from indexed-series.
 (require
+  racket/vector
   racket/pretty
   racket/fixnum
   racket/unsafe/ops
   math/statistics
- (only-in "indexed-series.rkt"
-	  build-index-from-list build-multi-index-from-list         
-          RFIndex RFIndex? IndexDataType
-          extract-index
-	  Label SIndex LabelIndex LabelIndex-index
-          FIndex FlonumIndex
-          label-index key->lst-idx
-          idx->key is-labeled? ListofIndexDataType?
-          is-indexed? ListofIndex? ListofListofString ListofListofString?)
- (only-in "boolean-series.rkt"
-          new-BSeries BSeries)
- (only-in "generic-series.rkt"
-	  GenSeries GenSeries? GenericType gen-series-iref new-GenSeries
-	  gen-series-referencer)
- (only-in "groupby-util.rkt"
-          make-agg-value-hash-sindex agg-value-hash-to-gen-series AggValueHash))
+  "../util/data-encode.rkt"  
+  (only-in "indexed-series.rkt"
+           build-index-from-list build-multi-index-from-list         
+           RFIndex RFIndex? RFNULL IndexDataType
+           extract-index
+           Label SIndex LabelIndex LabelIndex-index
+           FIndex FlonumIndex
+           label-index key->lst-idx
+           idx->key is-labeled? ListofIndexDataType?
+           is-indexed? ListofIndex? ListofListofString ListofListofString?)
+  (only-in "boolean-series.rkt"
+           new-BSeries BSeries)
+  (only-in "generic-series.rkt"
+           GenSeries GenSeries? GenericType gen-series-iref new-GenSeries
+           gen-series-referencer)
+  (only-in "groupby-util.rkt"
+           make-agg-value-hash-sindex agg-value-hash-to-gen-series AggValueHash))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -111,17 +114,27 @@
 
 ;; Integer series optimized with use of Fixnum.
 (struct ISeries ([index : (Option RFIndex)]
+                 ; vector data offset by 1, so first item is at
+                 ; index 1
                  [data : (Vectorof Fixnum)]
-                 [null-value : (Boxof GenericType)])
-                 ;[sparse-index-set : (Setof Index)] USE vector-index-of to build this set, null-value indexes are always included)
+                 ; null-value are mapped to 0 in the (Listof Index)                 
+                 [null-value : RFNULL])
   #:mutable
   #:transparent)
 
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a ISeries
 ; struct object.
-(: new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex)) [#:fill-null GenericType] -> ISeries))
-(define (new-ISeries data labels #:fill-null [null-value 0])
+
+; sorting data vector results in more efficient
+; sparse index, but it is up to the user and user case
+                 
+; When this is set we run length encode on save
+; it as the vector data and generate the index
+; to match 
+(: new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex))
+                                  [#:fill-null GenericType] [#:sort Boolean] [#:set-sparse-index Boolean] -> ISeries))
+(define (new-ISeries data labels #:fill-null [null-value 0] #:sort [sort #f] #:set-sparse-index [set-sparse-index #f])
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -134,13 +147,20 @@
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
 
-  (if (RFIndex? labels)      
-      (ISeries labels data (box null-value))
-      (if labels
-	  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
-	    (check-mismatch index)
-	    (ISeries index data (box null-value)))
-	  (ISeries #f data (box null-value)))))
+
+  (let*: ((data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or sort set-sparse-index) (most-frequent-element-list data) #f))
+         (data-vector : (Vectorof Fixnum)
+                      (if (not data-count-encoded)
+                          data
+                          (assert (list->vector (most-frequent-elements data-count-encoded)) fxvector?))))
+         
+         (if (RFIndex? labels)      
+             (ISeries labels data (box null-value))
+             (if labels
+                 (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
+                   (check-mismatch index)
+                   (ISeries index data-vector (box null-value)))
+                 (ISeries #f data-vector (box null-value))))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -148,7 +168,7 @@
 (define (set-ISeries-index iseries labels)
   (new-ISeries (iseries-data iseries) labels #:fill-null (iseries-null-value iseries)))
 
-(: set-ISeries-null-value (ISeries Fixnum -> ISeries))
+(: set-ISeries-null-value (ISeries GenericType -> ISeries))
 (define (set-ISeries-null-value iseries null-value)
   (new-ISeries (iseries-data iseries) (iseries-index iseries) #:fill-null null-value))
 ; ***********************************************************
@@ -729,7 +749,7 @@
                                   [(eq? function-name 'sum) (apply + val)]
                                   [(eq? function-name 'mean) (mean val)]
                                   [(eq? function-name 'median) (median (lambda ([val1 : Fixnum] [val2 : Fixnum]) (< val1 val2)) val)]
-                                  ;[(eq? function-name 'mode) (mode (vector->list (ISeries-data series)))]
+                                  [(eq? function-name 'mode) (most-frequent-element val)]
                                   [(eq? function-name 'count) (length val)]
                                   [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) val)]
                                   [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) val)]

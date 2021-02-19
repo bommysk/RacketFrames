@@ -141,4 +141,4 @@
 
 (iseries-print (assert (iseries-loc-multi-index multi-index-iseries-3 (list "c" "3")) ISeries?) (current-output-port))
 
-(ISeries-data (new-ISeries (vector (inexact->exact +nan.0) (inexact->exact +nan.0) (inexact->exact +nan.0) (inexact->exact +nan.0) (inexact->exact +nan.0)) (build-index-from-list (list 'a 'a 'b 'c 'd))))
+(new-ISeries (vector 0 1 0 1 0 1 0 0 0 0 1 1 1 0 1) #f)

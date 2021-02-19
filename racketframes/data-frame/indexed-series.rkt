@@ -35,7 +35,7 @@
 (provide
  SIndex IIndex FIndex DTIndex Labeling ListofLabel? ListofIndexDataType? ListofAny?
  Label Label? LabelProjection LabelProjection? LabelIndex? RFIndex? Datetime?
- RFIndex IndexDataType ListofIndex ListofIndex? ListofListofString ListofListofString?
+ RFIndex RFNULL IndexDataType ListofIndex ListofIndex? ListofListofString ListofListofString?
  LabelIndex LabelIndex-index
  FIndex FlonumIndex ListofFixnum? ListofFlonum? ListofBoolean? ListofDatetime?
  build-index-from-labels label-index key->lst-idx label->lst-idx idx->key idx->label)
@@ -57,6 +57,9 @@
 ; ***********************************************************
 (define-type Label Symbol)
 
+; Always referred to by 0 in the (Listof Index) of the Index
+(define-type RFNULL (Boxof Any))
+
 (define-predicate Label? Label)
 
 (define-predicate ListofLabel? (Listof Label))
@@ -75,6 +78,7 @@
 
 (define-predicate ListofAny? (Listof (Pair Any Any)))
 
+; Map index to a  (Listof Fixnum)
 (define-type Labeling (Listof (Pair Label (Listof Index))))
 
 (define-type SIndex (HashTable Label (Listof Index)))
