@@ -21,7 +21,7 @@
 
 (provide:
  [new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex))
-                                 [#:fill-null Fixnum] [#:sort Boolean] [#:set-sparse-index Boolean] -> ISeries)]
+                                 [#:fill-null Fixnum] [#:sort Boolean] [#:encode Boolean] -> ISeries)]
  [set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries)]
  [set-ISeries-null-value (ISeries Fixnum -> ISeries)]
  [iseries-iref (ISeries (Listof Index) -> (Listof Fixnum))]
@@ -117,8 +117,18 @@
                  ; vector data offset by 1, so first item is at
                  ; index 1
                  [data : (Vectorof Fixnum)]
+                ; EASIER OPTION IS TO CONVERT TO GEN SERIES WHENEVER null-value is not a Fixnum
                  ; null-value are mapped to 0 in the (Listof Index)                 
-                 [null-value : RFNULL])
+                 [null-value : RFNULL]
+                 [encoded : (Option Boolean)])
+  #:mutable
+  #:transparent)
+
+(struct: ISeries-Nominals
+  ([index : (Option RFIndex)]
+   [data : (Vectorof Index)]
+   [nominals : (Vectorof Fixnum)]   
+   [null-value : RFNULL])
   #:mutable
   #:transparent)
 
@@ -133,8 +143,8 @@
 ; it as the vector data and generate the index
 ; to match 
 (: new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex))
-                                  [#:fill-null GenericType] [#:sort Boolean] [#:set-sparse-index Boolean] -> ISeries))
-(define (new-ISeries data labels #:fill-null [null-value 0] #:sort [sort #f] #:set-sparse-index [set-sparse-index #f])
+                                  [#:fill-null GenericType] [#:sort Boolean] [#:encode Boolean] -> ISeries))
+(define (new-ISeries data labels #:fill-null [null-value 0] #:sort [do-sort #f] #:encode [encode #f])
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -147,20 +157,20 @@
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
 
-
-  (let*: ((data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or sort set-sparse-index) (most-frequent-element-list data) #f))
+  ; encode data by element count to avoid repetition if user elects to sort or encode series
+  (let*: ((data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or do-sort encode) (most-frequent-element-list data) #f))
          (data-vector : (Vectorof Fixnum)
                       (if (not data-count-encoded)
                           data
                           (assert (list->vector (most-frequent-elements data-count-encoded)) fxvector?))))
          
          (if (RFIndex? labels)      
-             (ISeries labels data (box null-value))
+             (ISeries labels data null-value)
              (if labels
                  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
                    (check-mismatch index)
-                   (ISeries index data-vector (box null-value)))
-                 (ISeries #f data-vector (box null-value))))))
+                   (ISeries index data-vector null-value))
+                 (ISeries #f data-vector null-value)))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -756,3 +766,5 @@
                                   [else (error 'apply-agg-data-frame "Unknown aggregate function.")])))))
 
   (agg-value-hash-to-gen-series agg-value-hash))
+
+; iseries->gen-series

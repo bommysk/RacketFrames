@@ -6,7 +6,7 @@
 #lang typed/racket
 (require typed/rackunit)
 
-(require "../data-frame/series-description.rkt")
+
 (require "../data-frame/indexed-series.rkt")
 (require "../data-frame/generic-series.rkt")
 
@@ -17,6 +17,13 @@
 ; Not sure how to check
 ;(check-equal? (build-index-from-list (list 'a 'b 'c 'd))
 ;              (hash 'b 1 'c' 2 'd 3 'a 0))
+
+(index-keys (build-index-from-list (list 'a 'b 'c 'd)))
+(index-idxes(build-index-from-list (list 'a 'b 'c 'd)))
+
+(index-keys-intersection (list (build-index-from-list (list 'a 'b 'c 'd)) (build-index-from-list (list 'a 'b 'c 'd)) (build-index-from-list (list 'a 'b 'c 'd))))
+
+(index-keys-intersection (list (build-index-from-list (list 'a 'b 'c 'd)) (build-index-from-list (list 'a 'b 'z 'd)) (build-index-from-list (list 'k 'l 'c 'd))))
 
 ; checks numerical index of label
 (check-equal? (get-index (build-index-from-list (list 'a 'b 'c 'd)) 'a) (list 0))
@@ -75,15 +82,15 @@
 (check-equal? (gen-series-iref g-series-integer (list 2)) (list 3))
 
 ; integer series ref by label
-(check-equal? (series-loc g-series-integer 'd) 4)
+(check-equal? (gen-series-loc g-series-integer 'd) 4)
 
-(check-equal? (series-loc g-series-integer-2 'a) 1)
+(check-equal? (gen-series-loc g-series-integer-2 'a) 1)
 
 ; symbol series ref by index
 (check-equal? (gen-series-iref g-series-symbol (list 2)) (list 'g))
 
 ; symbol series ref by label
-(check-equal? (series-loc g-series-symbol 'd) 'h)
+(check-equal? (gen-series-loc g-series-symbol 'd) 'h)
 
 ; series length
 (check-equal? (gen-series-length g-series-symbol) 4)
@@ -100,8 +107,8 @@
 
 ; integer series ref by label
 ; checks labeling function which converts labels hash to list
-(check-equal? (labeling (assert (build-index-from-list (list 'a 'b 'c 'd)) LabelIndex?))
-              '((b 1) (c 2) (d 3) (a 0)))
+;(check-equal? (labeling (assert (build-index-from-list (list 'a 'b 'c 'd)) LabelIndex?))
+ ;             '((b 1) (c 2) (d 3) (a 0)))
 
 ; checks label sorting
 (check-equal? (label-sort-lexical (assert (build-index-from-list (list 'b 'd 'a 'c)) LabelIndex?))
