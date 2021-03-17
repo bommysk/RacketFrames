@@ -154,3 +154,5 @@
      (datetime-series-groupby series by-value)]
     [else
      (gen-series-groupby series by-value)]))
+
+;(: convert-GenSeries-to-OriginalSeries (GenSeries -> Series))

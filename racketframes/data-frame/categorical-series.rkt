@@ -53,7 +53,9 @@
     
 (struct: CSeries ([index : (Option RFIndex)]
                   [data : (Vectorof Index)]
-                  [nominals : (Vectorof Label)]))
+                  [nominals : (Vectorof Label)])
+  #:mutable
+  #:transparent)
 
 ;; #:methods gen:custom-write [(define write-proc writer-CSeries)])
 

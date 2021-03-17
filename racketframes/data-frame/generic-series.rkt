@@ -9,7 +9,7 @@
           Label LabelIndex-index
           LabelIndex label-index label->lst-idx key->lst-idx
           idx->key is-indexed? ListofIndexDataType? ListofIndex?
-          ListofListofString ListofListofString?)
+          ListofListofString ListofListofString? RFNULL)
  (only-in "../load/types.rkt"
           ListofString?))
 
@@ -20,7 +20,8 @@
  (struct-out GenSeries)
  GenSeries-index
  GenericType
- GenericType?)
+ GenericType?
+ ListofGenericType?)
 
 (define-type GenericType Any)
 
@@ -28,7 +29,7 @@
 (define-predicate ListofGenericType? (Listof GenericType))
 
 (provide:
- [new-GenSeries ((Vectorof GenericType) (Option (U (Listof IndexDataType) RFIndex)) -> GenSeries)]
+ [new-GenSeries ((Vectorof GenericType) (Option (U (Listof IndexDataType) RFIndex)) [#:fill-null RFNULL] -> GenSeries)]
  [set-GenSeries-index (GenSeries (U (Listof IndexDataType) RFIndex) -> GenSeries)]
  [gen-series-iref (GenSeries (Listof Index) -> GenericType)]
  [gen-series-index-ref (GenSeries IndexDataType -> (Listof GenericType))]
@@ -48,13 +49,18 @@
 
 ; ***********************************************************
 
-(struct GenSeries ([index : (Option RFIndex)] [data : (Vectorof GenericType)]))
+(struct GenSeries
+  ([index : (Option RFIndex)]
+   [data : (Vectorof GenericType)]
+   [null-value : RFNULL])
+  #:mutable
+  #:transparent)
 
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a GenSeries
 ; struct object.
-(: new-GenSeries ((Vectorof GenericType) (Option (U (Listof IndexDataType) RFIndex)) -> GenSeries))
-(define (new-GenSeries data labels)
+(: new-GenSeries ((Vectorof GenericType) (Option (U (Listof IndexDataType) RFIndex)) [#:fill-null RFNULL] -> GenSeries))
+(define (new-GenSeries data labels #:fill-null [null-value 'NA])
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -70,12 +76,12 @@
   (if (RFIndex? labels)
       (begin
 	(check-mismatch labels)
-	(GenSeries labels data))
+	(GenSeries labels data null-value))
       (if labels
 	  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
 	    (check-mismatch index)
-	    (GenSeries index data))
-	  (GenSeries #f data))))
+	    (GenSeries index data null-value))
+	  (GenSeries #f data null-value))))
 
 ; ***********************************************************
 
@@ -127,6 +133,12 @@
 (define (gen-series-index series)
   (GenSeries-index series))
 
+; This function consumes an integer series and returns its
+; data vector.
+(: gen-series-null-value (GenSeries -> GenericType))
+(define (gen-series-null-value series)
+  (GenSeries-null-value series))
+
 ; This function consumes a generic series and a Label and returns
 ; the value at that Label in the series.
 (: gen-series-label-ref (GenSeries IndexDataType -> (Listof GenericType)))
@@ -145,8 +157,8 @@
 (define (map/gen-s series fn)
   (let ((old-data (GenSeries-data series)))
     (GenSeries #f (build-vector (vector-length old-data)
-                              (λ: ((idx : Natural))
-                                (fn (vector-ref old-data idx)))))))
+                                (λ: ((idx : Natural))
+                                  (fn (vector-ref old-data idx)))) (gen-series-null-value series))))
 ; ***********************************************************
 
 ; ***********************************************************

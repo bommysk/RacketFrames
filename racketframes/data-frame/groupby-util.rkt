@@ -45,7 +45,7 @@
 	    (let* ((gen-val : (U GenericType GenSeries) (gen-series-iloc gen-series (assert i index?)))
                    (gen-list : (Listof GenericType) (if (GenericType? gen-val) (list gen-val) (vector->list (GenSeries-data gen-val))))
                   (key (if (GenSeries-index gen-series)
-                                   (idx->key (GenSeries-index gen-series) (assert i index?))
+                                   (idx->key (assert (GenSeries-index gen-series)) (assert i index?))
                                    (assert i index?)))
                   (key-str : String (cond
                                       [(symbol? key) (symbol->string key)]

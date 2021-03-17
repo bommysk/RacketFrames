@@ -21,7 +21,7 @@
 
 (provide:
  [new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex))
-                                 [#:fill-null Fixnum] [#:sort Boolean] [#:encode Boolean] -> ISeries)]
+                                 [#:fill-null Fixnum] [#:sort Boolean] [#:encode Boolean] -> (U ISeries GenSeries))]
  [set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries)]
  [set-ISeries-null-value (ISeries Fixnum -> ISeries)]
  [iseries-iref (ISeries (Listof Index) -> (Listof Fixnum))]
@@ -97,7 +97,7 @@
            new-BSeries BSeries)
   (only-in "generic-series.rkt"
            GenSeries GenSeries? GenericType gen-series-iref new-GenSeries
-           gen-series-referencer)
+           gen-series-referencer ListofGenericType?)
   (only-in "groupby-util.rkt"
            make-agg-value-hash-sindex agg-value-hash-to-gen-series AggValueHash))
 ; ***********************************************************
@@ -114,16 +114,25 @@
 
 ;; Integer series optimized with use of Fixnum.
 (struct ISeries ([index : (Option RFIndex)]
-                 ; vector data offset by 1, so first item is at
-                 ; index 1
                  [data : (Vectorof Fixnum)]
-                ; EASIER OPTION IS TO CONVERT TO GEN SERIES WHENEVER null-value is not a Fixnum
-                 ; null-value are mapped to 0 in the (Listof Index)                 
+                 ; when the null-value is not a fixnum?, the series is converted to a GenSeries
+                 ; to accomodate any null value
                  [null-value : RFNULL]
-                 [encoded : (Option Boolean)])
+                 ; encode data by element count to optimze memory storage and read/write operations
+                 ; when data vector lacks variety
+                 [encoded : Boolean]
+                 [data-count-encoded : (Option (Listof (Pairof Any Real)))]
+                 ; if converted to a GenSeries we have this as bread crumbs back
+                 [original-series-type : Label])
   #:mutable
   #:transparent)
 
+; When working with very large integers that occur frequently,
+; it can be memory efficient to use the ISeries-Nominals form
+; which will only keep one copy of the Fixnum and maintain a
+; a light weight vector of index to reference to the nominals.
+; categorical series are constructed in nominal form by default,
+; but with other series types it is not
 (struct: ISeries-Nominals
   ([index : (Option RFIndex)]
    [data : (Vectorof Index)]
@@ -141,9 +150,11 @@
                  
 ; When this is set we run length encode on save
 ; it as the vector data and generate the index
-; to match 
-(: new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex))
-                                  [#:fill-null GenericType] [#:sort Boolean] [#:encode Boolean] -> ISeries))
+; to match
+(define DEFAULT_NULL_VALUE : Fixnum 0)
+(define ORIGINAL_SERIES_TYPE : Label 'ISeries)
+(: new-ISeries ((Vectorof Fixnum) (Option (U (Listof IndexDataType) RFIndex))
+                                  [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> (U ISeries GenSeries)))
 (define (new-ISeries data labels #:fill-null [null-value 0] #:sort [do-sort #f] #:encode [encode #f])
 
   (: check-mismatch (RFIndex -> Void))
@@ -157,20 +168,32 @@
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
 
-  ; encode data by element count to avoid repetition if user elects to sort or encode series
-  (let*: ((data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or do-sort encode) (most-frequent-element-list data) #f))
-         (data-vector : (Vectorof Fixnum)
-                      (if (not data-count-encoded)
-                          data
-                          (assert (list->vector (most-frequent-elements data-count-encoded)) fxvector?))))
+    ; encode data by element count to avoid repetition if user elects to sort or encode series
+    (let*: (; if the user is not using the DFEAULT_NULL_VALUE of 0 we need to replace all 0's with their selected 
+            (data-vector-null-replaced : (U (Vectorof GenericType) (Vectorof Fixnum)) (if (not (eq? null-value DEFAULT_NULL_VALUE)) (vector-map (λ ((f : Fixnum)) (if (eq? f DEFAULT_NULL_VALUE) null-value f)) data) data))
+            (data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or do-sort encode) (most-frequent-element-list data-vector-null-replaced) #f))
+            (data-vector : (U (Vectorof GenericType) (Vectorof Fixnum))
+                         (if (not data-count-encoded)
+                             data
+                             (list->vector (most-frequent-elements data-count-encoded))))
+            (index : (Option RFIndex)
+                   (if (RFIndex? labels)      
+                       (begin (check-mismatch labels) labels)
+                       (if labels
+                           (let ((index-from-list (build-index-from-list (assert labels ListofIndexDataType?))))
+                             (begin (check-mismatch index-from-list) index-from-list))
+                           #f)
+                       )))
+      
+      (if (fixnum? null-value)
+          (ISeries index (assert data-vector fxvector?) null-value encode data-count-encoded ORIGINAL_SERIES_TYPE)
+          ; when the null-value is not a fixnum?, the series is converted to a GenSeries
+          ; to accomodate any null value
+          (new-GenSeries data-vector index  #:fill-null null-value))))
          
-         (if (RFIndex? labels)      
-             (ISeries labels data null-value)
-             (if labels
-                 (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
-                   (check-mismatch index)
-                   (ISeries index data-vector null-value))
-                 (ISeries #f data-vector null-value)))))
+(: convert-ISeries-to-GenSeries (ISeries -> GenSeries))
+(define (convert-ISeries-to-GenSeries iseries)
+  (new-GenSeries (iseries-data iseries) (iseries-index iseries) #:fill-null (iseries-null-value iseries)))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -245,7 +268,7 @@
 ; data vector.
 (: iseries-null-value (ISeries -> GenericType))
 (define (iseries-null-value series)
-  (unbox (ISeries-null-value series)))
+  (ISeries-null-value series))
 
 ; This function consumes a series and an IndexDataType and returns
 ; the list of values at that index in the series.
@@ -678,22 +701,26 @@
       ; get labels from SIndex that refer to given indicies
       ; make a new index from these labels using build-index-from-labels
       ; sub-vector the data vector to get the data and create a new-ISeries
-      (new-ISeries
-       (for/vector: : (Vectorof Fixnum) ([i idx])
-         (referencer (assert i index?)))
-       (if (not (ISeries-index iseries))
-           #f
-           (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (ISeries-index iseries)) i)) idx))))
+      (assert
+       (new-ISeries
+        (for/vector: : (Vectorof Fixnum) ([i idx])
+          (referencer (assert i index?)))
+        (if (not (ISeries-index iseries))
+            #f
+            (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (ISeries-index iseries)) i)) idx))))
+       ISeries?)
       (referencer idx))))
 
 (: iseries-iloc-range (ISeries Index Index -> ISeries))
 (define (iseries-iloc-range iseries start end)
   ; use vector-copy library method
-  (new-ISeries
-   (vector-copy (iseries-data iseries) start end)
-   (if (not (ISeries-index iseries))
-       #f
-       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (ISeries-index iseries)) i)) (range start end))))))
+  (assert
+   (new-ISeries
+    (vector-copy (iseries-data iseries) start end)
+    (if (not (ISeries-index iseries))
+        #f
+        (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (ISeries-index iseries)) i)) (range start end)))))
+   ISeries?))
 
 ; ***********************************************************
 ;; ISeries groupby

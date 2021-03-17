@@ -37,7 +37,7 @@
  [index-keys-intersection ((Listof RFIndex) -> (Setof IndexDataType))])
 
 (provide
- SIndex IIndex FIndex DTIndex Labeling ListofLabel? ListofIndexDataType? ListofAny?
+ SIndex IIndex FIndex DTIndex Labeling ListofLabel? ListofIndexDataType? ListofAny? ListofAnyPair?
  Label Label? LabelProjection LabelProjection? LabelIndex? RFIndex? Datetime?
  RFIndex RFNULL IndexDataType ListofIndex ListofIndex? ListofListofString ListofListofString?
  LabelIndex LabelIndex-index
@@ -59,7 +59,8 @@
 ; ***********************************************************
 (define-type Label Symbol)
 
-; Always referred to by 0 in the (Listof Index) of the Index
+; series have the option to set any type of null value
+; and be converted to a GenSeries
 (define-type RFNULL Any)
 
 (define-predicate Label? Label)
@@ -78,7 +79,9 @@
 
 (define-predicate ListofDatetime? (Listof Datetime))
 
-(define-predicate ListofAny? (Listof (Pair Any Any)))
+(define-predicate ListofAny? (Listof Any))
+
+(define-predicate ListofAnyPair? (Listof (Pair Any Any)))
 
 ; Map index to a  (Listof Fixnum)
 (define-type Labeling (Listof (Pair Label (Listof Index))))
@@ -199,6 +202,7 @@
     [(DatetimeIndex? index) (idx->datetime index idx)]
     [else (error "Unsupported index datatype.")]))
 
+; perhaps put in utils
 (: universal-sort< (GenericType GenericType -> Boolean))
 (define (universal-sort< val1 val2)
   (if (and (real? val1) (real? val2))
@@ -210,6 +214,7 @@
   (if (and (real? val1) (real? val2))
       (> val1 val2)
       (string>? (~v val1) (~v val2))))
+; perhaps put in utils
 
 (: index-keys (RFIndex -> (Listof IndexDataType)))
 (define (index-keys index)
@@ -229,6 +234,9 @@
         (set2 (list->set lst2)))
     (set-intersect set1
                    set2)))
+(: seq-intersect ((Sequenceof GenericType) (Sequenceof GenericType) -> (Setof GenericType)))
+(define (seq-intersect seq1 seq2)
+  (list-intersect (sequence->list seq1) (sequence->list seq2)))
 
 (: index-keys-intersection ((Listof RFIndex) -> (Setof IndexDataType)))
 (define (index-keys-intersection indexes)
@@ -236,6 +244,16 @@
                    (set-intersect set1 set2))
                  (index-keys-set (car indexes)) (map index-keys-set (cdr indexes)))
           SetofIndexDataType?))
+
+(: list-union ((Listof GenericType) (Listof GenericType) -> (Setof GenericType)))
+(define (list-union lst1 lst2)
+  (let ((set1 (list->set lst1))
+        (set2 (list->set lst2)))
+    (set-union set1
+                   set2)))
+(: seq-union ((Sequenceof GenericType) (Sequenceof GenericType) -> (Setof GenericType)))
+(define (seq-union seq1 seq2)
+  (list-union (sequence->list seq1) (sequence->list seq2)))
 
 ; ***********************************************************
 
@@ -264,7 +282,7 @@
 
 ; ***********************************************************
 ; This function consumes a list of Labels and produces a
-; SIndex which is a HashTable Label to Index.
+; IIndex which is a HashTable Fixnum to Index.
 (: build-index-from-fixnums ((Listof Fixnum) -> IIndex))
 (define (build-index-from-fixnums fixnums)
   (let ((index : IIndex (make-hash '())))

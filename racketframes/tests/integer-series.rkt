@@ -18,13 +18,16 @@
 
 ; create integer series
 (define series-integer (new-ISeries (vector 1 2 3 4)
-                                      (build-index-from-list (list 'a 'b 'c 'd))))
+                                      (build-index-from-list (list 'a 'b 'c 'd))
+                                      0 #f #f))
 
 (define series-integer-2 (new-ISeries (vector 5 6 7 8)
-                                      (build-index-from-list (list 'a 'b 'c 'd))))
+                                      (build-index-from-list (list 'a 'b 'c 'd))
+                                      0 #f #f))
 
 (define series-integer-3 (new-ISeries (vector 5 5 6 7 8)
-                                      (build-index-from-list (list 'a 'a 'b 'c 'd))))
+                                      (build-index-from-list (list 'a 'a 'b 'c 'd))
+                                      0 #f #f))
 
 (extract-index (build-index-from-list (list 'a 'b 'c 'a 'd)))
 
@@ -141,4 +144,4 @@
 
 (iseries-print (assert (iseries-loc-multi-index multi-index-iseries-3 (list "c" "3")) ISeries?) (current-output-port))
 
-(new-ISeries (vector 0 1 0 1 0 1 0 0 0 0 1 1 1 0 1) #f)
+(new-ISeries (vector 0 1 0 1 0 1 0 0 0 0 1 1 1 0 1) #f 0 #f #f)
