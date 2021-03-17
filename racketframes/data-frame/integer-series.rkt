@@ -170,11 +170,14 @@
 
     ; encode data by element count to avoid repetition if user elects to sort or encode series
     (let*: (; if the user is not using the DFEAULT_NULL_VALUE of 0 we need to replace all 0's with their selected 
-            (data-vector-null-replaced : (U (Vectorof GenericType) (Vectorof Fixnum)) (if (not (eq? null-value DEFAULT_NULL_VALUE)) (vector-map (λ ((f : Fixnum)) (if (eq? f DEFAULT_NULL_VALUE) null-value f)) data) data))
+            (data-vector-null-replaced : (Vectorof GenericType)
+                                       (if (not (eq? null-value DEFAULT_NULL_VALUE))
+                                           (ann (vector-map (λ ((f : Fixnum)) (if (eq? f DEFAULT_NULL_VALUE) null-value f)) data) (Vectorof GenericType))
+                                           (cast data (Vectorof GenericType)))) 
             (data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or do-sort encode) (most-frequent-element-list data-vector-null-replaced) #f))
-            (data-vector : (U (Vectorof GenericType) (Vectorof Fixnum))
+            (data-vector : (Vectorof GenericType)
                          (if (not data-count-encoded)
-                             data
+                             (cast data (Vectorof GenericType))
                              (list->vector (most-frequent-elements data-count-encoded))))
             (index : (Option RFIndex)
                    (if (RFIndex? labels)      
@@ -193,17 +196,17 @@
          
 (: convert-ISeries-to-GenSeries (ISeries -> GenSeries))
 (define (convert-ISeries-to-GenSeries iseries)
-  (new-GenSeries (iseries-data iseries) (iseries-index iseries) #:fill-null (iseries-null-value iseries)))
+  (new-GenSeries (cast (iseries-data iseries) (Vectorof GenericType)) (iseries-index iseries) #:fill-null (iseries-null-value iseries)))
 ; ***********************************************************
 
 ; ***********************************************************
 (: set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries))
 (define (set-ISeries-index iseries labels)
-  (new-ISeries (iseries-data iseries) labels #:fill-null (iseries-null-value iseries)))
+  (assert (new-ISeries (iseries-data iseries) labels #:fill-null (iseries-null-value iseries)) ISeries?))
 
 (: set-ISeries-null-value (ISeries GenericType -> ISeries))
 (define (set-ISeries-null-value iseries null-value)
-  (new-ISeries (iseries-data iseries) (iseries-index iseries) #:fill-null null-value))
+  (assert (new-ISeries (iseries-data iseries) (iseries-index iseries) #:fill-null null-value) ISeries?))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -300,16 +303,15 @@
 
   result-fxvector)
 
-
 ; ***********************************************************
 
 ; ***********************************************************
 (: map/is (ISeries (Fixnum -> Fixnum) -> ISeries))
 (define (map/is series fn)
   (let ((old-data (ISeries-data series)))
-    (ISeries #f (build-vector (vector-length old-data)
-                              (λ: ((idx : Natural))
-                                (fn (vector-ref old-data idx)))) (ISeries-null-value series))))
+    (assert (new-ISeries (ann (build-vector (vector-length old-data)
+                               (λ: ((idx : Index))
+                                 (fn (vector-ref old-data idx)))) fxvector) (iseries-index series) #:fill-null (iseries-null-value series)) ISeries?)))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -337,7 +339,8 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : ISeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (new-ISeries v-bop #f))
+    ; instead of false, align indexes and return that here
+       ((= idx len) (assert (new-ISeries v-bop #f) ISeries?))
        (vector-set! v-bop idx (bop (vector-ref v1 idx)
 				   (vector-ref v2 idx)))))
 ; ***********************************************************
@@ -401,7 +404,7 @@
   (define: v-bop : (Vectorof Fixnum) ((inst make-vector Fixnum) len #{0 : Fixnum}))
 
   (do: : ISeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (new-ISeries v-bop #f))
+       ((= idx len) (assert (new-ISeries v-bop #f) ISeries?))
        (vector-set! v-bop idx (bop #{(vector-ref v1 idx) : Fixnum} fx))))
 
 ; ***********************************************************
