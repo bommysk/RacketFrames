@@ -71,6 +71,8 @@
  [iseries-filter (ISeries (Fixnum -> Boolean) -> ISeries)]
  [iseries-filter-not (ISeries (Fixnum -> Boolean) -> ISeries)]
  [fxvector->list (FxVector Fixnum -> (Listof Fixnum))]
+ ; TODO
+ ;[fxvector->vector (FxVector (Option Fixnum) -> (Vectorof Fixnum))]
  [list->fxvector ((Listof Fixnum) -> FxVector)])
 ; ***********************************************************
 
@@ -189,7 +191,7 @@
                        )))
       
       (if (fixnum? null-value)
-          (ISeries index (assert data-vector fxvector?) null-value encode data-count-encoded ORIGINAL_SERIES_TYPE)
+          (ISeries index (cast data-vector (Vectorof Fixnum)) null-value encode data-count-encoded ORIGINAL_SERIES_TYPE)
           ; when the null-value is not a fixnum?, the series is converted to a GenSeries
           ; to accomodate any null value
           (new-GenSeries data-vector index  #:fill-null null-value))))
@@ -309,9 +311,9 @@
 (: map/is (ISeries (Fixnum -> Fixnum) -> ISeries))
 (define (map/is series fn)
   (let ((old-data (ISeries-data series)))
-    (assert (new-ISeries (assert (build-vector (vector-length old-data)
+    (assert (new-ISeries (cast (build-vector (vector-length old-data)
                                (λ: ((idx : Index))
-                                 (fn (vector-ref old-data idx)))) fxvector?) (iseries-index series) #:fill-null (iseries-null-value series)) ISeries?)))
+                                 (fn (vector-ref old-data idx)))) (Vectorof Fixnum)) (iseries-index series) #:fill-null (iseries-null-value series)) ISeries?)))
 ; ***********************************************************
 
 ; ***********************************************************

@@ -17,17 +17,14 @@
 ; integer series tests
 
 ; create integer series
-(define series-integer (new-ISeries (vector 1 2 3 4)
-                                      (build-index-from-list (list 'a 'b 'c 'd))
-                                      0 #f #f))
+(define series-integer : ISeries (assert (new-ISeries (vector 1 2 3 4)
+                                      (build-index-from-list (list 'a 'b 'c 'd))) ISeries?))
 
-(define series-integer-2 (new-ISeries (vector 5 6 7 8)
-                                      (build-index-from-list (list 'a 'b 'c 'd))
-                                      0 #f #f))
+(define series-integer-2 : ISeries (assert (new-ISeries (vector 5 6 7 8)
+                                      (build-index-from-list (list 'a 'b 'c 'd))) ISeries?))
 
-(define series-integer-3 (new-ISeries (vector 5 5 6 7 8)
-                                      (build-index-from-list (list 'a 'a 'b 'c 'd))
-                                      0 #f #f))
+(define series-integer-3 : ISeries (assert (new-ISeries (vector 5 5 6 7 8)
+                                      (build-index-from-list (list 'a 'a 'b 'c 'd))) ISeries?))
 
 (extract-index (build-index-from-list (list 'a 'b 'c 'a 'd)))
 
@@ -132,11 +129,11 @@
 (LabelIndex-index (build-multi-index-from-list (list (list 'a 'b 'c 'a 'c) (list 1 2 3 4 3))))
 
 ; iseries multi-index
-(define multi-index-iseries (new-ISeries (vector 1 2 3 4 5) (build-multi-index-from-list (list (list 'a 'b 'c 'a 'c) (list 1 2 3 4 5)))))
+(define multi-index-iseries : ISeries (assert (new-ISeries (vector 1 2 3 4 5) (build-multi-index-from-list (list (list 'a 'b 'c 'a 'c) (list 1 2 3 4 5)))) ISeries?))
 
-(define multi-index-iseries-2 (new-ISeries (vector 500 2 3 4 100) (build-multi-index-from-list (list (list 'a 'b 'c 'a 'c) (list 1 2 3 4 3) (list 5 6 7 8 9)))))
+(define multi-index-iseries-2 : ISeries (assert (new-ISeries (vector 500 2 3 4 100) (build-multi-index-from-list (list (list 'a 'b 'c 'a 'c) (list 1 2 3 4 3) (list 5 6 7 8 9)))) ISeries?))
 
-(define multi-index-iseries-3 (new-ISeries (vector 100 200 300 400 500) (build-multi-index-from-list (list (list 'a 'b 'c 'a 'c) (list 1 2 3 4 3)))))
+(define multi-index-iseries-3 : ISeries (assert (new-ISeries (vector 100 200 300 400 500) (build-multi-index-from-list (list (list 'a 'b 'c 'a 'c) (list 1 2 3 4 3)))) ISeries?))
 
 (check-equal? (iseries-loc-multi-index multi-index-iseries (list "a" "1")) 1)
 
