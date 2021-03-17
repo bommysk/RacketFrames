@@ -153,7 +153,7 @@
 ; to match
 (define DEFAULT_NULL_VALUE : Fixnum 0)
 (define ORIGINAL_SERIES_TYPE : Label 'ISeries)
-(: new-ISeries ((Vectorof Fixnum) (Option (U (Listof IndexDataType) RFIndex))
+(: new-ISeries ((Vectorof Fixnum) (Option (U (Sequenceof IndexDataType) RFIndex))
                                   [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> (U ISeries GenSeries)))
 (define (new-ISeries data labels #:fill-null [null-value 0] #:sort [do-sort #f] #:encode [encode #f])
 
@@ -179,11 +179,11 @@
                          (if (not data-count-encoded)
                              (cast data (Vectorof GenericType))
                              (list->vector (most-frequent-elements data-count-encoded))))
-            (index : (Option RFIndex)
+            (index : (Option RFIndex)                   
                    (if (RFIndex? labels)      
                        (begin (check-mismatch labels) labels)
                        (if labels
-                           (let ((index-from-list (build-index-from-list (assert labels ListofIndexDataType?))))
+                           (let ((index-from-list (build-index-from-list (assert (sequence->list labels) ListofIndexDataType?))))
                              (begin (check-mismatch index-from-list) index-from-list))
                            #f)
                        )))
@@ -309,9 +309,9 @@
 (: map/is (ISeries (Fixnum -> Fixnum) -> ISeries))
 (define (map/is series fn)
   (let ((old-data (ISeries-data series)))
-    (assert (new-ISeries (ann (build-vector (vector-length old-data)
+    (assert (new-ISeries (assert (build-vector (vector-length old-data)
                                (λ: ((idx : Index))
-                                 (fn (vector-ref old-data idx)))) fxvector) (iseries-index series) #:fill-null (iseries-null-value series)) ISeries?)))
+                                 (fn (vector-ref old-data idx)))) fxvector?) (iseries-index series) #:fill-null (iseries-null-value series)) ISeries?)))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -557,11 +557,11 @@
 ; ***********************************************************
 (: iseries-filter (ISeries (Fixnum -> Boolean) -> ISeries))
 (define (iseries-filter iseries filter-function)
-  (new-ISeries (vector-filter filter-function (ISeries-data iseries)) #f))
+  (assert (new-ISeries (vector-filter filter-function (ISeries-data iseries)) #f) ISeries?))
 
 (: iseries-filter-not (ISeries (Fixnum -> Boolean) -> ISeries))
 (define (iseries-filter-not iseries filter-function)
-  (new-ISeries (vector-filter-not filter-function (ISeries-data iseries)) #f))
+  (assert (new-ISeries (vector-filter-not filter-function (ISeries-data iseries)) #f) ISeries?))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -648,7 +648,7 @@
       (if (list-ref boolean-lst 0)
           (vector-ref data 0)
           ; empty iseries
-          (new-ISeries (vector) #f))
+          (assert (new-ISeries (vector) #f) ISeries?))
        
       (for ([b boolean-lst]
             [d data])
@@ -661,7 +661,7 @@
 
   (if (= (vector-length new-data) 1)
       (vector-ref new-data 0)
-      (new-ISeries new-data #f)))
+      (assert (new-ISeries new-data #f) ISeries?)))
 
 (: iseries-loc-multi-index (ISeries (U (Listof String) ListofListofString) -> (U Fixnum ISeries)))
 (define (iseries-loc-multi-index iseries label)
@@ -694,7 +694,7 @@
 
         (if (= (vector-length vals) 1)
             (vector-ref vals 0)
-            (new-ISeries vals (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
+            (assert (new-ISeries vals (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length))) ISeries?)))))
 
 ; vector 0..n index based
 (: iseries-iloc (ISeries (U Index (Listof Index)) -> (U Fixnum ISeries)))
