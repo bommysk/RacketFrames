@@ -54,7 +54,9 @@
 
 (: iseries-unique (ISeries -> ISeries))
 (define (iseries-unique iseries)
-  (new-ISeries (remove-duplicates-sequence (iseries-data iseries)) (iseries-index iseries) #:fill-null (iseries-null-value iseries)))
+  (new-ISeries (remove-duplicates-sequence (iseries-data iseries))
+               (iseries-index iseries)
+               #:fill-null (iseries-null-value iseries)))
 
 (: iseries-head (ISeries [#:rows Index] -> ISeries))
 (define (iseries-head iseries #:rows [rows 10])

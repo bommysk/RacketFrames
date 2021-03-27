@@ -7,23 +7,28 @@
 
 (provide:
  [set-CSeries-index (CSeries (U (Listof IndexDataType) RFIndex) -> CSeries)]
+ [set-CSeries-null-value (CSeries RFNULL -> CSeries)]
+ [set-CSeries-label-null-value-inplace (CSeries Label -> Void)]
  [cseries-length      (CSeries -> Index)]
  [cseries-iref        (CSeries (Listof Index) -> (Listof Label))]
  [cseries-range (CSeries Index -> (Vectorof Label))]
  [cseries-data        (CSeries -> (Vectorof Symbol))]
  [cseries-index (CSeries -> (U False RFIndex))]
+ [cseries-null-value (CSeries -> Label)]
+ [cseries-custom-null-value (CSeries -> RFNULL)]
+ [cseries-value-is-null? (CSeries Label -> Boolean)]
  [cseries-referencer (CSeries -> (Fixnum -> Label))]
  [cseries-iloc (CSeries (U Index (Listof Index)) -> (U Label CSeries))]
  [cseries-groupby (CSeries [#:by-value Boolean] -> GroupHash)]
  [cseries-index-ref (CSeries IndexDataType -> (Listof Label))]
- [cseries-print (CSeries Output-Port -> Void)]
+ [cseries-print (CSeries [#:output-port Output-Port] -> Void)]
  [cseries-loc-boolean (CSeries (Listof Boolean) -> (U Label CSeries))]
  [cseries-loc (CSeries (U Label (Listof Label) (Listof Boolean)) -> (U Label CSeries))]
  [cseries-loc-multi-index (CSeries (U (Listof String) ListofListofString) -> (U Label CSeries))])
 
 (require
  (only-in "indexed-series.rkt"
-	  RFIndex RFIndex? Label Label? idx->key key->lst-idx extract-index build-index-from-list
+	  RFIndex RFIndex? RFNULL Label Label? idx->key key->lst-idx extract-index build-index-from-list
           build-multi-index-from-list LabelIndex LabelIndex-index is-labeled? IndexDataType
           ListofIndex? ListofListofString ListofListofString?))
 
@@ -32,8 +37,8 @@
 ;; Categorical Series
 ;; Encoded as an array of integer values with an associated nominal.
 ;; Custom Structure Writer
-(: cseries-print (CSeries Output-Port -> Void))
-(define (cseries-print cseries port)
+(: cseries-print (CSeries [#:output-port Output-Port] -> Void))
+(define (cseries-print cseries #:output-port [port (current-output-port)])
   (let* ([data (CSeries-data cseries)]
 	 [nominals (CSeries-nominals cseries)]
 	 [len (vector-length data)])
@@ -46,24 +51,34 @@
           (do ([i 0 (add1 i)])
             ((>= i len) (void))
             (if (CSeries-index cseries)                  
-                (display (idx->key (CSeries-index cseries) (assert i index?)) port)
+                (display (idx->key (assert (cseries-index cseries)) (assert i index?)) port)
                 (display (assert i index?) port))
             (display " " port)
-            (displayln  (vector-ref nominals (vector-ref data i))))))))
-    
+
+            (let* ((val (vector-ref nominals (vector-ref data i)))
+                   (display-val (if (cseries-value-is-null? cseries val) (cseries-custom-null-value cseries) val)))
+              (displayln display-val)))))))
+
+(define DEFAULT_NULL_VALUE : Label 'null)
 (struct: CSeries ([index : (Option RFIndex)]
                   [data : (Vectorof Index)]
-                  [nominals : (Vectorof Label)])
+                  [nominals : (Vectorof Label)]
+                  ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
+                  [null-value : RFNULL]
+                  ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+                  [label-null-value : Label])
   #:mutable
   #:transparent)
 
 ;; #:methods gen:custom-write [(define write-proc writer-CSeries)])
 
-(: new-CSeries ((Vectorof Label) (Option (U (Listof IndexDataType) RFIndex)) -> CSeries))
-(define (new-CSeries nominals labels)
+(: new-CSeries ((Vectorof Label) (Option (U (Listof IndexDataType) RFIndex)) [#:fill-null RFNULL]  -> CSeries))
+(define (new-CSeries nominals labels #:fill-null [null-value DEFAULT_NULL_VALUE])
 
   (: nominal-code (HashTable Label Index))
   (define nominal-code (make-hash))
+
+  (define label-null-value : Label (if (Label? null-value) null-value DEFAULT_NULL_VALUE))
 
   (define len (vector-length nominals))
 
@@ -88,15 +103,14 @@
         (let ((k (current-continuation-marks)))
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
-
-
+  
   (let: loop : CSeries ((idx : Natural 0) (code : Index 0))
 	(if (>= idx len)
             (if (RFIndex? labels)
                 (begin
                   (check-mismatch labels)
-                  (CSeries labels data (make-nominal-vector)))
-                (CSeries #f data (make-nominal-vector)))
+                  (CSeries labels data (make-nominal-vector) null-value label-null-value))
+                (CSeries #f data (make-nominal-vector) null-value label-null-value))
 	    (let ((nom (vector-ref nominals idx)))
 	      (if (hash-has-key? nominal-code nom)
 		  (begin
@@ -111,6 +125,14 @@
 (: set-CSeries-index (CSeries (U (Listof IndexDataType) RFIndex) -> CSeries))
 (define (set-CSeries-index cseries labels)
   (new-CSeries (CSeries-nominals cseries) labels))
+
+(: set-CSeries-null-value (CSeries RFNULL -> CSeries))
+(define (set-CSeries-null-value cseries null-value)
+  (new-CSeries (cseries-data cseries) (cseries-index cseries) #:fill-null null-value))
+
+(: set-CSeries-label-null-value-inplace (CSeries Label -> Void))
+(define (set-CSeries-label-null-value-inplace cseries null-value)
+  (set-CSeries-label-null-value! cseries null-value))
 ; ***********************************************************
 
 (: cseries-referencer (CSeries -> (Fixnum -> Label)))
@@ -146,6 +168,24 @@
 (: cseries-index (CSeries -> (U False RFIndex)))
 (define (cseries-index series)
   (CSeries-index series))
+
+; This function consumes an integer series and returns its
+; data vector.
+(: cseries-custom-null-value (CSeries -> RFNULL))
+(define (cseries-custom-null-value cseries)
+  (CSeries-null-value cseries))
+
+; This function consumes an integer series and returns its
+; data vector.
+(: cseries-null-value (CSeries -> Label))
+(define (cseries-null-value cseries)
+  (CSeries-label-null-value cseries))
+
+; This function consumes an integer series and a integer value
+; and returns whether it is considered to be NULL in the series.
+(: cseries-value-is-null? (CSeries Label -> Boolean))
+(define (cseries-value-is-null? cseries value)
+  (eq? (cseries-null-value cseries) value))
 
 ; label based
 (: build-labels-by-count ((Listof Label) (Listof Integer) -> (Listof Label)))
@@ -292,8 +332,8 @@
                    (label-list : (Listof Label) (if (Label? label-val) (list label-val) (vector->list (cseries-data label-val))))
                    (key (if by-value
                             (cseries-iloc cseries (assert i index?))
-                            (if (CSeries-index cseries)
-                                (idx->key (CSeries-index cseries) (assert i index?))
+                            (if (cseries-index cseries)
+                                (idx->key (assert (cseries-index cseries)) (assert i index?))
                                 (assert i index?))))
                   (key-str : String (cond
                                       [(symbol? key) (symbol->string key)]
