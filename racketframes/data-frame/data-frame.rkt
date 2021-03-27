@@ -114,7 +114,8 @@
 (define-predicate Columns? Columns)
 
 ;; A DataFrame is map of series.
-(struct: DataFrame LabelIndex ([series : (Vectorof Series)]))
+(struct: DataFrame LabelIndex ([series : (Vectorof Series)]
+                               [index : (Option RFIndex)]))
 
 (struct: DataFrameDescription ([dimensions : Dim]
                                [series : (Listof SeriesDescription)]))
@@ -191,8 +192,8 @@
 ; DataFrame from it. The function checks that all columns
 ; are of the same length and builds a LabelIndex and a
 ; Vectorof Series.
-(: new-data-frame ((U Columns (Sequenceof Label (Sequenceof Any))) -> DataFrame))
-(define (new-data-frame cols)
+(: new-data-frame ((U Columns (Sequenceof Label (Sequenceof Any))) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] -> DataFrame))
+(define (new-data-frame cols #:index [index #f])
 
   (: cols/seq->columns Columns)
   (define cols/seq->columns (seq->columns cols))
@@ -227,10 +228,10 @@
                                                                             cols/seq->columns)))
     
   
-  (let ((index (build-index-from-labels ((inst map Label Column)
+  (let ((col-name-index (build-index-from-labels ((inst map Label Column)
                                          (inst car Label Series) (assert cols/seq->columns Columns?))))
         (data (apply vector ((inst map Series Column) cdr cols/seq->columns))))
-    (DataFrame index data)))
+    (DataFrame col-name-index data)))
 
 ; ***********************************************************
 

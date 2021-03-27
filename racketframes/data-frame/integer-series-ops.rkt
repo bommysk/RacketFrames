@@ -14,7 +14,8 @@
   (only-in "../util/format.rkt"
            ~a)
   (only-in "integer-series.rkt"
-           ISeries new-ISeries iseries-data iseries-length iseries-referencer iseries-iref)
+           ISeries new-ISeries iseries-data iseries-length iseries-referencer iseries-iref
+           iseries-index iseries-null-value)
   (only-in "boolean-series.rkt"
            BSeries new-BSeries bseries-data bseries-length bseries-referencer bseries-iref)
   (only-in "integer-series-builder.rkt"
@@ -42,14 +43,18 @@
   (append-iseries isb)
   (complete-ISeriesBuilder builder))
 
-
-(: remove-duplicates ((Listof Fixnum) -> (Listof Fixnum)))
-(define (remove-duplicates lst)
-  (foldr (lambda ([x : Fixnum] [y : (Listof Fixnum)]) (cons x (filter (lambda ([z : Fixnum]) (not (= x z))) y))) null lst))
+(: remove-duplicates-sequence ((Sequenceof Fixnum) -> (Vectorof Fixnum)))
+(define (remove-duplicates-sequence fx-seq)  
+  (let* ((data (remove-duplicates (sequence->list fx-seq)))
+         (len (length data)))
+    (let: ((new-data : (Vectorof Fixnum) ((inst make-vector Fixnum) len 0)))
+      (do ([idx 0 (add1 idx)])
+        ([>= idx len] new-data)
+        (vector-set! new-data idx (list-ref data idx))))))
 
 (: iseries-unique (ISeries -> ISeries))
 (define (iseries-unique iseries)
-  (ISeries #f (list->vector (remove-duplicates (vector->list (iseries-data iseries))))))
+  (new-ISeries (remove-duplicates-sequence (iseries-data iseries)) (iseries-index iseries) #:fill-null (iseries-null-value iseries)))
 
 (: iseries-head (ISeries [#:rows Index] -> ISeries))
 (define (iseries-head iseries #:rows [rows 10])
@@ -88,7 +93,7 @@
   (let ((rows (iseries-length iseries)))
     (define data : (Vectorof Boolean) (make-vector (iseries-length iseries) #f))
     (for ([i rows])
-      (if (= (nref (assert i index?)) -10000)
+      (if (= (nref (assert i index?)) (iseries-null-value iseries))
           (vector-set! data i #t)
           (vector-set! data i #f)))
     (new-BSeries data #f)))
@@ -100,7 +105,7 @@
   (let ((rows (iseries-length iseries)))
     (define data : (Vectorof Boolean) (make-vector (iseries-length iseries) #f))
     (for ([i rows])
-      (if (= (nref (assert i index?)) -10000)
+      (if (= (nref (assert i index?)) (iseries-null-value iseries))
           (vector-set! data i #t)
           (vector-set! data i #f)))
     (new-BSeries data #f)))
