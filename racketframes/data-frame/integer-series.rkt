@@ -24,6 +24,7 @@
                                  [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> ISeries)]
  [set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries)]
  [set-ISeries-null-value (ISeries Fixnum -> ISeries)]
+ [set-ISeries-fixnum-null-value-inplace (ISeries Fixnum -> Void)]
  [iseries-iref (ISeries (Listof Index) -> (Listof Fixnum))]
  [iseries-loc-boolean (ISeries (Listof Boolean) -> (U Fixnum ISeries))]
  [iseries-loc (ISeries (U Label (Listof Label) (Listof Boolean)) -> (U Fixnum ISeries))]
@@ -185,9 +186,14 @@
 (define (set-ISeries-index iseries labels)
   (new-ISeries (iseries-data iseries) labels #:fill-null (iseries-null-value iseries)))
 
-(: set-ISeries-null-value (ISeries GenericType -> ISeries))
+(: set-ISeries-null-value (ISeries RFNULL -> ISeries))
 (define (set-ISeries-null-value iseries null-value)
   (new-ISeries (iseries-data iseries) (iseries-index iseries) #:fill-null null-value))
+
+(: set-ISeries-fixnum-null-value-inplace (ISeries Fixnum -> Void))
+(define (set-ISeries-fixnum-null-value-inplace iseries null-value)
+  (set-ISeries-fixnum-null-value! iseries null-value))
+
 ; ***********************************************************
 
 ; ***********************************************************

@@ -150,3 +150,10 @@
 (iseries-print iseries-with-nan)
 (iseries-null-value iseries-with-nan)
 (iseries-custom-null-value iseries-with-nan)
+
+(set-ISeries-fixnum-null-value-inplace iseries-with-nan 1)
+(define iseries-with-fixnum-null-value : ISeries iseries-with-nan)
+(iseries-print iseries-with-fixnum-null-value)
+(iseries-null-value iseries-with-fixnum-null-value)
+(iseries-custom-null-value iseries-with-fixnum-null-value)
+
