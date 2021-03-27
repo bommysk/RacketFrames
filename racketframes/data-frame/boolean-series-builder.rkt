@@ -32,9 +32,11 @@
 (define (string->boolean str)
   (cond
     [(string-ci=? str "#t") #t]
+    [(string-ci=? str "T") #t]
     [(string-ci=? str "true") #t]
     [(string-ci=? str "#true") #t]
     [(string-ci=? str "#f") #f]
+    [(string-ci=? str "F") #f]
     [(string-ci=? str "false") #f]
     [(string-ci=? str "#false") #f]
     [else #f]))

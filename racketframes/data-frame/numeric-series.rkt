@@ -165,6 +165,20 @@
   #:mutable
   #:transparent)
 
+; When working with very large values that occur frequently,
+; it can be more performant to use the ISeries-Nominals form
+; which will only keep one copy of the Fixnum and maintain a
+; a light weight vector of index to reference to the nominals.
+; categorical series are constructed in nominal form by default,
+; but with other series types it is not
+(struct: NSeries-Nominals
+  ([index : (Option RFIndex)]
+   [data : (Vectorof Index)]
+   [nominals : FlVector]
+   [null-value : RFNULL])
+  #:mutable
+  #:transparent)
+
 (: new-NSeries (FlVector (Option (U (Listof IndexDataType) RFIndex)) -> NSeries))
 (define (new-NSeries data labels)
 

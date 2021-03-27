@@ -122,9 +122,9 @@
 (check-equal? (apply-stat-is 'skewness series-integer) 0.0)
 
 ; iseries print
-(iseries-print (assert (iseries-iloc series-integer (list 1 3)) ISeries?) (current-output-port))
+(iseries-print (assert (iseries-iloc series-integer (list 1 3)) ISeries?))
 
-(iseries-print series-integer (current-output-port))
+(iseries-print series-integer)
 
 (LabelIndex-index (build-multi-index-from-list (list (list 'a 'b 'c 'a 'c) (list 1 2 3 4 3))))
 
@@ -139,6 +139,14 @@
 
 (check-equal? (iseries-loc-multi-index multi-index-iseries-2 (list "c" "3" "9")) 100)
 
-(iseries-print (assert (iseries-loc-multi-index multi-index-iseries-3 (list "c" "3")) ISeries?) (current-output-port))
+(iseries-print (assert (iseries-loc-multi-index multi-index-iseries-3 (list "c" "3")) ISeries?))
 
-(new-ISeries (vector 0 1 0 1 0 1 0 0 0 0 1 1 1 0 1) #f)
+(define int-vector : (Vectorof Fixnum) (vector 0 1 0 1 0 1 0 0 0 0 1 1 1 0 1))
+(new-ISeries int-vector #f)
+
+(iseries-print (new-ISeries int-vector (build-index-from-list (range (vector-length int-vector)))))
+
+(define iseries-with-nan : ISeries (new-ISeries int-vector (build-index-from-list (range (vector-length int-vector))) #:fill-null 'NaN))
+(iseries-print iseries-with-nan)
+(iseries-null-value iseries-with-nan)
+(iseries-custom-null-value iseries-with-nan)

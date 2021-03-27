@@ -56,6 +56,20 @@
   #:mutable
   #:transparent)
 
+; When working with very large values that occur frequently,
+; it can be more performant to use the ISeries-Nominals form
+; which will only keep one copy of the Fixnum and maintain a
+; a light weight vector of index to reference to the nominals.
+; categorical series are constructed in nominal form by default,
+; but with other series types it is not
+(struct: GenSeries-Nominals
+  ([index : (Option RFIndex)]
+   [data : (Vectorof Index)]
+   [nominals : (Vectorof GenericType)]   
+   [null-value : RFNULL])
+  #:mutable
+  #:transparent)
+
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a GenSeries
 ; struct object.
