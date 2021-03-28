@@ -76,7 +76,8 @@
  [iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries)]
  [fxvector->list (FxVector Fixnum -> (Listof Fixnum))]
  [list->fxvector ((Listof Fixnum) -> FxVector)]
- [iseries-dropna (ISeries -> ISeries)])
+ [iseries-dropna (ISeries -> ISeries)]
+ [iseries-isna (ISeries -> ISeries)])
 ; ***********************************************************
 
 ; ***********************************************************
@@ -117,6 +118,7 @@
 ; safer. This library will be using unsafe operations for
 ; speed improvement.
 (define-type RFFixnum (U Fixnum RFNoData))
+(define-predicate RFFixnum? RFFixnum)
 (define DEFAULT_NULL_VALUE : Fixnum 0)
 ;; Integer series optimized with use of Fixnum.
 (struct ISeries ([index : (Option RFIndex)]
@@ -170,13 +172,8 @@
           (data-vector : (Vectorof RFFixnum)
                       (if (not data-count-encoded)
                           data
-                          (let* ((len (vector-length data)))
-                            (let: ((new-data : (Vectorof GenericType) ((inst make-vector GenericType) len 0)))
-                              (begin
-                                (do ([idx 0 (add1 idx)])
-                                  ([>= idx len] new-data)
-                                  (vector-set! new-data idx (list-ref data idx)))))
-                            (list->vector (most-frequent-elements data-count-encoded)))))
+                          (let ((mf-elements : (Listof Any) (most-frequent-elements data-count-encoded)))
+                            (for/vector: : (Vectorof RFFixnum) ([el mf-elements]) (assert el RFFixnum?)))))
           (fixnum-null-value : Fixnum (if (fixnum? null-value) null-value DEFAULT_NULL_VALUE)))
     (if (RFIndex? labels)      
         (ISeries labels data null-value fixnum-null-value encode data-count-encoded)
@@ -185,6 +182,7 @@
               (check-mismatch index)
               (ISeries index data-vector null-value fixnum-null-value encode data-count-encoded))
             (ISeries #f data-vector null-value fixnum-null-value encode data-count-encoded)))))
+
 ; ***********************************************************
 
 ; ***********************************************************
@@ -293,8 +291,11 @@
 
 (: iseries-dropna (ISeries -> ISeries))
 (define (iseries-dropna iseries)
-  (iseries-filter (lambda ((x : RFFixnum)) (not (RFNoData?))) iseries))
-  
+  (iseries-filter iseries (lambda ((x : RFFixnum)) (not (RFNoData? x)))))
+
+(: iseries-isna (ISeries -> ISeries))
+(define (iseries-isna iseries)
+  (iseries-filter iseries (lambda ((x : RFFixnum)) (RFNoData? x))))
 
 (: fxvector->list (FxVector Fixnum -> (Listof Fixnum)))
 (define (fxvector->list fxvec idx)
@@ -525,7 +526,7 @@
 
 (: comp./is (Fixnum ISeries (Fixnum Fixnum -> Boolean) -> BSeries))
 (define (comp./is fx is comp)
-  (define: v1 : (Vectorof Fixnum) (ISeries-data is))
+  (define: v1 : (Vectorof Fixnum) (assert (iseries-data (iseries-dropna is)) fxvector?))
   (define: len : Index (vector-length v1))
   (define: v-bop : (Vectorof Boolean) (make-vector len #f))
 
@@ -568,6 +569,8 @@
 ; ***********************************************************
 (: iseries-filter (ISeries (RFFixnum -> Boolean) -> ISeries))
 (define (iseries-filter iseries filter-function)
+  ; need to use new filtered data to get the new index
+  ; setting #f is naive
   (new-ISeries (vector-filter filter-function (iseries-data iseries)) #f))
 
 (: iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries))
@@ -582,9 +585,9 @@
 ; the column-name column. Currently supports 3: sum, avg, count.
 (: apply-agg-is (Symbol ISeries -> GenericType))
 (define (apply-agg-is function-name series)
-  (let ((data : (Listof Fixnum) (vector->list (assert (vector-map (lambda ([x : RFFixnum]) (if (RFNoData? x) DEFAULT_NULL_VALUE x)) (iseries-data series)) fxvector?))))
+  (let ((data : (Vectorof Fixnum) (assert (vector-map (lambda ([x : RFFixnum]) (if (RFNoData? x) DEFAULT_NULL_VALUE x)) (iseries-data series)) fxvector?)))
     (cond 
-      [(eq? function-name 'sum) (apply + data)]
+      [(eq? function-name 'sum) (apply + (vector->list data))]
       [(eq? function-name 'mean) (mean data)]
       [(eq? function-name 'median) (median < data)]
       [(eq? function-name 'mode) (most-frequent-element data)]
@@ -600,7 +603,7 @@
 
 (: apply-stat-is (Symbol ISeries -> Real))
 (define (apply-stat-is function-name series)
-  (let ((data : (Listof Fixnum) (vector->list (vector-map (lambda ([x : RFFixnum]) (if (RFNoData? x) DEFAULT_NULL_VALUE (assert x fixnum?))) (iseries-data series)))))
+  (let ((data : (Listof Fixnum) (vector->list (assert (vector-map (lambda ([x : RFFixnum]) (if (RFNoData? x) DEFAULT_NULL_VALUE (assert x fixnum?))) (iseries-data series)) fxvector?))))
     (cond 
       [(eq? function-name 'variance) (variance data)]
       [(eq? function-name 'stddev) (stddev data)]
@@ -752,7 +755,7 @@
 (: iseries-groupby (ISeries [#:by-value Boolean] -> GroupHash))
 (define (iseries-groupby iseries #:by-value [by-value #f])
   (define: group-index : GroupHash (make-group-hash))
-  (set! iseries (iseries-filter (lambda ((x : RFFixnum)) (not (RFNoData?))) iseries))
+  (set! iseries (iseries-filter iseries (lambda ((x : RFFixnum)) (not (RFNoData? x)))))
 
   (let ((len (iseries-length iseries))
         (k (current-continuation-marks)))
