@@ -42,7 +42,8 @@
  RFIndex RFNULL IndexDataType ListofIndex ListofIndex? ListofListofString ListofListofString?
  LabelIndex LabelIndex-index
  FIndex FlonumIndex ListofFixnum? ListofFlonum? ListofBoolean? ListofDatetime?
- build-index-from-labels label-index key->lst-idx label->lst-idx idx->key idx->label)
+ build-index-from-labels label-index key->lst-idx label->lst-idx idx->key idx->label
+ (struct-out RFNoData))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -128,6 +129,8 @@
 (define-type RFIndex (U LabelIndex FixnumIndex FlonumIndex DatetimeIndex))
 
 (define-predicate RFIndex? RFIndex)
+
+(struct RFNoData () #:transparent)
 ; ***********************************************************
 
 ; ***********************************************************
