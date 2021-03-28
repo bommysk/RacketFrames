@@ -310,9 +310,10 @@
 (: map/is (ISeries (Fixnum -> Fixnum) -> ISeries))
 (define (map/is series fn)
   (let ((old-data (ISeries-data series)))
-    (assert (new-ISeries (cast (build-vector (vector-length old-data)
+    (new-ISeries (cast (build-vector (vector-length old-data)
                                (λ: ((idx : Index))
-                                 (fn (vector-ref old-data idx)))) (Vectorof Fixnum)) (iseries-index series) #:fill-null (iseries-null-value series)) ISeries?)))
+                                 (fn (vector-ref old-data idx)))) (Vectorof Fixnum))
+                         (iseries-index series) #:fill-null (iseries-null-value series))))
 ; ***********************************************************
 
 ; ***********************************************************

@@ -19,6 +19,8 @@
 ; Provide functions in this file to other files.
 
 (provide:
+ [new-NSeries (FlVector (Option (U (Sequenceof IndexDataType) RFIndex))
+                         [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean]  -> NSeries)]
  [set-NSeries-index (NSeries (U (Listof IndexDataType) RFIndex) -> NSeries)]
  [nseries-iref (NSeries (Listof Index) -> (Listof Flonum))]
  [nseries-loc-boolean (NSeries (Listof Boolean) -> (U Flonum NSeries))] 
@@ -79,8 +81,7 @@
 (provide
  ;flvector-print
  (struct-out NSeries)
- NSeries-index
- new-NSeries)
+ NSeries-index)
 
 ; ***********************************************************
 
@@ -89,12 +90,13 @@
 (require
  racket/unsafe/ops
  racket/flonum
+ "../util/data-encode.rkt"  
  (only-in "settings.rkt"
 	  Settings-decimals
 	  Settings-max-output
 	  settings)
  (only-in "indexed-series.rkt"
-	  RFIndex? label-index label->lst-idx
+	  RFIndex? RFNULL label-index label->lst-idx
 	  build-index-from-list IndexDataType
 	  SIndex Label RFIndex extract-index
 	  LabelIndex LabelIndex-index
@@ -159,9 +161,19 @@
                   [count : Natural]
                   [nans : Natural]))
 
+(define DEFAULT_NULL_VALUE : Flonum +nan.0)
 ;; An NSeries is an optimized Series for computation over vectors of Flonum
 ;; i.e., NSeries should be faster then (Series Flonum)
-(struct: NSeries ([index : (Option RFIndex)] [data : FlVector])
+(struct: NSeries ([index : (Option RFIndex)]
+                  [data : FlVector]
+                  ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
+                  [null-value : RFNULL]
+                  ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+                  [flonum-null-value : Flonum]
+                  ; encode data by element count to optimze memory storage and read/write operations
+                  ; when data vector lacks variety
+                  [encoded : Boolean]
+                  [data-count-encoded : (Option (Listof (Pairof Any Real)))])
   #:mutable
   #:transparent)
 
@@ -179,9 +191,9 @@
   #:mutable
   #:transparent)
 
-(: new-NSeries (FlVector (Option (U (Listof IndexDataType) RFIndex)) -> NSeries))
-(define (new-NSeries data labels)
-
+(: new-NSeries (FlVector (Option (U (Sequenceof IndexDataType) RFIndex))
+                         [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean]  -> NSeries))
+(define (new-NSeries data labels #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
     (let ((index-length (apply + (for/list: : (Listof Index)
@@ -193,15 +205,22 @@
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
 
-  (if (RFIndex? labels)
-      (begin
-	(check-mismatch labels)
-	(NSeries labels data))
-      (if labels
-	  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
-	    (check-mismatch index)
-	    (NSeries index data))
-	  (NSeries #f data))))
+
+  ; encode data by element count to avoid repetition if user elects to sort or encode series
+  (let*: ((data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or do-sort encode) (most-frequent-element-list data) #f))
+          (data-vector : FlVector
+                       (if (not data-count-encoded)
+                           data
+                           (assert (list->vector (most-frequent-elements data-count-encoded)) flvector?)))
+          (flonum-null-value : Flonum (if (flonum? null-value) null-value DEFAULT_NULL_VALUE)))
+    
+    (if (RFIndex? labels)      
+        (NSeries labels data null-value flonum-null-value encode data-count-encoded)
+        (if labels
+            (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
+            (check-mismatch index)
+              (NSeries index data-vector null-value flonum-null-value encode data-count-encoded))
+            (NSeries #f data-vector null-value flonum-null-value encode data-count-encoded)))))
 
 ; ***********************************************************
 
@@ -209,6 +228,14 @@
 (: set-NSeries-index (NSeries (U (Listof IndexDataType) RFIndex) -> NSeries))
 (define (set-NSeries-index nseries labels)
   (new-NSeries (nseries-data nseries) labels))
+
+(: set-NSeries-null-value (NSeries RFNULL -> NSeries))
+(define (set-NSeries-null-value nseries null-value)
+  (new-NSeries (nseries-data nseries) (nseries-index nseries) #:fill-null null-value))
+
+(: set-NSeries-flonum-null-value-inplace (NSeries Flonum -> Void))
+(define (set-NSeries-flonum-null-value-inplace nseries null-value)
+  (set-NSeries-flonum-null-value! nseries null-value))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -258,6 +285,24 @@
 (define (nseries-index series)
   (NSeries-index series))
 
+; This function consumes an integer series and returns its
+; data vector.
+(: nseries-custom-null-value (NSeries -> RFNULL))
+(define (nseries-custom-null-value series)
+  (NSeries-null-value series))
+
+; This function consumes an integer series and returns its
+; data vector.
+(: nseries-null-value (NSeries -> Flonum))
+(define (nseries-null-value series)
+  (NSeries-flonum-null-value series))
+
+; This function consumes an flonum series and a integer value
+; and returns whether it is considered to be NULL in the series.
+(: nseries-value-is-null? (NSeries Flonum -> Boolean))
+(define (nseries-value-is-null? series value)
+  (eq? (nseries-null-value series) value))
+
 (: nseries-length (NSeries -> Index))
 (define (nseries-length nseries)
   (flvector-length (NSeries-data nseries)))
@@ -299,7 +344,7 @@
 	      (flvector-set! new-data idx (fn (flvector-ref old-data idx)))
 	      (loop (add1 idx)))
 	    (void))))
-    (NSeries (NSeries-index series) new-data)))
+    (new-NSeries new-data (nseries-index series) #:fill-null (nseries-null-value series))))
 
 ; ***********************************************************
 
@@ -319,7 +364,7 @@
   (define: v-bop : FlVector (make-flvector len))
 
   (do: : NSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (NSeries #f v-bop))
+       ((= idx len) (new-NSeries v-bop #f))
        (flvector-set! v-bop idx (bop (flvector-ref v1 idx)
 				 (flvector-ref v2 idx)))))
 
@@ -357,7 +402,7 @@
   (define: v-bop : FlVector (make-flvector len))
 
   (do: : NSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (NSeries #f v-bop))
+       ((= idx len) (new-NSeries v-bop #f))
        (flvector-set! v-bop idx (bop (flvector-ref v1 idx)
 				 (exact->inexact (vector-ref v2 idx))))))
 
@@ -396,7 +441,7 @@
   (define: v-bop : FlVector (make-flvector len))
 
   (do: : NSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (NSeries #f v-bop))
+       ((= idx len) (new-NSeries v-bop #f))
        (flvector-set! v-bop idx (bop (exact->inexact (vector-ref v1 idx))
 				 (flvector-ref v2 idx)))))
 
@@ -429,7 +474,7 @@
   (define: v-bop : FlVector (make-flvector len))
 
   (do: : NSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (NSeries #f v-bop))
+       ((= idx len) (new-NSeries v-bop #f))
        (flvector-set! v-bop idx (bop (flvector-ref v1 idx) fl))))
 
 (: +./ns (NSeries Flonum -> NSeries))
