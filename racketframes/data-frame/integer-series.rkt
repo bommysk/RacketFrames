@@ -804,4 +804,14 @@
 
   (agg-value-hash-to-gen-series agg-value-hash))
 
-; iseries->gen-series
+(: iseries->gen-series (ISeries -> GenSeries))
+(define (iseries->gen-series iseries)
+  (let* ((data (iseries-data iseries))
+         (len (vector-length data)))
+    
+     (let: ((new-data : (Vectorof GenericType) ((inst make-vector GenericType) len 0)))
+       (begin
+         (do ([idx 0 (add1 idx)])
+           ([>= idx len] new-data)
+           (vector-set! new-data idx (vector-ref data idx)))
+         (new-GenSeries new-data (iseries-index iseries) #:fill-null (iseries-null-value iseries))))))
