@@ -115,10 +115,21 @@
 ; slower than the unsafe versions, with the benefit of being
 ; safer. This library will be using unsafe operations for
 ; speed improvement.
+
+(struct NoData () #:transparent)
+
+
+
+(define e : (Vectorof (U Integer NoData))
+  (vector 3 4 5 6))
+
+
+(vector-set! e 2 (NoData))
+
 (define DEFAULT_NULL_VALUE : Fixnum 0)
 ;; Integer series optimized with use of Fixnum.
 (struct ISeries ([index : (Option RFIndex)]
-                 [data : (Vectorof Fixnum)]
+                 [data : (Vectorof (U Fixnum NoData))]
                  ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
                  [null-value : RFNULL]
                  ; needed for type checking purposes and to do proper arithmetic operations in numeric series
