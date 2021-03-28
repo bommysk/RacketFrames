@@ -129,7 +129,7 @@
 (define DEFAULT_NULL_VALUE : Fixnum 0)
 ;; Integer series optimized with use of Fixnum.
 (struct ISeries ([index : (Option RFIndex)]
-                 [data : (Vectorof (U Fixnum NoData))]
+                 [data : (U (Vectorof Fixnum) (Vectorof (U Fixnum NoData)))]
                  ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
                  [null-value : RFNULL]
                  ; needed for type checking purposes and to do proper arithmetic operations in numeric series
@@ -234,7 +234,7 @@
 ; lambda function which consumes an index and provides the
 ; value of the data at that index in the series. It can be
 ; defined once and used repeatedly as a referencer.
-(: iseries-referencer (ISeries -> (Index -> Fixnum)))
+(: iseries-referencer (ISeries -> (Index -> (U Fixnum NoData))))
 (define (iseries-referencer iseries)
   (let ((data (ISeries-data iseries)))
     (λ: ((idx : Index))
