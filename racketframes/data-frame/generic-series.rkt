@@ -3,13 +3,14 @@
 (require math/statistics)
 
 (require
+  "../util/data-encode.rkt"
  (only-in "indexed-series.rkt"
-	  RFIndex RFIndex? build-index-from-list
+	  RFIndex RFIndex? RFNULL build-index-from-list
           IndexDataType extract-index
           Label LabelIndex-index
           LabelIndex label-index label->lst-idx key->lst-idx
           idx->key is-indexed? ListofIndexDataType? ListofIndex?
-          ListofListofString ListofListofString? RFNULL)
+          ListofListofString ListofListofString?)
  (only-in "../load/types.rkt"
           ListofString?))
 
@@ -48,11 +49,17 @@
  [gen-series-print (GenSeries Output-Port -> Void)])
 
 ; ***********************************************************
-
+(define DEFAULT_NULL_VALUE : GenericType 'NA)
 (struct GenSeries
   ([index : (Option RFIndex)]
    [data : (Vectorof GenericType)]
-   [null-value : RFNULL])
+   [null-value : RFNULL]
+   ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+   [any-null-value : GenericType]
+   ; encode data by element count to optimze memory storage and read/write operations
+   ; when data vector lacks variety
+   [encoded : Boolean]
+   [data-count-encoded : (Option (Listof (Pairof Any Real)))])
   #:mutable
   #:transparent)
 
@@ -73,8 +80,9 @@
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a GenSeries
 ; struct object.
-(: new-GenSeries ((Vectorof GenericType) (Option (U (Listof IndexDataType) RFIndex)) [#:fill-null RFNULL] -> GenSeries))
-(define (new-GenSeries data labels #:fill-null [null-value 'NA])
+(: new-GenSeries ((Vectorof GenericType) (Option (U (Listof IndexDataType) RFIndex))
+                                         [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> GenSeries))
+(define (new-GenSeries data labels #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -87,15 +95,21 @@
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
 
-  (if (RFIndex? labels)
-      (begin
-	(check-mismatch labels)
-	(GenSeries labels data null-value))
-      (if labels
-	  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
-	    (check-mismatch index)
-	    (GenSeries index data null-value))
-	  (GenSeries #f data null-value))))
+  ; encode data by element count to avoid repetition if user elects to sort or encode series
+  (let*: ((data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or do-sort encode) (most-frequent-element-list data) #f))
+         (data-vector : (Vectorof GenericType)
+                      (if (not data-count-encoded)
+                          data
+                          (list->vector (most-frequent-elements data-count-encoded))))
+         (any-null-value : GenericType null-value))
+         
+         (if (RFIndex? labels)      
+             (GenSeries labels data null-value any-null-value encode data-count-encoded)
+             (if labels
+                 (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
+                   (check-mismatch index)
+                   (GenSeries index data-vector null-value any-null-value encode data-count-encoded))
+                 (GenSeries #f data-vector null-value any-null-value encode data-count-encoded)))))
 
 ; ***********************************************************
 
@@ -170,9 +184,9 @@
 (: map/gen-s (GenSeries (GenericType -> GenericType) -> GenSeries))
 (define (map/gen-s series fn)
   (let ((old-data (GenSeries-data series)))
-    (GenSeries #f (build-vector (vector-length old-data)
-                                (λ: ((idx : Natural))
-                                  (fn (vector-ref old-data idx)))) (gen-series-null-value series))))
+    (new-GenSeries (build-vector (vector-length old-data)
+                                 (λ: ((idx : Natural))
+                                   (fn (vector-ref old-data idx)))) #f #:fill-null (gen-series-null-value series))))
 ; ***********************************************************
 
 ; ***********************************************************

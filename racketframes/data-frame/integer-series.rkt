@@ -69,7 +69,7 @@
  [<=./is (ISeries Fixnum -> BSeries)]
  [=./is (ISeries Fixnum -> BSeries)]
  [!=./is (ISeries Fixnum -> BSeries)]
- [apply-agg-is (Symbol ISeries -> Real)]
+ [apply-agg-is (Symbol ISeries -> GenericType)]
  [apply-stat-is (Symbol ISeries -> Real)]
  [iseries-print (ISeries [#:output-port Output-Port] -> Void)]
  [iseries-filter (ISeries (Fixnum -> Boolean) -> ISeries)]
@@ -87,7 +87,7 @@
   racket/fixnum
   racket/unsafe/ops
   math/statistics
-  "../util/data-encode.rkt"  
+  "../util/data-encode.rkt"
   (only-in "indexed-series.rkt"
            build-index-from-list build-multi-index-from-list         
            RFIndex RFIndex? RFNULL IndexDataType
@@ -570,13 +570,13 @@
 
 ; Applies the aggregate function specificed by function-name to the values in
 ; the column-name column. Currently supports 3: sum, avg, count.
-(: apply-agg-is (Symbol ISeries -> Real))
+(: apply-agg-is (Symbol ISeries -> GenericType))
 (define (apply-agg-is function-name series)
   (cond 
     [(eq? function-name 'sum) (apply + (vector->list (ISeries-data series)))]
     [(eq? function-name 'mean) (mean (ISeries-data series))]
     [(eq? function-name 'median) (median < (ISeries-data series))]
-    ;[(eq? function-name 'mode) (mode (vector->list (ISeries-data series)))]
+    [(eq? function-name 'mode) (most-frequent-element (iseries-data series))]
     [(eq? function-name 'count) (iseries-length series)]
     [(eq? function-name 'min) (vector-argmin (lambda ([x : Fixnum]) x) (ISeries-data series))]
     [(eq? function-name 'max) (vector-argmax (lambda ([x : Fixnum]) x) (ISeries-data series))]

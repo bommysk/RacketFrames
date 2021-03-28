@@ -76,7 +76,7 @@
  [apply-stat-ns (Symbol NSeries -> Real)]
  [flvector->list (FlVector Fixnum -> (Listof Flonum))]
  [list->flvector ((Listof Flonum) -> FlVector)]
- [nseries-print (NSeries Output-Port -> Void)])
+ [nseries-print (NSeries [#:output-port Output-Port] -> Void)])
 
 (provide
  ;flvector-print
@@ -117,8 +117,8 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: nseries-print (NSeries Output-Port -> Void))
-(define (nseries-print nseries port)
+(: nseries-print (NSeries [#:output-port Output-Port] -> Void))
+(define (nseries-print nseries #:output-port [port (current-output-port)])
   (define flv (nseries-data nseries))
   (let ((len (flvector-length flv))
 	(out (current-output-port))
@@ -904,8 +904,8 @@
                                 (cond 
                                   [(eq? function-name 'sum) (apply + val)]
                                   [(eq? function-name 'mean) (mean val)]
-                                  ;[(eq? function-name 'median) (median (vector->list (NSeries-data series)))]
-                                  ;[(eq? function-name 'mode) (mode (vector->list (NSeries-data series)))]
+                                  [(eq? function-name 'median) (median < val)]
+                                  [(eq? function-name 'mode) (most-frequent-element val)]
                                   [(eq? function-name 'count) (length val)]
                                   [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) val)]
                                   [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) val)]
