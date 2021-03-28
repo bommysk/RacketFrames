@@ -535,13 +535,16 @@
 
 (: comp./is (Fixnum ISeries (Fixnum Fixnum -> Boolean) -> BSeries))
 (define (comp./is fx is comp)
-  (define: v1 : (Vectorof Fixnum) (assert (iseries-data (iseries-notna is)) fxvector?))
+  (define: v1 : (Vectorof RFFixnum) (iseries-data (iseries-notna is)))
   (define: len : Index (vector-length v1))
   (define: v-bop : (Vectorof Boolean) (make-vector len #f))
 
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
        ((= idx len) (new-BSeries v-bop #f))
-       (vector-set! v-bop idx (comp #{(vector-ref v1 idx) : Fixnum} fx))))
+
+    (if (or (RFNoData? (vector-ref v1 idx)))
+        (vector-set! v-bop idx #f)
+        (vector-set! v-bop idx (comp #{(assert (vector-ref v1 idx) fixnum?) : Fixnum} fx)))))
 
 ; ***********************************************************
 
@@ -594,7 +597,7 @@
 ; the column-name column. Currently supports 3: sum, avg, count.
 (: apply-agg-is (Symbol ISeries -> GenericType))
 (define (apply-agg-is function-name series)
-  (let ((data : (Vectorof Fixnum) (assert (vector-map (lambda ([x : RFFixnum]) (if (RFNoData? x) DEFAULT_NULL_VALUE x)) (iseries-data series)) fxvector?)))
+  (let ((data : (Vectorof Fixnum) (vector-map (lambda ([x : RFFixnum]) (if (RFNoData? x) DEFAULT_NULL_VALUE x)) (iseries-data series))))
     (cond 
       [(eq? function-name 'sum) (apply + (vector->list data))]
       [(eq? function-name 'mean) (mean data)]
@@ -612,7 +615,7 @@
 
 (: apply-stat-is (Symbol ISeries -> Real))
 (define (apply-stat-is function-name series)
-  (let ((data : (Listof Fixnum) (vector->list (assert (vector-map (lambda ([x : RFFixnum]) (if (RFNoData? x) DEFAULT_NULL_VALUE (assert x fixnum?))) (iseries-data series)) fxvector?))))
+  (let ((data : (Vectorof Fixnum) (vector-map (lambda ([x : RFFixnum]) (if (RFNoData? x) DEFAULT_NULL_VALUE (assert x fixnum?))) (iseries-data series))))
     (cond 
       [(eq? function-name 'variance) (variance data)]
       [(eq? function-name 'stddev) (stddev data)]
@@ -754,7 +757,7 @@
 ;; ISeries groupby
 
 (define-type Key String)
-(define-type GroupHash (HashTable Key (Listof Fixnum)))
+(define-type GroupHash (HashTable Key (Listof RFFixnum)))
 
 ; This function is self-explanatory, it consumes no arguments
 ; and creates a hash map which will represent a JoinHash.
@@ -776,8 +779,8 @@
   (begin          
     (do ((i 0 (add1 i)))
         ((>= i len) group-index)
-      (let* ((fixnum-val : (U Fixnum ISeries) (assert (iseries-iloc iseries (assert i index?)) fixnum?))
-                   (fixnum-list : (Listof Fixnum) (if (fixnum? fixnum-val) (list fixnum-val) (vector->list (iseries-data fixnum-val))))
+      (let* ((rffixnum-val : (U RFFixnum ISeries) (assert (iseries-iloc iseries (assert i index?)) fixnum?))
+                   (rffixnum-list : (Listof RFFixnum) (if (fixnum? rffixnum-val) (list rffixnum-val) (vector->list (iseries-data iseries))))
                    (key (if (assert by-value)
                             (assert (iseries-iloc iseries (assert i index?)) fixnum?)
                             (if (iseries-index iseries)
@@ -790,8 +793,8 @@
                              ; pretty-format anything else
                              [else (pretty-format key)])))              
               (hash-update! group-index key-str
-            (λ: ((val : (Listof Fixnum)))                                
-          (append fixnum-list val))
+            (λ: ((val : (Listof RFFixnum)))                                
+          (append rffixnum-list val))
             (λ () (list)))))))))
 
 ; ***********************************************************
@@ -807,10 +810,10 @@
   (define agg-value-hash (make-hash))
 
   (hash-for-each group-hash
-                 (lambda ([key : String] [val : (Listof Fixnum)])
+                 (lambda ([key : String] [val : (Listof RFFixnum)])
                    
                    (let ((key (assert key string?))
-                         (val (assert (flatten val) ListofFixnum?)))
+                         (val (assert (flatten (andmap fixnum? val)) ListofFixnum?)))
                      (hash-set! agg-value-hash key
                                 (cond 
                                   [(eq? function-name 'sum) (apply + val)]
