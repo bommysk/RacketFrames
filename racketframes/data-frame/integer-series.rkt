@@ -193,7 +193,6 @@
 (: set-ISeries-fixnum-null-value-inplace (ISeries Fixnum -> Void))
 (define (set-ISeries-fixnum-null-value-inplace iseries null-value)
   (set-ISeries-fixnum-null-value! iseries null-value))
-
 ; ***********************************************************
 
 ; ***********************************************************

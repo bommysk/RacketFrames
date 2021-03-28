@@ -32,6 +32,8 @@
 (provide:
  [new-GenSeries ((Vectorof GenericType) (Option (U (Listof IndexDataType) RFIndex)) [#:fill-null RFNULL] -> GenSeries)]
  [set-GenSeries-index (GenSeries (U (Listof IndexDataType) RFIndex) -> GenSeries)]
+ [set-GenSeries-null-value (GenSeries RFNULL -> GenSeries)]
+ [set-GenSeries-any-null-value-inplace (GenSeries GenericType -> Void)]
  [gen-series-iref (GenSeries (Listof Index) -> GenericType)]
  [gen-series-index-ref (GenSeries IndexDataType -> (Listof GenericType))]
  [gen-series-label-ref (GenSeries Label -> GenericType)]
@@ -46,7 +48,7 @@
  [gen-series-iloc (GenSeries (U Index (Listof Index)) -> (U GenericType GenSeries))]
  [gen-series-iloc-range (GenSeries Index Index -> GenSeries)]
  [map/gen-s (GenSeries (GenericType -> GenericType) -> GenSeries)]
- [gen-series-print (GenSeries Output-Port -> Void)])
+ [gen-series-print (GenSeries [#:output-port Output-Port] -> Void)])
 
 ; ***********************************************************
 (define DEFAULT_NULL_VALUE : GenericType 'NA)
@@ -117,6 +119,14 @@
 (: set-GenSeries-index (GenSeries (U (Listof IndexDataType) RFIndex) -> GenSeries))
 (define (set-GenSeries-index gen-series labels)
   (new-GenSeries (gen-series-data gen-series) labels))
+
+(: set-GenSeries-null-value (GenSeries RFNULL -> GenSeries))
+(define (set-GenSeries-null-value gen-series null-value)
+  (new-GenSeries (gen-series-data gen-series) (gen-series-index gen-series) #:fill-null null-value))
+
+(: set-GenSeries-any-null-value-inplace (GenSeries GenericType -> Void))
+(define (set-GenSeries-any-null-value-inplace gen-series null-value)
+  (set-GenSeries-any-null-value! gen-series null-value))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -317,8 +327,8 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: gen-series-print (GenSeries Output-Port -> Void))
-(define (gen-series-print gen-series port)
+(: gen-series-print (GenSeries [#:output-port Output-Port] -> Void))
+(define (gen-series-print gen-series #:output-port [port (current-output-port)])
   (define v (gen-series-data gen-series))
   (let ((len (vector-length v))
 	(out (current-output-port)))
