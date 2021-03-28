@@ -640,11 +640,11 @@ N nanoseconds
 
 (define-type GenericType Any)
 
-(define key-delimiter "\t")
+(define key-delimiter "::")
 
 ; This function consumes a Listof IndexableSeries and builds key
 ; string from the columns of a frame and a given set of col labels to use.
-; Insert a tab char between each key value, e.g., k1 + \t + k2 + \t + ...
+; Insert a tab char between each key value, e.g., k1 + :: + k2 + :: + ...
 (: key-fn-list ((Listof (Listof GenericType)) -> (Index -> String)))
 (define (key-fn-list lsts)
   (λ: ((row-id : Index))

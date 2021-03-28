@@ -17,10 +17,10 @@
 ; Provide functions in this file to other files.
 (provide
  (struct-out ISeries)
- ISeries-index)
+ ISeries-index RFFixnum RFFixnum?)
 
 (provide:
- [new-ISeries ((Vectorof RFFixnum) (Option (U (Sequenceof IndexDataType) RFIndex))
+ [new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                                  [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> ISeries)]
  [set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries)]
  [set-ISeries-null-value (ISeries Fixnum -> ISeries)]
@@ -76,8 +76,9 @@
  [iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries)]
  [fxvector->list (FxVector Fixnum -> (Listof Fixnum))]
  [list->fxvector ((Listof Fixnum) -> FxVector)]
- [iseries-dropna (ISeries -> ISeries)]
- [iseries-isna (ISeries -> ISeries)])
+ [iseries-notna (ISeries -> ISeries)]
+ [iseries-isna (ISeries -> ISeries)]
+ [make-RFFixnum-vector ((U (Sequenceof Fixnum) (Sequenceof RFFixnum)) -> (Vectorof RFFixnum))])
 ; ***********************************************************
 
 ; ***********************************************************
@@ -152,36 +153,43 @@
 ; When this is set we run length encode on save
 ; it as the vector data and generate the index
 ; to match
-(: new-ISeries ((Vectorof RFFixnum) (Option (U (Sequenceof IndexDataType) RFIndex))
+(: new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                                   [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> ISeries))
-(define (new-ISeries data labels #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
-
+(define (new-ISeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
+  (define RFFixnum-vector : (Vectorof RFFixnum) (make-RFFixnum-vector data))
+  
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
     (let ((index-length (apply + (for/list: : (Listof Index)
                                    ([value (in-hash-values (extract-index index))])
                                    (length (assert value ListofIndex?))))))
 
-      (unless (eq? (vector-length data) index-length)
+      (unless (eq? (vector-length RFFixnum-vector) index-length)
         (let ((k (current-continuation-marks)))
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
 
   ; encode data by element count to avoid repetition if user elects to sort or encode series
-  (let*: ((data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or do-sort encode) (most-frequent-element-list data) #f))
+  (let*: ((data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or do-sort encode) (most-frequent-element-list RFFixnum-vector) #f))
           (data-vector : (Vectorof RFFixnum)
                       (if (not data-count-encoded)
-                          data
+                          RFFixnum-vector
                           (let ((mf-elements : (Listof Any) (most-frequent-elements data-count-encoded)))
                             (for/vector: : (Vectorof RFFixnum) ([el mf-elements]) (assert el RFFixnum?)))))
           (fixnum-null-value : Fixnum (if (fixnum? null-value) null-value DEFAULT_NULL_VALUE)))
     (if (RFIndex? labels)      
-        (ISeries labels data null-value fixnum-null-value encode data-count-encoded)
+        (ISeries labels RFFixnum-vector null-value fixnum-null-value encode data-count-encoded)
         (if labels
             (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
               (check-mismatch index)
               (ISeries index data-vector null-value fixnum-null-value encode data-count-encoded))
             (ISeries #f data-vector null-value fixnum-null-value encode data-count-encoded)))))
+
+(: make-RFFixnum-vector ((U (Sequenceof Fixnum) (Sequenceof RFFixnum)) -> (Vectorof RFFixnum)))
+(define (make-RFFixnum-vector seq)
+  ;((inst make-vector RFFixnum) (sequence-length seq) #{0 : Fixnum}))
+  (let ((vec : (Vectorof RFFixnum) (list->vector (sequence->list seq))))
+    vec))
 
 ; ***********************************************************
 
@@ -189,11 +197,11 @@
 ; Any non matching indexes need to have their values set to NULL
 (: set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries))
 (define (set-ISeries-index iseries labels)
-  (new-ISeries (iseries-data iseries) labels #:fill-null (iseries-null-value iseries)))
+  (new-ISeries (iseries-data iseries) #:index labels #:fill-null (iseries-null-value iseries)))
 
 (: set-ISeries-null-value (ISeries RFNULL -> ISeries))
 (define (set-ISeries-null-value iseries null-value)
-  (new-ISeries (iseries-data iseries) (iseries-index iseries) #:fill-null null-value))
+  (new-ISeries (iseries-data iseries) #:index (iseries-index iseries) #:fill-null null-value))
 
 (: set-ISeries-fixnum-null-value-inplace (ISeries Fixnum -> Void))
 (define (set-ISeries-fixnum-null-value-inplace iseries null-value)
@@ -206,18 +214,18 @@
 (define (iseries-print iseries #:output-port [port (current-output-port)])
   (define v (iseries-data iseries))
   (let ((len (vector-length v))
-  (out (current-output-port)))
+        (out (current-output-port)))
     (if (zero? len)
-  (displayln "Empty $ISeries" port)
-  (begin
+        (displayln "Empty $ISeries" port)
+        (begin
           (displayln "*********" port)
           (displayln "$ISeries" port)
           (displayln "*********" port)
-    (do ((i 0 (add1 i)))
-        ((>= i len) (void))
-      (let ((num (if (iseries-value-is-null? iseries (vector-ref v i)) (iseries-custom-null-value iseries) (vector-ref v i))))
-              (if (ISeries-index iseries)
-                  (display (idx->key (assert (ISeries-index iseries)) (assert i index?)) port)
+          (do ((i 0 (add1 i)))
+            ((>= i len) (void))
+            (let ((num (if (iseries-value-is-null? iseries (vector-ref v i)) (iseries-custom-null-value iseries) (vector-ref v i))))
+              (if (iseries-index iseries)
+                  (display (idx->key (assert (iseries-index iseries)) (assert i index?)) port)
                   (display (assert i index?) port))
               (display " " port)
               (displayln num port)))))))
@@ -230,7 +238,7 @@
 ; defined once and used repeatedly as a referencer.
 (: iseries-referencer (ISeries -> (Index -> RFFixnum)))
 (define (iseries-referencer iseries)
-  (let ((data (ISeries-data iseries)))
+  (let ((data (iseries-data iseries)))
     (λ: ((idx : Index))
   (vector-ref data idx))))
 
@@ -245,7 +253,7 @@
 ; returns a vector of values in the range [0:index] in the series.
 (: iseries-range (ISeries Index Index -> (Vectorof RFFixnum)))
 (define (iseries-range series start end)
-   (vector-copy (ISeries-data series) start end))
+   (vector-copy (iseries-data series) start end))
 
 ; This function consumes an integer series and returns its
 ; data vector.
@@ -289,8 +297,8 @@
 (define (iseries-length series)
   (vector-length (ISeries-data series)))
 
-(: iseries-dropna (ISeries -> ISeries))
-(define (iseries-dropna iseries)
+(: iseries-notna (ISeries -> ISeries))
+(define (iseries-notna iseries)
   (iseries-filter iseries (lambda ((x : RFFixnum)) (not (RFNoData? x)))))
 
 (: iseries-isna (ISeries -> ISeries))
@@ -320,11 +328,12 @@
 ; ***********************************************************
 (: map/is (ISeries (Fixnum -> Fixnum) -> ISeries))
 (define (map/is iseries fn)
-  (let ((old-data (assert (iseries-data (iseries-dropna iseries)) fxvector?)))
-    (new-ISeries (assert (build-vector (vector-length old-data)
-                               (λ: ((idx : Index))
-                                 (fn (vector-ref old-data idx)))) fxvector?)
-                         (iseries-index iseries) #:fill-null (iseries-null-value iseries))))
+  (let* ((old-data : (Vectorof RFFixnum) (iseries-data (iseries-notna iseries)))
+        (new-data : (Vectorof Fixnum)
+                              (build-vector (vector-length old-data)
+                                            (λ: ((idx : Index))
+                                              (fn (assert (vector-ref old-data idx) fixnum?))))))
+    (new-ISeries new-data #:index (iseries-index iseries) #:fill-null (iseries-null-value iseries))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -338,8 +347,8 @@
 ; which is returned.
 (: bop/is (ISeries ISeries (Fixnum Fixnum -> Fixnum) -> ISeries))
 (define (bop/is is1 is2 bop)
-  (define v1 (assert (iseries-data (iseries-dropna is1)) fxvector?))
-  (define v2 (assert (iseries-data (iseries-dropna is2)) fxvector?))
+  (define v1 (iseries-data (iseries-notna is1)))
+  (define v2 (iseries-data (iseries-notna is2)))
   (define: len : Index (vector-length v1))
   
   (unless (eqv? len (vector-length v2))
@@ -352,9 +361,9 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : ISeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (new-ISeries v-bop #f))
-       (vector-set! v-bop idx (bop (vector-ref v1 idx)
-           (vector-ref v2 idx)))))
+       ((= idx len) (new-ISeries v-bop))
+       (vector-set! v-bop idx (bop (assert (vector-ref v1 idx) fixnum?)
+                                   (assert (vector-ref v2 idx) fixnum?)))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -373,8 +382,8 @@
 ; above.
 
 (: +/is (ISeries ISeries -> ISeries))
-(define (+/is ns1 ns2)
-  (bop/is ns1 ns2 unsafe-fx+))
+(define (+/is is1 is2)
+  (bop/is is1 is2 unsafe-fx+))
 
 (: -/is (ISeries ISeries -> ISeries))
 (define (-/is ns1 ns2)
@@ -411,13 +420,13 @@
 
 (: bop./is (Fixnum ISeries (Fixnum Fixnum -> Fixnum) -> ISeries))
 (define (bop./is fx is bop)
-  (define: v1 : (Vectorof Fixnum) (assert (iseries-data (iseries-dropna is)) fxvector?))
+  (define: v1 : (Vectorof RFFixnum) (iseries-data (iseries-notna is)))
   (define: len : Index (vector-length v1))
   (define: v-bop : (Vectorof RFFixnum) ((inst make-vector RFFixnum) len #{0 : Fixnum}))
 
   (do: : ISeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (new-ISeries v-bop #f))
-       (vector-set! v-bop idx (bop #{(vector-ref v1 idx) : Fixnum} fx))))
+       ((= idx len) (new-ISeries v-bop))
+       (vector-set! v-bop idx (bop #{(assert (vector-ref v1 idx) fixnum?) : Fixnum} fx))))
 
 ; ***********************************************************
 
@@ -463,8 +472,8 @@
 ; which is returned.
 (: comp/is (ISeries ISeries (Fixnum Fixnum -> Boolean) -> BSeries))
 (define (comp/is ns1 ns2 comp)
-  (define v1 : (Vectorof Fixnum) (assert (iseries-data (iseries-dropna ns1)) fxvector?))
-  (define v2 : (Vectorof Fixnum) (assert (iseries-data (iseries-dropna ns2)) fxvector?))
+  (define v1 : (Vectorof RFFixnum) (iseries-data (iseries-notna ns1)))
+  (define v2 : (Vectorof RFFixnum) (iseries-data (iseries-notna ns2)))
   (define: len : Index (vector-length v1))
   
   (unless (eqv? len (vector-length v2))
@@ -478,8 +487,8 @@
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
        ((= idx len) (new-BSeries v-comp #f))
-       (vector-set! v-comp idx (comp (vector-ref v1 idx)
-           (vector-ref v2 idx)))))
+       (vector-set! v-comp idx (comp (assert (vector-ref v1 idx) fixnum?)
+                                     (assert (vector-ref v2 idx) fixnum?)))))
 
 ; ***********************************************************
 
@@ -526,7 +535,7 @@
 
 (: comp./is (Fixnum ISeries (Fixnum Fixnum -> Boolean) -> BSeries))
 (define (comp./is fx is comp)
-  (define: v1 : (Vectorof Fixnum) (assert (iseries-data (iseries-dropna is)) fxvector?))
+  (define: v1 : (Vectorof Fixnum) (assert (iseries-data (iseries-notna is)) fxvector?))
   (define: len : Index (vector-length v1))
   (define: v-bop : (Vectorof Boolean) (make-vector len #f))
 
@@ -571,11 +580,11 @@
 (define (iseries-filter iseries filter-function)
   ; need to use new filtered data to get the new index
   ; setting #f is naive
-  (new-ISeries (vector-filter filter-function (iseries-data iseries)) #f))
+  (new-ISeries (vector-filter filter-function (iseries-data iseries))))
 
 (: iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries))
 (define (iseries-filter-not iseries filter-function)
-  (new-ISeries (vector-filter-not filter-function (iseries-data iseries)) #f))
+  (new-ISeries (vector-filter-not filter-function (iseries-data iseries))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -665,7 +674,7 @@
       (if (list-ref boolean-lst 0)
           (vector-ref data 0)
           ; empty iseries
-          (new-ISeries (vector) #f))
+          (new-ISeries (vector)))
        
       (for ([b boolean-lst]
             [d data])
@@ -678,7 +687,7 @@
 
   (if (= (vector-length new-data) 1)
       (vector-ref new-data 0)
-      (new-ISeries new-data #f)))
+      (new-ISeries new-data)))
 
 (: iseries-loc-multi-index (ISeries (U (Listof String) ListofListofString) -> (U RFFixnum ISeries)))
 (define (iseries-loc-multi-index iseries label)
@@ -688,7 +697,7 @@
 
   (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "\t") "\t")))
+    (string->symbol (string-append (string-join label "::") "::")))
   
   (if (ListofListofString? label)
       (iseries-loc iseries (map get-index-val label))
@@ -711,7 +720,7 @@
 
         (if (= (vector-length vals) 1)
             (vector-ref vals 0)
-            (new-ISeries vals (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
+            (new-ISeries vals #:index (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
 
 ; vector 0..n index based
 (: iseries-iloc (ISeries (U Index (Listof Index)) -> (U RFFixnum ISeries)))
@@ -720,23 +729,26 @@
   (if (list? idx)
       ; get labels from SIndex that refer to given indicies
       ; make a new index from these labels using build-index-from-labels
-      ; sub-vector the data vector to get the data and create a new-ISeries
-      (new-ISeries
-       (for/vector: : (Vectorof RFFixnum) ([i idx])
-         (referencer (assert i index?)))
-       (if (not (ISeries-index iseries))
-           #f
-           (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (iseries-index iseries)) i)) idx))))
+      ; sub-vector the data vector to get the data and create a new-ISeries             
+       (if (ISeries-index iseries)           
+           (new-ISeries
+            (for/vector: : (Vectorof RFFixnum) ([i idx])
+              (referencer (assert i index?)))
+            #:index (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (iseries-index iseries)) i)) idx)))
+           (new-ISeries
+            (for/vector: : (Vectorof RFFixnum) ([i idx])
+              (referencer (assert i index?)))))
       (referencer idx))))
 
 (: iseries-iloc-range (ISeries Index Index -> ISeries))
 (define (iseries-iloc-range iseries start end)
-  ; use vector-copy library method
-  (new-ISeries
-   (vector-copy (iseries-data iseries) start end)
-   (if (not (ISeries-index iseries))
-       #f
-       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (iseries-index iseries)) i)) (range start end))))))
+  ; use vector-copy library method  
+   (if (ISeries-index iseries)
+       (new-ISeries
+        (vector-copy (iseries-data iseries) start end)
+       #:index (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (iseries-index iseries)) i)) (range start end))))
+       (new-ISeries
+        (vector-copy (iseries-data iseries) start end))))
 
 ; ***********************************************************
 ;; ISeries groupby
@@ -765,7 +777,7 @@
     (do ((i 0 (add1 i)))
         ((>= i len) group-index)
       (let* ((fixnum-val : (U Fixnum ISeries) (assert (iseries-iloc iseries (assert i index?)) fixnum?))
-                   (fixnum-list : (Listof Fixnum) (if (fixnum? fixnum-val) (list fixnum-val) (assert (vector->list (iseries-data fixnum-val)) fxvector?)))
+                   (fixnum-list : (Listof Fixnum) (if (fixnum? fixnum-val) (list fixnum-val) (vector->list (iseries-data fixnum-val))))
                    (key (if (assert by-value)
                             (assert (iseries-iloc iseries (assert i index?)) fixnum?)
                             (if (iseries-index iseries)
