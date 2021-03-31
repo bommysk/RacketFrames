@@ -105,21 +105,21 @@
       (void)))
   
   (let: loop : CSeries ((idx : Natural 0) (code : Index 0))
-	(if (>= idx len)
-            (if (RFIndex? labels)
-                (begin
-                  (check-mismatch labels)
+    (if (>= idx len)
+        (if (RFIndex? labels)
+            (begin
+              (check-mismatch labels)
                   (CSeries labels data (make-nominal-vector) null-value label-null-value))
-                (CSeries #f data (make-nominal-vector) null-value label-null-value))
-	    (let ((nom (vector-ref nominals idx)))
-	      (if (hash-has-key? nominal-code nom)
-		  (begin
-		    (vector-set! data idx (hash-ref nominal-code nom))
-		    (loop (add1 idx) code))
-		  (begin
-		    (hash-set! nominal-code nom code)
-		    (vector-set! data idx code)
-		    (loop (add1 idx) (assert (add1 code) index?))))))))
+            (CSeries #f data (make-nominal-vector) null-value label-null-value))
+        (let ((nom (vector-ref nominals idx)))
+          (if (hash-has-key? nominal-code nom)
+              (begin
+                (vector-set! data idx (hash-ref nominal-code nom))
+                (loop (add1 idx) code))
+              (begin
+                (hash-set! nominal-code nom code)
+                (vector-set! data idx code)
+                (loop (add1 idx) (assert (add1 code) index?))))))))
 
 ; ***********************************************************
 (: set-CSeries-index (CSeries (U (Listof IndexDataType) RFIndex) -> CSeries))
@@ -160,6 +160,14 @@
 (: cseries-length (CSeries -> Index))
 (define (cseries-length series)
   (vector-length (CSeries-data series)))
+
+(: cseries-nominal-data (CSeries -> (Vectorof Symbol)))
+(define (cseries-nominal-data series)
+  (CSeries-nominals series))
+
+(: cseries-ref-idx-data (CSeries -> (Vectorof Index)))
+(define (cseries-ref-idx-data series)
+  (CSeries-data series))
 
 (: cseries-data (CSeries -> (Vectorof Symbol)))
 (define (cseries-data series)

@@ -162,6 +162,7 @@
                   [nans : Natural]))
 
 (define DEFAULT_NULL_VALUE : Flonum +nan.0)
+
 ;; An NSeries is an optimized Series for computation over vectors of Flonum
 ;; i.e., NSeries should be faster then (Series Flonum)
 (struct: NSeries ([index : (Option RFIndex)]
@@ -404,7 +405,7 @@
   (do: : NSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
        ((= idx len) (new-NSeries v-bop #f))
        (flvector-set! v-bop idx (bop (flvector-ref v1 idx)
-				 (exact->inexact (vector-ref v2 idx))))))
+				 (exact->inexact (assert (vector-ref v2 idx) fixnum?))))))
 
 ; caller functions
 (: +/ns/is (NSeries ISeries -> NSeries))
@@ -442,7 +443,7 @@
 
   (do: : NSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
        ((= idx len) (new-NSeries v-bop #f))
-       (flvector-set! v-bop idx (bop (exact->inexact (vector-ref v1 idx))
+       (flvector-set! v-bop idx (bop (exact->inexact (assert (vector-ref v1 idx) fixnum?))
 				 (flvector-ref v2 idx)))))
 
 ; caller functions
@@ -584,7 +585,7 @@
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
        ((= idx len) (new-BSeries v-comp #f))
        (vector-set! v-comp idx (comp (flvector-ref v1 idx)
-				   (exact->inexact (vector-ref v2 idx))))))
+				   (exact->inexact (assert (vector-ref v2 idx) fixnum?))))))
 
 ; ***********************************************************
 
@@ -644,7 +645,7 @@
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
        ((= idx len) (new-BSeries v-comp #f))
-       (vector-set! v-comp idx (comp (exact->inexact (vector-ref v1 idx))
+       (vector-set! v-comp idx (comp (exact->inexact (assert (vector-ref v1 idx) fixnum?))
 				   (flvector-ref v2 idx)))))
 
 ; ***********************************************************

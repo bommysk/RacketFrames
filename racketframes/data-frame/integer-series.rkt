@@ -187,7 +187,6 @@
 
 (: make-RFFixnum-vector ((U (Sequenceof Fixnum) (Sequenceof RFFixnum)) -> (Vectorof RFFixnum)))
 (define (make-RFFixnum-vector seq)
-  ;((inst make-vector RFFixnum) (sequence-length seq) #{0 : Fixnum}))
   (let ((vec : (Vectorof RFFixnum) (list->vector (sequence->list seq))))
     vec))
 
@@ -260,6 +259,18 @@
 (: iseries-data (ISeries -> (Vectorof RFFixnum)))
 (define (iseries-data series)
   (ISeries-data series))
+
+; This function consumes an integer series and returns its
+; data vector with RFNoData replaced wtih the fixnum null-value.
+(: iseries-data-fill-fixnum-null-value (ISeries -> (Vectorof Fixnum)))
+(define (iseries-data-fill-fixnum-null-value series)
+  (vector-map (λ: ((val : RFFixnum)) (if (RFNoData? val) (iseries-null-value series) val)) (iseries-data series)))
+
+; This function consumes an integer series and returns its
+; data vector with RFNoData replaced wtih the custom-null-value.
+(: iseries-data-fill-custom-null-value (ISeries -> (Vectorof GenericType)))
+(define (iseries-data-fill-custom-null-value series)
+  (vector-map (λ: ((val : RFFixnum)) (if (RFNoData? val) (iseries-custom-null-value series) val)) (iseries-data series)))
 
 ; This function consumes an integer series and returns its
 ; index.
