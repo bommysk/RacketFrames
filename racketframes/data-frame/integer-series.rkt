@@ -139,11 +139,17 @@
   ([index : (Option RFIndex)]
    [data : (Vectorof Index)]
    [nominals : (Vectorof RFFixnum)]   
-   [null-value : RFNULL])
+   [null-value : RFNULL]
+   [fixnum-null-value : Fixnum])
   #:mutable
   #:transparent)
 
-; Consumes a Vector of Fixnum and a list of Labels which
+(: make-RFFixnum-vector ((U (Sequenceof Fixnum) (Sequenceof RFFixnum)) -> (Vectorof RFFixnum)))
+(define (make-RFFixnum-vector seq)
+  (let ((vec : (Vectorof RFFixnum) (list->vector (sequence->list seq))))
+    vec))
+
+; Consumes a Vector of Fixnum or RFFixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a ISeries
 ; struct object.
 
@@ -185,10 +191,256 @@
               (ISeries index data-vector null-value fixnum-null-value encode data-count-encoded))
             (ISeries #f data-vector null-value fixnum-null-value encode data-count-encoded)))))
 
-(: make-RFFixnum-vector ((U (Sequenceof Fixnum) (Sequenceof RFFixnum)) -> (Vectorof RFFixnum)))
-(define (make-RFFixnum-vector seq)
-  (let ((vec : (Vectorof RFFixnum) (list->vector (sequence->list seq))))
-    vec))
+; ***********************************************************
+; ISeries Nominals
+; ***********************************************************
+(: new-ISeries-Nominals ((Vectorof RFFixnum) (Option (U (Listof IndexDataType) RFIndex)) [#:fill-null RFNULL] -> ISeries-Nominals))
+(define (new-ISeries-Nominals nominals labels #:fill-null [null-value DEFAULT_NULL_VALUE])
+
+  (: nominal-code (HashTable RFFixnum Index))
+  (define nominal-code (make-hash))
+
+  (define fixnum-null-value : Fixnum (if (fixnum? null-value) null-value DEFAULT_NULL_VALUE))
+
+  (define len (vector-length nominals))
+
+  (: data (Vectorof Index))
+  (define data (make-vector len 0))
+
+  (: make-nominal-vector (-> (Vectorof RFFixnum)))
+  (define (make-nominal-vector)
+    (define nominals : (Vectorof RFFixnum) (make-vector (hash-count nominal-code) DEFAULT_NULL_VALUE))
+    (hash-for-each nominal-code
+		   (λ: ((nom : RFFixnum) (idx : Index))
+		       (vector-set! nominals idx nom)))
+    nominals)
+
+  (: check-mismatch (RFIndex -> Void))
+  (define (check-mismatch index)    
+    (let ((index-length (apply + (for/list: : (Listof Index)
+                                   ([value (in-hash-values (extract-index index))])
+                                   (length (assert value ListofIndex?))))))
+
+      (unless (eq? (vector-length data) index-length)
+        (let ((k (current-continuation-marks)))
+          (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
+      (void)))
+  
+  (let: loop : ISeries-Nominals ((idx : Natural 0) (code : Index 0))
+    (if (>= idx len)
+        (if (RFIndex? labels)
+            (begin
+              (check-mismatch labels)
+              (ISeries-Nominals labels data (make-nominal-vector) null-value fixnum-null-value))
+            (ISeries-Nominals #f data (make-nominal-vector) null-value fixnum-null-value))
+        (let ((nom (vector-ref nominals idx)))
+          (if (hash-has-key? nominal-code nom)
+              (begin
+                (vector-set! data idx (hash-ref nominal-code nom))
+                (loop (add1 idx) code))
+              (begin
+                (hash-set! nominal-code nom code)
+                (vector-set! data idx code)
+                (loop (add1 idx) (assert (add1 code) index?))))))))
+
+; ***********************************************************
+(: set-ISeries-Nominals-index (ISeries-Nominals (U (Listof IndexDataType) RFIndex) -> ISeries-Nominals))
+(define (set-ISeries-Nominals-index iseries-nominals labels)
+  (new-ISeries-Nominals (ISeries-Nominals-nominals iseries-nominals) labels))
+
+(: set-ISeries-Nominals-null-value (ISeries-Nominals RFNULL -> ISeries-Nominals))
+(define (set-ISeries-Nominals-null-value iseries-nominals null-value)
+  (new-ISeries-Nominals (iseries-nominals-data iseries-nominals) (iseries-nominals-index iseries-nominals) #:fill-null null-value))
+
+(: set-ISeries-Nominals-fixnum-null-value-inplace (ISeries-Nominals Fixnum -> Void))
+(define (set-ISeries-Nominals-fixnum-null-value-inplace iseries-nominals null-value)
+  (set-ISeries-Nominals-fixnum-null-value! iseries-nominals null-value))
+; ***********************************************************
+
+(: iseries-nominals-referencer (ISeries-Nominals -> (Fixnum -> RFFixnum)))
+(define (iseries-nominals-referencer iseries-nominals)
+  (let ((data (ISeries-Nominals-data iseries-nominals))
+	(noms (ISeries-Nominals-nominals iseries-nominals)))
+    (λ: ((idx : Fixnum))
+	(let ((code (vector-ref data idx)))
+	  (vector-ref noms code)))))
+
+(: iseries-nominals-iref (ISeries-Nominals (Listof Index) -> (Listof RFFixnum)))
+(define (iseries-nominals-iref iseries-nominals lst-idx)
+  (map (lambda ((idx : Index))
+         (vector-ref (ISeries-Nominals-nominals iseries-nominals)
+                     (vector-ref (ISeries-Nominals-data iseries-nominals) idx)))
+       lst-idx))
+
+; This function consumes an integer series and an index and
+; returns a vector of values in the range [0:index] in the series.
+(: iseries-nominals-range (ISeries-Nominals Index -> (Vectorof RFFixnum)))
+(define (iseries-nominals-range series pos)
+  (vector-map (lambda ([idx : Index]) (vector-ref (ISeries-Nominals-nominals series) idx))
+              (vector-take (ISeries-Nominals-data series) pos)))
+
+(: iseries-nominals-length (ISeries-Nominals -> Index))
+(define (iseries-nominals-length series)
+  (vector-length (ISeries-Nominals-data series)))
+
+(: iseries-nominals-nominal-data (ISeries-Nominals -> (Vectorof RFFixnum)))
+(define (iseries-nominals-nominal-data series)
+  (ISeries-Nominals-nominals series))
+
+(: iseries-nominals-ref-idx-data (ISeries-Nominals -> (Vectorof Index)))
+(define (iseries-nominals-ref-idx-data series)
+  (ISeries-Nominals-data series))
+
+(: iseries-nominals-data (ISeries-Nominals -> (Vectorof RFFixnum)))
+(define (iseries-nominals-data series)
+  (vector-map (lambda ([i : Index]) (car (iseries-nominals-iref series (list i)))) (ISeries-Nominals-data series)))
+
+(: iseries-nominals-index (ISeries-Nominals -> (U False RFIndex)))
+(define (iseries-nominals-index series)
+  (ISeries-Nominals-index series))
+
+; This function consumes an integer series and returns its
+; data vector.
+(: iseries-nominals-custom-null-value (ISeries-Nominals -> RFNULL))
+(define (iseries-nominals-custom-null-value iseries-nominals)
+  (ISeries-Nominals-null-value iseries-nominals))
+
+; This function consumes an integer series and returns its
+; fixnum null value.
+(: iseries-nominals-null-value (ISeries-Nominals -> RFFixnum))
+(define (iseries-nominals-null-value iseries-nominals)
+  (ISeries-Nominals-fixnum-null-value iseries-nominals))
+
+; This function consumes an integer series and a integer value
+; and returns whether it is considered to be NULL in the series.
+(: iseries-nominals-value-is-null? (ISeries-Nominals RFFixnum -> Boolean))
+(define (iseries-nominals-value-is-null? iseries-nominals value)
+  (eq? (iseries-nominals-null-value iseries-nominals) value))
+
+; This function consumes a series and a RFFixnum and returns
+; the list of values at that RFFixnum in the series.
+(: iseries-nominals-index-ref (ISeries-Nominals IndexDataType -> (Listof RFFixnum)))
+(define (iseries-nominals-index-ref series item)
+  (iseries-nominals-iref series (key->lst-idx (assert (ISeries-Nominals-index series)) item)))
+
+; label based
+; for two different use cases:
+; a.) Selecting rows by label/index
+; b.) Selecting rows with a boolean / conditional lookup
+
+(: iseries-nominals-loc-multi-index (ISeries-Nominals (U (Listof String) ListofListofString) -> (U RFFixnum ISeries-Nominals)))
+(define (iseries-nominals-loc-multi-index iseries-nominals label)
+  (unless (ISeries-Nominals-index iseries-nominals)
+    (let ((k (current-continuation-marks)))
+      (raise (make-exn:fail:contract "iseries-nominals must have a label index." k))))
+
+  (: get-index-val ((Listof String) -> Label))
+  (define (get-index-val label)
+    (string->symbol (string-append (string-join label "::") "::")))
+  
+  (if (ListofListofString? label)
+      (iseries-nominals-loc iseries-nominals (map get-index-val label))
+      (iseries-nominals-loc iseries-nominals (get-index-val label))))
+
+(: iseries-nominals-loc (ISeries-Nominals (U Label (Listof Label) (Listof Boolean)) -> (U RFFixnum ISeries-Nominals)))
+(define (iseries-nominals-loc iseries-nominals label)
+  (unless (ISeries-Nominals-index iseries-nominals)
+    (let ((k (current-continuation-marks)))
+      (raise (make-exn:fail:contract "iseries must have an index." k))))
+
+  (if (ListofBoolean? label)
+      (iseries-nominals-loc-boolean iseries-nominals label)
+      (let ((associated-indices-length : (Listof Integer)
+                                       (map (lambda ([l : Label]) (length (iseries-nominals-index-ref iseries-nominals l))) (convert-to-label-lst label)))
+            (vals : (Vectorof RFFixnum)
+             (if (list? label)
+                 (list->vector (assert (flatten (map (lambda ([l : Label]) (iseries-nominals-index-ref iseries-nominals l)) label)) ListofRFFixnum?))
+                 (list->vector (assert (iseries-nominals-index-ref iseries-nominals label) ListofRFFixnum?)))))
+
+        (if (= (vector-length vals) 1)
+            (vector-ref vals 0)
+            (new-ISeries-Nominals vals (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))    
+
+; index based
+(: iseries-nominals-iloc (ISeries-Nominals (U Index (Listof Index)) -> (U RFFixnum ISeries-Nominals)))
+(define (iseries-nominals-iloc iseries-nominals idx)
+  (let ((referencer (iseries-nominals-referencer iseries-nominals)))
+  (if (list? idx)
+      ; get labels from SIndex that refer to given indicies
+      ; make a new index from these labels using build-index-from-labels
+      ; sub-vector the data vector to get the data and create a new-BSeries
+      (new-ISeries-Nominals
+       (for/vector: : (Vectorof RFFixnum) ([i idx])
+         (vector-ref (iseries-nominals-data iseries-nominals) i))
+       
+       (if (not (ISeries-Nominals-index iseries-nominals))
+           (build-index-from-list (range (length idx)))
+           (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (ISeries-Nominals-index iseries-nominals)) i)) idx))))
+      (referencer idx))))
+
+(: iseries-nominals-loc-boolean (ISeries-Nominals (Listof Boolean) -> (U RFFixnum ISeries-Nominals)))
+(define (iseries-nominals-loc-boolean iseries-nominals boolean-lst)
+  (: data (Vectorof RFFixnum))
+  (define data (iseries-nominals-data iseries-nominals))
+
+  (: new-data (Vectorof RFFixnum))
+  (define new-data (make-vector (length (filter true? boolean-lst)) DEFAULT_NULL_VALUE))
+  
+  (define data-idx 0)
+  (define new-data-idx 0)
+
+  (if (= (length boolean-lst) 1)
+      (if (list-ref boolean-lst 0)
+          (vector-ref data 0)
+          ; empty iseries-nominals
+          (new-ISeries-Nominals (vector) #f))
+       
+      (for ([b boolean-lst]
+            [d data])
+        (begin
+          (when b
+            (begin              
+              (vector-set! new-data new-data-idx (vector-ref data data-idx))
+              (set! new-data-idx (add1 new-data-idx))))
+          (set! data-idx (add1 data-idx)))))
+
+  (if (= (vector-length new-data) 1)
+      (vector-ref new-data 0)
+      (new-ISeries-Nominals new-data #f)))
+
+; Used to determine the groups for the groupby on each value of the series index by default.
+; The Series VALUES will be used to determine the groups if by-value is set to true.
+(: iseries-nominals-groupby (ISeries-Nominals [#:by-value Boolean] -> GroupHash))
+(define (iseries-nominals-groupby iseries-nominals #:by-value [by-value #f])
+  (define: group-index : GroupHash (make-group-hash))
+
+  (let ((len (iseries-nominals-length iseries-nominals))
+        (k (current-continuation-marks)))
+    (if (zero? len)
+	(raise (make-exn:fail:contract "iseries-nominals can't be empty on groupby." k))
+	(begin          
+	  (do ((i 0 (add1 i)))
+	      ((>= i len) group-index)
+	    (let* ((label-val : (U RFFixnum ISeries-Nominals) (iseries-nominals-iloc iseries-nominals (assert i index?)))
+                   (label-list : (Listof RFFixnum) (if (RFFixnum? label-val) (list label-val) (vector->list (iseries-nominals-data label-val))))
+                   (key (if by-value
+                            (iseries-nominals-iloc iseries-nominals (assert i index?))
+                            (if (iseries-nominals-index iseries-nominals)
+                                (idx->key (assert (iseries-nominals-index iseries-nominals)) (assert i index?))
+                                (assert i index?))))
+                  (key-str : String (cond
+                                      [(symbol? key) (symbol->string key)]
+                                      [(number? key) (number->string key)]
+                                      ; pretty-format anything else
+                                      [else (pretty-format key)])))              
+              (hash-update! group-index key-str
+			      (λ: ((val : (Listof RFFixnum)))                                
+				  (append label-list val))
+			      (λ () (list)))))))))
+
+; ***********************************************************
+; ISeries Nominals
+; ***********************************************************
 
 ; ***********************************************************
 
@@ -807,6 +1059,10 @@
             (λ: ((val : (Listof RFFixnum)))                                
           (append rffixnum-list val))
             (λ () (list)))))))))
+
+;group-hash->series, the keys of hash will be the index
+;(: group-hash->series (GroupHash -> ISeries))
+
 
 ; ***********************************************************
 ;; ISeries agg ops

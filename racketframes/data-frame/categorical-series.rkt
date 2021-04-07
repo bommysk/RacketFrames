@@ -12,7 +12,7 @@
  [cseries-length      (CSeries -> Index)]
  [cseries-iref        (CSeries (Listof Index) -> (Listof Label))]
  [cseries-range (CSeries Index -> (Vectorof Label))]
- [cseries-data        (CSeries -> (Vectorof Symbol))]
+ [cseries-data        (CSeries -> (Vectorof Label))]
  [cseries-index (CSeries -> (U False RFIndex))]
  [cseries-null-value (CSeries -> Label)]
  [cseries-custom-null-value (CSeries -> RFNULL)]
@@ -161,7 +161,7 @@
 (define (cseries-length series)
   (vector-length (CSeries-data series)))
 
-(: cseries-nominal-data (CSeries -> (Vectorof Symbol)))
+(: cseries-nominal-data (CSeries -> (Vectorof Label)))
 (define (cseries-nominal-data series)
   (CSeries-nominals series))
 
@@ -169,7 +169,7 @@
 (define (cseries-ref-idx-data series)
   (CSeries-data series))
 
-(: cseries-data (CSeries -> (Vectorof Symbol)))
+(: cseries-data (CSeries -> (Vectorof Label)))
 (define (cseries-data series)
   (vector-map (lambda ([i : Index]) (car (cseries-iref series (list i)))) (CSeries-data series)))
 
@@ -233,9 +233,9 @@
     (let ((k (current-continuation-marks)))
       (raise (make-exn:fail:contract "cseries must have a label index." k))))
 
-  (: get-index-val ((Listof String) -> Symbol))
+  (: get-index-val ((Listof String) -> Label))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "\t") "\t")))
+    (string->symbol (string-append (string-join label "::") "::")))
   
   (if (ListofListofString? label)
       (cseries-loc cseries (map get-index-val label))
@@ -344,7 +344,7 @@
                                 (idx->key (assert (cseries-index cseries)) (assert i index?))
                                 (assert i index?))))
                   (key-str : String (cond
-                                      [(symbol? key) (symbol->string key)]
+                                      [(Label? key) (symbol->string key)]
                                       [(number? key) (number->string key)]
                                       ; pretty-format anything else
                                       [else (pretty-format key)])))              

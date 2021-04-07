@@ -51,6 +51,7 @@
   "../util/datetime.rkt"
   racket/sequence
   racket/set
+  typed/racket/date
   (only-in racket/flonum
            make-flvector flvector? flvector
            flvector-ref flvector-set!
@@ -80,6 +81,8 @@
 
 (define-predicate ListofDatetime? (Listof Datetime))
 
+(define-predicate ListofDate? (Listof Date))
+
 (define-predicate ListofAny? (Listof Any))
 
 (define-predicate ListofAnyPair? (Listof (Pair Any Any)))
@@ -96,7 +99,9 @@
 
 (define-type DTIndex (HashTable Datetime (Listof Index)))
 
-(define-type IndexDataType (U Label Fixnum Flonum Datetime))
+(define-type DIndex (HashTable date (Listof Index)))
+
+(define-type IndexDataType (U Label Fixnum Flonum Datetime date))
 
 (define-predicate ListofIndexDataType? (Listof IndexDataType))
 
@@ -116,17 +121,16 @@
 
 (define-predicate LabelProjection? LabelProjection)
 
-; like in Pandas, it could be dictionary of labels to values or not
-; that's what the LabelIndex is for
-(struct LabelIndex ([index : SIndex]) #:mutable)
-(struct FixnumIndex ([index : IIndex]) #:mutable)
-(struct FlonumIndex ([index : FIndex]) #:mutable)
-(struct DatetimeIndex ([index : DTIndex]) #:mutable)
+(struct LabelIndex ([index : SIndex]) #:mutable #:transparent)
+(struct FixnumIndex ([index : IIndex]) #:mutable #:transparent)
+(struct FlonumIndex ([index : FIndex]) #:mutable #:transparent)
+(struct DatetimeIndex ([index : DTIndex]) #:mutable #:transparent)
+(struct DateIndex ([index : date]) #:mutable #:transparent)
 
-(define-type IndexType (U SIndex IIndex FIndex DTIndex))
+(define-type IndexType (U SIndex IIndex FIndex DTIndex DIndex))
 
 ; add RangeIndex later
-(define-type RFIndex (U LabelIndex FixnumIndex FlonumIndex DatetimeIndex))
+(define-type RFIndex (U LabelIndex FixnumIndex FlonumIndex DatetimeIndex DateIndex))
 
 (define-predicate RFIndex? RFIndex)
 
@@ -148,6 +152,7 @@
     [(ListofFixnum? lst) (FixnumIndex (build-index-from-fixnums lst))]
     [(ListofFlonum? lst) (FlonumIndex (build-index-from-flonums lst))]
     [(ListofDatetime? lst) (DatetimeIndex (build-index-from-datetimes lst))]
+    [(ListofDate? lst) (DateIndex (build-index-from-dates lst))]
     [else (error "Unsupported index datatype.")]))
 
 (: build-data-vector-from-sequence ((Sequenceof GenericType) -> (Vectorof GenericType)))
@@ -161,6 +166,7 @@
     [(and (FixnumIndex? index) (exact-integer? item)) (fixnum-index (FixnumIndex-index index) item)]
     [(and (FlonumIndex? index) (flonum? item)) (flonum-index (FlonumIndex-index index) item)]
     [(and (DatetimeIndex? index) (Datetime? item)) (datetime-index (DatetimeIndex-index index) item)]
+    [(and (DatetimeIndex? index) (Datetime? item)) (date-index (DateIndex-index index) item)]
     [else (error "Unsupported index datatype.")]))
 
 (: extract-index (RFIndex -> IndexType))
@@ -350,6 +356,28 @@
 (: datetime-index (DTIndex Datetime -> (Listof Index)))
 (define (datetime-index index datetime)      
   (hash-ref index datetime))
+
+; ***********************************************************
+; This function consumes a list of dates and produces a
+; DIndex which is a HashTable date to Index.
+(: build-index-from-dates ((Listof date) -> DIndex))
+(define (build-index-from-dates dates)
+  (let ((index : DIndex (make-hash '())))
+    (let loop : DIndex ((idx : Index 0) (dates : (Listof date) dates))
+      (if (null? dates)
+          index
+          (begin
+            (hash-update! index (car dates)
+                          (λ: ((lst-index : (Listof Index)))
+                            (append lst-index (list idx)))
+                          (λ () (list)))
+
+            
+            (loop (assert (+ idx 1) index?) (cdr dates)))))))
+
+(: date-index (DIndex date -> (Listof Index)))
+(define (date-index index racket-date)      
+  (hash-ref index racket-date))
 
 #|
 B business day frequency

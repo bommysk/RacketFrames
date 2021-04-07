@@ -163,3 +163,6 @@
 (iseries-null-value iseries-with-fixnum-null-value)
 (iseries-custom-null-value iseries-with-fixnum-null-value)
 
+; ISeries Nominals Tests
+; (new-ISeries-Nominals (make-RFFixnum-vector (list 1 2 98228012 3 4 5 98228012 6 7 8999 98228012 98228012)) #f)
+
