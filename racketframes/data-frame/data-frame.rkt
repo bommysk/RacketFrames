@@ -17,6 +17,9 @@
  [column (Label Series -> Column)]
  [column-heading (Column -> Label)]
  [column-series (Column -> Series)]
+ [data-frame-series (DataFrame -> (Vectorof Series))]
+ [data-frame-index (DataFrame -> (Option RFIndex))]
+ [data-frame-series-ref (DataFrame Label -> Series)]
  [data-frame-rename (DataFrame Label Label -> DataFrame)]
  [data-frame-project (DataFrame LabelProjection -> DataFrame)]
  [data-frame-drop (DataFrame Label -> DataFrame)]
@@ -26,7 +29,7 @@
  [data-frame-extend  (DataFrame (U Column Columns DataFrame) -> DataFrame)]
  [data-frame-description (DataFrame [#:project LabelProjection] -> DataFrameDescription)]
  [show-data-frame-description (DataFrameDescription -> Void)]
- [data-frame-set-index (DataFrame (U (Sequenceof Label) (Sequenceof Fixnum) (Sequenceof Flonum) (Sequenceof Datetime) RFIndex Series) -> DataFrame)]
+ [data-frame-set-index (DataFrame (U (Sequenceof IndexDataType) RFIndex Series) -> DataFrame)]
  [data-frame-loc (DataFrame (U Label (Listof Label) (Listof Boolean)) LabelProjection -> (U Series DataFrame))]
  [data-frame-iloc (DataFrame (U Index (Listof Index)) (U Index (Listof Index)) -> (U Series DataFrame))]
  [data-frame-iloc-label (DataFrame (U Index (Listof Index)) LabelProjection -> (U Series DataFrame))]
@@ -38,7 +41,6 @@
 (provide
  DataFrame DataFrame? Column Column? Columns Columns?
  (struct-out DataFrameDescription)
- data-frame-series
  data-frame-names data-frame-dim 
  data-frame-cseries data-frame-nseries data-frame-iseries
  new-data-frame)
@@ -62,17 +64,18 @@
           Dim Dim-rows Dim-cols)
  (only-in "indexed-series.rkt"
 	  RFIndex label-sort-positional ListofLabel? Label? LabelIndex?
-          ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime?
+          ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime? ListofDate? ListofIndex?
           Label LabelProjection LabelProjection? LabelIndex LabelIndex-index
           build-index-from-labels build-index-from-list build-index-from-sequence
-          label-index idx->key idx->label)
+          label-index idx->key idx->label IndexDataType RFIndex? extract-index)
  (only-in "series-description.rkt"
 	  series-description series-length series-type series-data
           Series Series? SeriesType
           SeriesDescription SeriesDescription-name
           SeriesDescription-type SeriesDescription-length
           set-series-index get-series-index
-          series-loc-boolean series-loc series-iloc)
+          series-loc-boolean series-loc series-iloc indexable-series->index
+          IndexableSeries IndexableSeries?)
  (only-in "generic-series.rkt"
          GenSeries GenericType GenSeries?
          GenSeries-data
@@ -99,6 +102,10 @@
 	  DatetimeSeries DatetimeSeries?
 	  DatetimeSeries-data
 	  new-DatetimeSeries)
+ (only-in "date-series.rkt"
+	  DateSeries DateSeries?
+	  DateSeries-data
+	  new-DateSeries)
  (only-in  "../util/datetime.rkt"
            Datetime)
  (only-in "../load/sample.rkt"
@@ -117,9 +124,9 @@
 (define-predicate Columns? Columns)
 
 ;; A DataFrame is map of series.
-(struct: DataFrame ([columns : LabelIndex]
-                    [series : (Vectorof Series)]                    
-                    [index : (Option RFIndex)]))
+(struct: DataFrame LabelIndex
+  ([series : (Vectorof Series)]                    
+   [index : (Option RFIndex)]))
 
 (struct: DataFrameDescription ([dimensions : Dim]
                                [series : (Listof SeriesDescription)]))
@@ -179,13 +186,13 @@
                                                       [(eq? h-ref-series-type 'NumericSeries)
                                                        (new-NSeries (list->flvector (assert h-ref ListofFlonum?)) #f)]
                                                       [(eq? h-ref-series-type 'IntegerSeries)
-                                                       (new-ISeries (list->vector (assert h-ref ListofFixnum?)) #f)]
+                                                       (new-ISeries (assert h-ref ListofFixnum?))]
                                                       [(eq? h-ref-series-type 'BooleanSeries)
                                                        (new-BSeries (list->vector (assert h-ref ListofBoolean?)) #f)]
                                                       [(eq? h-ref-series-type 'DatetimeSeries)
                                                        (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)) #f)]
-                                                      [(eq? h-ref-series-type 'DateSeries)
-                                                       (new-DateSeries (list->vector (assert h-ref ListofDate?)) #f)]
+                                                      ;[(eq? h-ref-series-type 'DateSeries)
+                                                       ;(new-DateSeries (assert h-ref ListofDate?) #f)]
                                                       [else
                                                        (new-GenSeries (list->vector h-ref) #f)])) cols))))))
         
@@ -217,6 +224,17 @@
                              (series-description (car s) (cdr s)))
                            cols/seq->columns))))))
 
+  (: check-mismatch (RFIndex -> Void))
+  (define (check-mismatch index)    
+    (let ((index-length (apply + (for/list: : (Listof Index)
+                                   ([value (in-hash-values (extract-index index))])
+                                   (length (assert value ListofIndex?))))))
+      
+      (unless (eq? (series-length (assert (cdr (car cols/seq->columns)) Series?)) index-length)
+        (let ((k (current-continuation-marks)))
+          (raise (make-exn:fail:contract "Cardinality of a DataFrame' data and labels must be equal" k))))
+      (void)))
+  
   (: are-all-unique? ((Listof Symbol) -> Boolean))
   (define are-all-unique?
     (lambda (v)
@@ -226,6 +244,7 @@
           #t)))
   
   (check-equal-length)
+
 
   (when (not (are-all-unique? (map (λ: ((s : (Pair Symbol Series)))
                                      (car s)) cols/seq->columns)))
@@ -237,7 +256,14 @@
   (let ((col-name-index (build-index-from-labels ((inst map Label Column)
                                          (inst car Label Series) (assert cols/seq->columns Columns?))))
         (data (apply vector ((inst map Series Column) cdr cols/seq->columns))))
-    (DataFrame col-name-index data)))
+
+    (if (RFIndex? index)
+        (DataFrame col-name-index data index)
+        (if index
+            (let ((index (build-index-from-sequence index)))
+              (check-mismatch index)
+              (DataFrame col-name-index data index))
+            (DataFrame col-name-index data #f)))))
 
 ; ***********************************************************
 
@@ -253,10 +279,10 @@
     (if index
 	(let: ((col-idx : (Option (Listof Index)) (hash-ref index from (λ () #f))))
 	      (if col-idx
-		  (let ((new-index (hash-copy index)))
-		    (hash-remove! new-index from)
-		    (hash-set! new-index to col-idx)
-		    (DataFrame new-index (vector-copy (DataFrame-series data-frame))))
+		  (let ((new-col-index (hash-copy index)))
+		    (hash-remove! new-col-index from)
+		    (hash-set! new-col-index to col-idx)
+		    (DataFrame new-col-index (vector-copy (data-frame-series data-frame)) (data-frame-index data-frame)))
 		  data-frame))
 	data-frame)))
 
@@ -277,10 +303,18 @@
 ; ***********************************************************
 
 ; ***********************************************************
+(: data-frame-series (DataFrame -> (Vectorof Series)))
+(define (data-frame-series data-frame)
+  (DataFrame-series data-frame))
+
+(: data-frame-index (DataFrame -> (Option RFIndex)))
+(define (data-frame-index data-frame)
+  (DataFrame-index data-frame))
+
 ; This function consumes a DataFrame and a Symbol representing
 ; the column name and returns the Series of that column.
-(: data-frame-series (DataFrame Symbol -> Series))
-(define (data-frame-series data-frame col)
+(: data-frame-series-ref (DataFrame Symbol -> Series))
+(define (data-frame-series-ref data-frame col)
   (vector-ref (DataFrame-series data-frame)
               (car (label-index (assert (LabelIndex-index data-frame)) col))))
 
@@ -294,25 +328,25 @@
 ; to ensure the series returned is a CSeries.
 (: data-frame-cseries (DataFrame Symbol -> CSeries))
 (define (data-frame-cseries data-frame name)
-  (assert (data-frame-series data-frame name) CSeries?))
+  (assert (data-frame-series-ref data-frame name) CSeries?))
 
 ; This function uses the above function and the assert function
 ; to ensure the series returned is a NSeries.
 (: data-frame-nseries (DataFrame Symbol -> NSeries))
 (define (data-frame-nseries data-frame name)
-  (assert (data-frame-series data-frame name) NSeries?))
+  (assert (data-frame-series-ref data-frame name) NSeries?))
 
 ; This function uses the above function and the assert function
 ; to ensure the series returned is an ISeries.
 (: data-frame-iseries (DataFrame Symbol -> ISeries))
 (define (data-frame-iseries data-frame name)
-  (assert (data-frame-series data-frame name) ISeries?))
+  (assert (data-frame-series-ref data-frame name) ISeries?))
 
 ; This function uses the above function and the assert function
 ; to ensure the series returned is an BSeries.
 (: data-frame-bseries (DataFrame Symbol -> BSeries))
 (define (data-frame-bseries data-frame name)
-  (assert (data-frame-series data-frame name) BSeries?))
+  (assert (data-frame-series-ref data-frame name) BSeries?))
 
 ; This function consumes a DataFrame and returns a Listof pairs
 ; consisting of the column name and its associated indices in the
@@ -424,7 +458,7 @@
 				       (length cols))
 				  (reverse cols)))
 	      (let* ((name (car names))
-		     (series (data-frame-series data-frame name)))
+		     (series (data-frame-series-ref data-frame name)))
 		(loop (cdr names) (cons (SeriesDescription name 
 							   (series-type series) 
 							   (series-length series))
@@ -533,33 +567,36 @@
 
 ; ***********************************************************
 
+; need build-index-from-series-data
+
 ; ***********************************************************
 ; Set index of all Series in data-frame.
 ; Loops through columns and calls the set-series-index method on each Series.
 ; Returns new DataFrame allowing previous one to be garbage collected.
 ; (: data-frame-set-index (DataFrame (U (Listof IndexDataType) RFIndex) -> DataFrame))
-(: data-frame-set-index (DataFrame (U (Sequenceof Label) (Listof Fixnum) (Listof Flonum) (Listof Datetime) RFIndex Series) -> DataFrame))
+
+(: data-frame-set-index (DataFrame (U (Sequenceof IndexDataType) RFIndex Series) -> DataFrame))
 (define (data-frame-set-index data-frame new-index)
   (define src-series (DataFrame-series data-frame))
-  (define src-column-names (map column-heading (data-frame-explode data-frame)))
-
-  (: new-RFIndex RFIndex)
-  (define new-RFIndex (LabelIndex (hash)))
+  (define src-column-names (map column-heading (data-frame-explode data-frame)))  
 
   (let ((new-RFIndex : RFIndex
                      ; convert new-index to RFIndex
-                     (if (sequence? new-index)
-                         (set! new-RFIndex (build-index-from-list-sequence new-index))
-                         (if series? new-index (build-index-from-sequence (series-data new-index))
-                             (set! new-RFIndex new-index)))))
+                     (if (RFIndex? new-index)
+                         new-index
+                         (if (Series? new-index)
+                             (indexable-series->index (assert new-index IndexableSeries?))
+                             (if (sequence? new-index)
+                                 (build-index-from-sequence (assert new-index sequence?))
+                                 (assert new-index RFIndex?))))))
 
     (: new-columns Columns)
     (define new-columns
       (for/list ([pos (in-range (vector-length src-series))])
         ; define new column, set index for each series
-        (cons (list-ref src-column-names pos) (series-set-index (vector-ref src-series pos) new-RFIndex))))
-
-    (new-data-frame new-columns)))
+        (cons (list-ref src-column-names pos) (set-series-index (vector-ref src-series pos) new-RFIndex))))
+    
+    (new-data-frame new-columns #:index new-RFIndex)))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -652,55 +689,3 @@
          (series-iloc (column-series col) idx)) #f)))
 
 ; ***********************************************************
-
-
-;; Returns the number of rows in the data frame DF.  All series inside a data
-;; frame have the same number of rows.
-(define (df-row-count df)
-  (match-define (data-frame _ _ series _ _) df)
-  (or (for/first ([v (in-hash-values series)])
-        (series-size v))
-      0))
-
-
-;; Write in CSV format the data frame DF to the output port OUTP.  If SERIES,
-;; if non-null, denote the series to be written.  If null, all the series are
-;; written out in an unspecified order.  Rows between START and STOP are
-;; written out.
-(: data-frame-write-csv (DataFrame (Sequenceof Label) [#:output-port Output-Port]  -> Void))
-(define (data-frane-write-csv data-frame series #:start start #:stop stop #:output-port outp)
-  (define first? #t)
-  (define columns (if (null? series) (data-frame-series-names data-frame) series))
-  (for ([header (in-list columns)])
-    (if first?
-        (set! first? #f)
-        (write-string "," outp))
-    (write-string (quote-string header) outp))
-  (newline outp)
-  (df-for-each
-   df
-   columns
-   (lambda (val)
-     (define first? #t)
-     (for ([col (in-list columns)]
-           [item (in-list val)])
-       (if first?
-           (set! first? #f)
-           (write-string "," outp))
-       (define oitem
-         (cond
-           ((df-is-na? df col item) "") ; this is not very fast...
-           ((string? item) (quote-string item))
-           ((real? item)
-            (~a
-             (if (exact-integer? item)
-                 item
-                 (exact->inexact item))))
-           ;; otherwise we write in a way that we might be able to read it
-           ;; back... this would work for transparent structs...
-           (#t (quote-string (~s item)))))
-       (write-string oitem outp))
-     (newline outp))
-   #:start start #:stop stop))
-
-; (data-frame-write-json

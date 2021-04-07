@@ -69,4 +69,4 @@
 (define (complete-ISeriesBuilder builder)  
   (let* ((data (ISeriesBuilder-data builder))
          (len (ISeriesBuilder-index builder)))
-    (new-ISeries (vector-copy data 0 len) #f)))
+    (new-ISeries (vector-copy data 0 len))))

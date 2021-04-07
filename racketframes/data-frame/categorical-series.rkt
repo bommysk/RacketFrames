@@ -34,31 +34,6 @@
 
 (define-type CSeriesFn (Label -> Label))
 
-;; Categorical Series
-;; Encoded as an array of integer values with an associated nominal.
-;; Custom Structure Writer
-(: cseries-print (CSeries [#:output-port Output-Port] -> Void))
-(define (cseries-print cseries #:output-port [port (current-output-port)])
-  (let* ([data (CSeries-data cseries)]
-	 [nominals (CSeries-nominals cseries)]
-	 [len (vector-length data)])
-    (if (zero? len)
-	(displayln "Empty $CSeries" port)
-	(begin
-          (displayln "*********" port)
-          (displayln "$CSeries" port)
-          (displayln "*********" port)
-          (do ([i 0 (add1 i)])
-            ((>= i len) (void))
-            (if (CSeries-index cseries)                  
-                (display (idx->key (assert (cseries-index cseries)) (assert i index?)) port)
-                (display (assert i index?) port))
-            (display " " port)
-
-            (let* ((val (vector-ref nominals (vector-ref data i)))
-                   (display-val (if (cseries-value-is-null? cseries val) (cseries-custom-null-value cseries) val)))
-              (displayln display-val)))))))
-
 (define DEFAULT_NULL_VALUE : Label 'null)
 (struct: CSeries ([index : (Option RFIndex)]
                   [data : (Vectorof Index)]
@@ -69,8 +44,6 @@
                   [label-null-value : Label])
   #:mutable
   #:transparent)
-
-;; #:methods gen:custom-write [(define write-proc writer-CSeries)])
 
 (: new-CSeries ((Vectorof Label) (Option (U (Listof IndexDataType) RFIndex)) [#:fill-null RFNULL]  -> CSeries))
 (define (new-CSeries nominals labels #:fill-null [null-value DEFAULT_NULL_VALUE])
@@ -352,3 +325,30 @@
 			      (λ: ((val : (Listof Label)))                                
 				  (append label-list val))
 			      (λ () (list)))))))))
+
+;; #:methods gen:custom-write [(define write-proc writer-CSeries)])
+
+;; Categorical Series
+;; Encoded as an array of integer values with an associated nominal.
+;; Custom Structure Writer
+(: cseries-print (CSeries [#:output-port Output-Port] -> Void))
+(define (cseries-print cseries #:output-port [port (current-output-port)])
+  (let* ([data (CSeries-data cseries)]
+	 [nominals (CSeries-nominals cseries)]
+	 [len (vector-length data)])
+    (if (zero? len)
+	(displayln "Empty $CSeries" port)
+	(begin
+          (displayln "*********" port)
+          (displayln "$CSeries" port)
+          (displayln "*********" port)
+          (do ([i 0 (add1 i)])
+            ((>= i len) (void))
+            (if (CSeries-index cseries)                  
+                (display (idx->key (assert (cseries-index cseries)) (assert i index?)) port)
+                (display (assert i index?) port))
+            (display " " port)
+
+            (let* ((val (vector-ref nominals (vector-ref data i)))
+                   (display-val (if (cseries-value-is-null? cseries val) (cseries-custom-null-value cseries) val)))
+              (displayln display-val)))))))

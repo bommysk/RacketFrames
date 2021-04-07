@@ -29,9 +29,6 @@
  [key-cols-series (Columns -> (Listof IndexableSeries))]
  [key-fn ((Listof IndexableSeries) -> (Index -> Key))])
 
-(provide
- IndexableSeries)
-
 (require
  racket/pretty
  racket/unsafe/ops
@@ -44,14 +41,15 @@
  (only-in "../util/symbol.rkt"
           symbol-prefix)
  (only-in "indexed-series.rkt"
-	  LabelIndex SIndex Label Labeling LabelProjection)
+	  LabelIndex SIndex Label Labeling LabelProjection key-delimiter)
  (only-in "series.rkt"
 	  series-complete)
  (only-in "series-description.rkt"
 	  SeriesType Series
 	  SeriesDescription-type
 	  series-type series-length
-          series-data series-iref)
+          series-data series-iref
+          IndexableSeries)
  (only-in "data-frame.rkt"
 	  DataFrame Column Columns Columns? new-data-frame data-frame-names
 	  data-frame-cseries data-frame-explode
@@ -116,11 +114,8 @@
 
 (define-type Key String)
 (define-type JoinHash (HashTable Key (Listof Index)))
-(define-type IndexableSeries (U GenSeries CSeries ISeries NSeries))
 
 (define-predicate ListofReal? (Listof Real))
-
-(define key-delimiter "\t")
 
 ; ***********************************************************
 

@@ -88,7 +88,11 @@
   time-zone-offset : exact-integer?
 |#
 
-(struct DateSeries ([index : (Option RFIndex)] [data : (Vectorof date)]))
+(struct DateSeries
+  ([index : (Option RFIndex)]
+   [data : (Vectorof date)])
+  #:mutable
+  #:transparent)
 
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a DateSeries
@@ -526,7 +530,7 @@
 
 ;(date-range (date (Date 2018 5 19) (Time 0 0 0 0 0)) 'MO 2 (date (Date 2018 10 23) (Time 0 0 0 0 0)))
 
-(date-range (current-date) 'MO 100 #f)
+;(date-range (current-date) 'MO 100 #f)
 
 ; ***********************************************************
 ;;DateSeries groupby
@@ -554,11 +558,11 @@
 	  (do ((i 0 (add1 i)))
 	      ((>= i len) group-index)
 	    (let* ((date-val : (U date DateSeries) (date-series-iloc date-series (assert i index?)))
-                   (date-list : (Listof date) (if (date? date-val) (list date-val) (vector->list (DateSeries-data date-val))))
+                   (date-list : (Listof date) (if (date? date-val) (list date-val) (vector->list (date-series-data date-val))))
                    (key (if by-value
                             (date->string (assert (date-series-iloc date-series (assert i index?)) date?) #f)
-                            (if (DateSeries-index date-series)
-                                (idx->key (DateSeries-index date-series) (assert i index?))
+                            (if (date-series-index date-series)
+                                (idx->key (assert (date-series-index date-series)) (assert i index?))
                                 (assert i index?))))
                   (key-str : String (cond
                                       [(symbol? key) (symbol->string key)]

@@ -16,9 +16,9 @@
   racket/sequence
   typed/racket/date
  (only-in racket/flonum
-          flvector-length)
+          flvector-length flvector?)
  (only-in "indexed-series.rkt"
-          Label RFIndex IndexDataType ListofListofString ListofListofString?)
+          Label RFIndex IndexDataType ListofListofString ListofListofString? ListofIndexDataType? build-index-from-sequence)
  (only-in "generic-series.rkt"
           GenericType GenSeries GenSeries? new-GenSeries GenSeries-index GenSeries-data gen-series-length gen-series-data gen-series-index gen-series-iref
           set-GenSeries-index gen-series-loc-boolean gen-series-loc gen-series-loc-multi-index gen-series-iloc gen-series-index-ref)
@@ -27,7 +27,7 @@
           cseries-loc-boolean cseries-iloc cseries-loc cseries-loc-multi-index cseries-index-ref)
  (only-in "numeric-series.rkt"
           NSeries NSeries? new-NSeries NSeries-index NSeries-data nseries-length nseries-data nseries-index nseries-iref
-          set-NSeries-index nseries-loc-boolean nseries-loc nseries-loc-multi-index nseries-iloc nseries-index-ref list->flvector)
+          set-NSeries-index nseries-loc-boolean nseries-loc nseries-loc-multi-index nseries-iloc nseries-index-ref list->flvector flvector->list)
  (only-in "integer-series.rkt"
 	  ISeries ISeries? new-ISeries ISeries-index ISeries-data iseries-length iseries-data iseries-index iseries-iref
           set-ISeries-index iseries-loc-boolean iseries-loc iseries-loc-multi-index iseries-iloc iseries-index-ref RFFixnum RFFixnum?)
@@ -50,7 +50,7 @@
 
 (provide
  (struct-out SeriesDescription)
- Series Series? SeriesList SeriesList? SeriesType)
+ Series Series? SeriesList SeriesList? SeriesType IndexableSeries IndexableSeries?)
 
 (provide: 
  [series-description (Label Series -> SeriesDescription)]
@@ -64,7 +64,9 @@
  [series-iloc (Series (U Index (Listof Index)) -> (U Any Series))]
  [set-series-index (Series RFIndex -> Series)]
  [get-series-index (Series -> RFIndex)]
- [has-series-index? (Series -> Boolean)])
+ [has-series-index? (Series -> Boolean)]
+ [indexable-series->index (IndexableSeries -> RFIndex)]
+ [series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof date) FlVector) -> (Sequenceof IndexDataType))])
 
 ; ***********************************************************
 
@@ -79,6 +81,10 @@
 (define-predicate SeriesList? SeriesList)
 
 (define-type SeriesType (U 'GenericSeries 'NumericSeries 'CategoricalSeries 'IntegerSeries 'BooleanSeries 'DatetimeSeries 'DateSeries))
+
+(define-type IndexableSeries (U GenSeries CSeries ISeries NSeries DateSeries))
+
+(define-predicate IndexableSeries? IndexableSeries)
 
 (struct: SeriesDescription ([name : Label]
                             [type : SeriesType]
@@ -246,3 +252,15 @@
     [else (error "Unknown or not supported series type in DataFrame")]))
 
 ; ***********************************************************
+
+(: series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof date) FlVector) -> (Sequenceof IndexDataType)))
+(define (series-data->indexable-sequence vectorof-any)
+  (let ((indexable-sequence : (Sequenceof IndexDataType)
+                            (if (flvector? vectorof-any)
+                                (flvector->list (assert vectorof-any flvector?))
+                                (assert (vector->list vectorof-any) ListofIndexDataType?))))
+    indexable-sequence))
+        
+(: indexable-series->index (IndexableSeries -> RFIndex))
+(define (indexable-series->index series)
+  (build-index-from-sequence (series-data->indexable-sequence (series-data series))))

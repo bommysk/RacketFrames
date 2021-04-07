@@ -99,7 +99,8 @@
            FIndex FlonumIndex
            label-index key->lst-idx
            idx->key is-labeled? ListofIndexDataType?
-           is-indexed? ListofIndex? ListofListofString ListofListofString?)
+           is-indexed? ListofIndex? ListofListofString ListofListofString?
+           key-delimiter)
   (only-in "boolean-series.rkt"
            new-BSeries BSeries)
   (only-in "generic-series.rkt"
@@ -703,7 +704,7 @@
 
   (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "::") "::")))
+    (string->symbol (string-append (string-join label key-delimiter) key-delimiter)))
   
   (if (ListofListofString? label)
       (iseries-loc iseries (map get-index-val label))
@@ -1000,7 +1001,7 @@
 
   (: get-index-val ((Listof String) -> Label))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "::") "::")))
+    (string->symbol (string-append (string-join label key-delimiter) key-delimiter)))
   
   (if (ListofListofString? label)
       (iseries-nominals-loc iseries-nominals (map get-index-val label))

@@ -74,7 +74,7 @@
  [!=/is/ns (ISeries NSeries -> BSeries)]
  [apply-agg-ns (Symbol NSeries -> Real)]
  [apply-stat-ns (Symbol NSeries -> Real)]
- [flvector->list (FlVector Fixnum -> (Listof Flonum))]
+ [flvector->list (FlVector [#:index Fixnum] -> (Listof Flonum))]
  [list->flvector ((Listof Flonum) -> FlVector)]
  [nseries-print (NSeries [#:output-port Output-Port] -> Void)])
 
@@ -308,11 +308,11 @@
 (define (nseries-length nseries)
   (flvector-length (NSeries-data nseries)))
 
-(: flvector->list (FlVector Fixnum -> (Listof Flonum)))
-(define (flvector->list flvec idx)
+(: flvector->list (FlVector [#:index Fixnum] -> (Listof Flonum)))
+(define (flvector->list flvec #:index [idx 0])
   (cond
     [(= idx (flvector-length flvec)) null]
-    [else (cons (flvector-ref flvec idx) (flvector->list flvec (unsafe-fx+ idx 1)))]))
+    [else (cons (flvector-ref flvec idx) (flvector->list flvec #:index (unsafe-fx+ idx 1)))]))
 
 (: list->flvector ((Listof Flonum) -> FlVector))
 (define (list->flvector flonum-list)
@@ -688,8 +688,8 @@
 (: apply-agg-ns (Symbol NSeries -> Real))
 (define (apply-agg-ns function-name series)
   (cond 
-    [(eq? function-name 'sum) (apply + (flvector->list (NSeries-data series) 0))]
-    [(eq? function-name 'mean) (mean (flvector->list (NSeries-data series) 0))]
+    [(eq? function-name 'sum) (apply + (flvector->list (NSeries-data series)))]
+    [(eq? function-name 'mean) (mean (flvector->list (NSeries-data series)))]
     ;[(eq? function-name 'median) (median (flvector->list (ISeries-data series)))]
     [(eq? function-name 'count) (nseries-length series)]
     ;[(eq? function-name 'min) (flvector-argmin (lambda (x) x) (ISeries-data series))]
@@ -704,9 +704,9 @@
 (: apply-stat-ns (Symbol NSeries -> Real))
 (define (apply-stat-ns function-name series)
   (cond 
-    [(eq? function-name 'variance) (variance (flvector->list (NSeries-data series) 0))]
-    [(eq? function-name 'stddev) (stddev (flvector->list (NSeries-data series) 0))]
-    [(eq? function-name 'skewness) (skewness (flvector->list (NSeries-data series) 0))]
+    [(eq? function-name 'variance) (variance (flvector->list (NSeries-data series)))]
+    [(eq? function-name 'stddev) (stddev (flvector->list (NSeries-data series)))]
+    [(eq? function-name 'skewness) (skewness (flvector->list (NSeries-data series)))]
     [else (error 'apply-stat-ns "Unknown stat function.")]))
 
 ; ***********************************************************
@@ -767,7 +767,7 @@
           (new-NSeries (flvector) #f))
        
       (for ([b boolean-lst]
-            [d (flvector->list data (flvector-length data))])
+            [d (flvector->list data)])
         (begin
           (when b
             (begin              
@@ -866,8 +866,7 @@
 	    (let* ((flonum-val : (U Flonum NSeries) (nseries-iloc nseries (assert i index?)))
                    (flonum-list : (Listof Flonum) (if (flonum? flonum-val)
                                                       (list flonum-val)
-                                                      (flvector->list (NSeries-data (assert flonum-val NSeries?))
-                                                                      (flvector-length (NSeries-data (assert flonum-val NSeries?))))))
+                                                      (flvector->list (NSeries-data (assert flonum-val NSeries?)))))
                    (key (if by-value
                             (nseries-iloc nseries (assert i index?))
                             (if (NSeries-index nseries)
