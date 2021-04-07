@@ -15,7 +15,7 @@
  (only-in racket/vector
 	  vector-copy)
  (only-in "generic-series.rkt"
-          GenSeries))
+          GenSeries new-GenSeries))
 
 (struct: GenSeriesBuilder ([index  : Index]
                            [data : (Vectorof Any)]) #:mutable)
@@ -72,4 +72,4 @@
 (define (complete-GenSeriesBuilder builder)  
   (let* ((data (GenSeriesBuilder-data builder))
          (len (GenSeriesBuilder-index builder)))
-    (GenSeries #f (vector-copy data 0 len))))
+    (new-GenSeries (vector-copy data 0 len) #f)))

@@ -31,6 +31,7 @@
  [data-frame-iloc (DataFrame (U Index (Listof Index)) (U Index (Listof Index)) -> (U Series DataFrame))]
  [data-frame-iloc-label (DataFrame (U Index (Listof Index)) LabelProjection -> (U Series DataFrame))]
  [data-frame-labels (DataFrame -> (Listof (Pair Symbol (Listof Index))))]
+ [data-frame-series-names (DataFrame -> (Listof (Pair Symbol (Listof Index))))]
  [projection-set (LabelProjection -> (Setof Label))]
  [data-frame-all-labels-projection-set (DataFrame -> (Setof Label))])
 
@@ -50,6 +51,7 @@
  racket/set
  racket/list
  racket/sequence
+ racket/match
  (only-in racket/vector
           vector-empty?
 	  vector-copy)
@@ -69,7 +71,8 @@
           Series Series? SeriesType
           SeriesDescription SeriesDescription-name
           SeriesDescription-type SeriesDescription-length
-          series-set-index series-get-index series-loc-boolean series-loc series-iloc)
+          set-series-index get-series-index
+          series-loc-boolean series-loc series-iloc)
  (only-in "generic-series.rkt"
          GenSeries GenericType GenSeries?
          GenSeries-data
@@ -114,8 +117,9 @@
 (define-predicate Columns? Columns)
 
 ;; A DataFrame is map of series.
-(struct: DataFrame LabelIndex ([series : (Vectorof Series)]
-                               [index : (Option RFIndex)]))
+(struct: DataFrame ([columns : LabelIndex]
+                    [series : (Vectorof Series)]                    
+                    [index : (Option RFIndex)]))
 
 (struct: DataFrameDescription ([dimensions : Dim]
                                [series : (Listof SeriesDescription)]))
@@ -180,6 +184,8 @@
                                                        (new-BSeries (list->vector (assert h-ref ListofBoolean?)) #f)]
                                                       [(eq? h-ref-series-type 'DatetimeSeries)
                                                        (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)) #f)]
+                                                      [(eq? h-ref-series-type 'DateSeries)
+                                                       (new-DateSeries (list->vector (assert h-ref ListofDate?)) #f)]
                                                       [else
                                                        (new-GenSeries (list->vector h-ref) #f)])) cols))))))
         
@@ -314,6 +320,13 @@
 (: data-frame-labels (DataFrame -> (Listof (Pair Symbol (Listof Index)))))
 (define (data-frame-labels data-frame)
   (hash->list (assert (LabelIndex-index data-frame))))
+
+; This function consumes a DataFrame and returns a Listof pairs
+; consisting of the column name and its associated indices in the
+; DataFrame.
+(: data-frame-series-names (DataFrame -> (Listof (Pair Symbol (Listof Index)))))
+(define (data-frame-series-names data-frame)
+  (data-frame-labels data-frame))
 
 ; ***********************************************************
 
@@ -639,3 +652,55 @@
          (series-iloc (column-series col) idx)) #f)))
 
 ; ***********************************************************
+
+
+;; Returns the number of rows in the data frame DF.  All series inside a data
+;; frame have the same number of rows.
+(define (df-row-count df)
+  (match-define (data-frame _ _ series _ _) df)
+  (or (for/first ([v (in-hash-values series)])
+        (series-size v))
+      0))
+
+
+;; Write in CSV format the data frame DF to the output port OUTP.  If SERIES,
+;; if non-null, denote the series to be written.  If null, all the series are
+;; written out in an unspecified order.  Rows between START and STOP are
+;; written out.
+(: data-frame-write-csv (DataFrame (Sequenceof Label) [#:output-port Output-Port]  -> Void))
+(define (data-frane-write-csv data-frame series #:start start #:stop stop #:output-port outp)
+  (define first? #t)
+  (define columns (if (null? series) (data-frame-series-names data-frame) series))
+  (for ([header (in-list columns)])
+    (if first?
+        (set! first? #f)
+        (write-string "," outp))
+    (write-string (quote-string header) outp))
+  (newline outp)
+  (df-for-each
+   df
+   columns
+   (lambda (val)
+     (define first? #t)
+     (for ([col (in-list columns)]
+           [item (in-list val)])
+       (if first?
+           (set! first? #f)
+           (write-string "," outp))
+       (define oitem
+         (cond
+           ((df-is-na? df col item) "") ; this is not very fast...
+           ((string? item) (quote-string item))
+           ((real? item)
+            (~a
+             (if (exact-integer? item)
+                 item
+                 (exact->inexact item))))
+           ;; otherwise we write in a way that we might be able to read it
+           ;; back... this would work for transparent structs...
+           (#t (quote-string (~s item)))))
+       (write-string oitem outp))
+     (newline outp))
+   #:start start #:stop stop))
+
+; (data-frame-write-json

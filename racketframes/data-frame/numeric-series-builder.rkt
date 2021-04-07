@@ -13,7 +13,7 @@
 (require
  racket/flonum
  (only-in "numeric-series.rkt"
-          NSeries))
+          NSeries new-NSeries))
 (struct: NSeriesBuilder ([index  : Index]
 			 [data : FlVector]) #:mutable)
 
@@ -67,4 +67,4 @@
 (define (complete-NSeriesBuilder builder)  
   (let* ((data (NSeriesBuilder-data builder))
          (len (NSeriesBuilder-index builder)))
-    (NSeries #f (flvector-copy data 0 len))))
+    (new-NSeries (flvector-copy data 0 len) #f)))

@@ -24,7 +24,8 @@
 ; ***********************************************************
 ; Provide functions in this file to other files.
 (provide
- (struct-out DateSeries))
+ (struct-out DateSeries)
+ DateSeries?)
 
 (provide:
  [new-DateSeries ((Vectorof date) (Option (U (Listof IndexDataType) RFIndex)) -> DateSeries)]
