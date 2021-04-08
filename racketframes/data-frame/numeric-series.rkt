@@ -19,7 +19,7 @@
 ; Provide functions in this file to other files.
 
 (provide:
- [new-NSeries (FlVector (Option (U (Sequenceof IndexDataType) RFIndex))
+ [new-NSeries (FlVector [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                          [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean]  -> NSeries)]
  [set-NSeries-index (NSeries (U (Listof IndexDataType) RFIndex) -> NSeries)]
  [nseries-iref (NSeries (Listof Index) -> (Listof Flonum))]
@@ -192,9 +192,9 @@
   #:mutable
   #:transparent)
 
-(: new-NSeries (FlVector (Option (U (Sequenceof IndexDataType) RFIndex))
+(: new-NSeries (FlVector [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                          [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean]  -> NSeries))
-(define (new-NSeries data labels #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
+(define (new-NSeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
     (let ((index-length (apply + (for/list: : (Listof Index)
@@ -228,11 +228,11 @@
 ; ***********************************************************
 (: set-NSeries-index (NSeries (U (Listof IndexDataType) RFIndex) -> NSeries))
 (define (set-NSeries-index nseries labels)
-  (new-NSeries (nseries-data nseries) labels))
+  (new-NSeries (nseries-data nseries) #:index labels))
 
 (: set-NSeries-null-value (NSeries RFNULL -> NSeries))
 (define (set-NSeries-null-value nseries null-value)
-  (new-NSeries (nseries-data nseries) (nseries-index nseries) #:fill-null null-value))
+  (new-NSeries (nseries-data nseries) #:index (nseries-index nseries) #:fill-null null-value))
 
 (: set-NSeries-flonum-null-value-inplace (NSeries Flonum -> Void))
 (define (set-NSeries-flonum-null-value-inplace nseries null-value)
@@ -345,7 +345,7 @@
 	      (flvector-set! new-data idx (fn (flvector-ref old-data idx)))
 	      (loop (add1 idx)))
 	    (void))))
-    (new-NSeries new-data (nseries-index series) #:fill-null (nseries-null-value series))))
+    (new-NSeries new-data #:index (nseries-index series) #:fill-null (nseries-null-value series))))
 
 ; ***********************************************************
 
@@ -365,7 +365,7 @@
   (define: v-bop : FlVector (make-flvector len))
 
   (do: : NSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (new-NSeries v-bop #f))
+       ((= idx len) (new-NSeries v-bop))
        (flvector-set! v-bop idx (bop (flvector-ref v1 idx)
 				 (flvector-ref v2 idx)))))
 
@@ -403,7 +403,7 @@
   (define: v-bop : FlVector (make-flvector len))
 
   (do: : NSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (new-NSeries v-bop #f))
+       ((= idx len) (new-NSeries v-bop))
        (flvector-set! v-bop idx (bop (flvector-ref v1 idx)
 				 (exact->inexact (assert (vector-ref v2 idx) fixnum?))))))
 
@@ -442,7 +442,7 @@
   (define: v-bop : FlVector (make-flvector len))
 
   (do: : NSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (new-NSeries v-bop #f))
+       ((= idx len) (new-NSeries v-bop))
        (flvector-set! v-bop idx (bop (exact->inexact (assert (vector-ref v1 idx) fixnum?))
 				 (flvector-ref v2 idx)))))
 
@@ -475,7 +475,7 @@
   (define: v-bop : FlVector (make-flvector len))
 
   (do: : NSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (new-NSeries v-bop #f))
+       ((= idx len) (new-NSeries v-bop))
        (flvector-set! v-bop idx (bop (flvector-ref v1 idx) fl))))
 
 (: +./ns (NSeries Flonum -> NSeries))
@@ -764,7 +764,7 @@
       (if (list-ref boolean-lst 0)
           (flvector-ref data 0)
           ; empty nseries
-          (new-NSeries (flvector) #f))
+          (new-NSeries (flvector)))
        
       (for ([b boolean-lst]
             [d (flvector->list data)])
@@ -777,7 +777,7 @@
 
   (if (= (flvector-length new-data) 1)
       (flvector-ref new-data 0)
-      (new-NSeries new-data #f)))
+      (new-NSeries new-data)))
 
 (: nseries-loc-multi-index (NSeries (U (Listof String) ListofListofString) -> (U Flonum NSeries)))
 (define (nseries-loc-multi-index nseries label)
@@ -810,7 +810,7 @@
 
         (if (= (flvector-length vals) 1)
             (flvector-ref vals 0)
-            (new-NSeries vals (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
+            (new-NSeries vals #:index (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
 
 ; index based
 (: nseries-iloc (NSeries (U Index (Listof Index)) -> (U Flonum NSeries)))
@@ -823,9 +823,9 @@
         (new-NSeries
          (list->flvector (for/list: : (Listof Flonum) ([i idx])
                            (referencer (assert i index?))))
-         (if (not (NSeries-index nseries))
-           #f
-           (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (NSeries-index nseries)) i)) idx))))
+         #:index (if (not (NSeries-index nseries))
+                     #f
+                     (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (NSeries-index nseries)) i)) idx))))
         (referencer idx))))
 
 (: nseries-iloc-range (NSeries Index Index -> NSeries))
@@ -833,9 +833,9 @@
   ; use vector-copy library method
   (new-NSeries
    (flvector-copy (nseries-data nseries) start end)
-   (if (not (NSeries-index nseries))
-       #f
-       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (NSeries-index nseries)) i)) (range start end))))))
+   #:index (if (not (NSeries-index nseries))
+               #f
+               (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (NSeries-index nseries)) i)) (range start end))))))
 
 ; ***********************************************************
 

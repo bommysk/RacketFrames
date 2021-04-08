@@ -146,9 +146,12 @@
 
 (: format-iseries (ISeries Index -> String))
 (define (format-iseries iseries row)
-  (~r (car (iseries-iref iseries (list row)))
-      #:precision 0
-      #:min-width WIDTH))
+  (let ((ref-val (car (iseries-iref iseries (list row)))))
+    (if (integer? ref-val)
+        (~r ref-val
+            #:precision 0
+            #:min-width WIDTH)
+        (pretty-format ref-val))))
 
 (: format-bseries (BSeries Index -> String))
 (define (format-bseries bseries row)
