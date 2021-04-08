@@ -38,6 +38,7 @@
           set set-member?
 	  list->set set->list
 	  set-intersect set-subtract)
+ "../util/data-encode.rkt"
  (only-in "../util/symbol.rkt"
           symbol-prefix)
  (only-in "indexed-series.rkt"
@@ -899,8 +900,8 @@
                                 (cond 
                                   [(eq? function-name 'sum) (apply + val)]
                                   [(eq? function-name 'mean) (mean val)]
-                                  ;[(eq? function-name 'median) (median (vector->list (ISeries-data series)))]
-                                  ;[(eq? function-name 'mode) (mode (vector->list (ISeries-data series)))]
+                                  [(eq? function-name 'median) (median < (vector->list (ISeries-data series)))]
+                                  [(eq? function-name 'mode) (most-frequent-element (vector->list (ISeries-data series)))]
                                   [(eq? function-name 'count) (length val)]
                                   [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) val)]
                                   [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) val)]

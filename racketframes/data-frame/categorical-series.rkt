@@ -1,11 +1,11 @@
 #lang typed/racket
 
 (provide
- (struct-out CSeries)
- new-CSeries)
+ (struct-out CSeries))
 ;;writer-CSeries)
 
 (provide:
+ [new-CSeries ((Vectorof Label) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> CSeries)]
  [set-CSeries-index (CSeries (U (Listof IndexDataType) RFIndex) -> CSeries)]
  [set-CSeries-null-value (CSeries RFNULL -> CSeries)]
  [set-CSeries-label-null-value-inplace (CSeries Label -> Void)]
@@ -45,8 +45,8 @@
   #:mutable
   #:transparent)
 
-(: new-CSeries ((Vectorof Label) (Option (U (Listof IndexDataType) RFIndex)) [#:fill-null RFNULL]  -> CSeries))
-(define (new-CSeries nominals labels #:fill-null [null-value DEFAULT_NULL_VALUE])
+(: new-CSeries ((Vectorof Label) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> CSeries))
+(define (new-CSeries nominals #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE])
 
   (: nominal-code (HashTable Label Index))
   (define nominal-code (make-hash))
@@ -97,11 +97,11 @@
 ; ***********************************************************
 (: set-CSeries-index (CSeries (U (Listof IndexDataType) RFIndex) -> CSeries))
 (define (set-CSeries-index cseries labels)
-  (new-CSeries (CSeries-nominals cseries) labels))
+  (new-CSeries (CSeries-nominals cseries) #:index labels))
 
 (: set-CSeries-null-value (CSeries RFNULL -> CSeries))
 (define (set-CSeries-null-value cseries null-value)
-  (new-CSeries (cseries-data cseries) (cseries-index cseries) #:fill-null null-value))
+  (new-CSeries (cseries-data cseries) #:index (cseries-index cseries) #:fill-null null-value))
 
 (: set-CSeries-label-null-value-inplace (CSeries Label -> Void))
 (define (set-CSeries-label-null-value-inplace cseries null-value)
@@ -232,7 +232,7 @@
 
         (if (= (vector-length vals) 1)
             (vector-ref vals 0)
-            (new-CSeries vals (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
+            (new-CSeries vals #:index (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
 
 ; index based
 (: cseries-iloc (CSeries (U Index (Listof Index)) -> (U Label CSeries)))
@@ -246,9 +246,9 @@
        (for/vector: : (Vectorof Label) ([i idx])
          (vector-ref (cseries-data cseries) i))
        
-       (if (not (CSeries-index cseries))
-           (build-index-from-list (range (length idx)))
-           (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (CSeries-index cseries)) i)) idx))))
+       #:index (if (not (CSeries-index cseries))
+                   (build-index-from-list (range (length idx)))
+                   (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (CSeries-index cseries)) i)) idx))))
       (referencer idx))))
 
 (: true? (Boolean -> Boolean))
@@ -270,7 +270,7 @@
       (if (list-ref boolean-lst 0)
           (vector-ref data 0)
           ; empty cseries
-          (new-CSeries (vector) #f))
+          (new-CSeries (vector)))
        
       (for ([b boolean-lst]
             [d data])
@@ -283,7 +283,7 @@
 
   (if (= (vector-length new-data) 1)
       (vector-ref new-data 0)
-      (new-CSeries new-data #f)))
+      (new-CSeries new-data)))
 
 ;; CSeries groupby
 

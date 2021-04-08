@@ -72,7 +72,7 @@
  [<=/is/ns (ISeries NSeries -> BSeries)]
  [=/is/ns (ISeries NSeries -> BSeries)]
  [!=/is/ns (ISeries NSeries -> BSeries)]
- [apply-agg-ns (Symbol NSeries -> Real)]
+ [apply-agg-ns (Symbol NSeries -> GenericType)]
  [apply-stat-ns (Symbol NSeries -> Real)]
  [flvector->list (FlVector [#:index Fixnum] -> (Listof Flonum))]
  [list->flvector ((Listof Flonum) -> FlVector)]
@@ -685,15 +685,16 @@
 
 ; Applies the aggregate function specificed by function-name to the values in
 ; the column-name column. Currently supports 3: sum, avg, count.
-(: apply-agg-ns (Symbol NSeries -> Real))
+(: apply-agg-ns (Symbol NSeries -> GenericType))
 (define (apply-agg-ns function-name series)
   (cond 
-    [(eq? function-name 'sum) (apply + (flvector->list (NSeries-data series)))]
-    [(eq? function-name 'mean) (mean (flvector->list (NSeries-data series)))]
-    ;[(eq? function-name 'median) (median (flvector->list (ISeries-data series)))]
-    [(eq? function-name 'count) (nseries-length series)]
-    ;[(eq? function-name 'min) (flvector-argmin (lambda (x) x) (ISeries-data series))]
-    ;[(eq? function-name 'max) (flvector-argmax (lambda (x) x) (ISeries-data series))]
+    [(eq? function-name 'sum) (apply + (flvector->list (nseries-data series)))]
+    [(eq? function-name 'mean) (mean (flvector->list (nseries-data series)))]
+    [(eq? function-name 'median) (median < (flvector->list (nseries-data series)))]
+    [(eq? function-name 'mode) (most-frequent-element (flvector->list (nseries-data series)))]
+    [(eq? function-name 'count) (nseries-length series)]    
+    [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) (flvector->list (nseries-data series)))]
+    [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) (flvector->list (nseries-data series)))]
     [else (error 'apply-agg-ns "Unknown aggregate function.")]))
 
 ; ***********************************************************
@@ -704,9 +705,9 @@
 (: apply-stat-ns (Symbol NSeries -> Real))
 (define (apply-stat-ns function-name series)
   (cond 
-    [(eq? function-name 'variance) (variance (flvector->list (NSeries-data series)))]
-    [(eq? function-name 'stddev) (stddev (flvector->list (NSeries-data series)))]
-    [(eq? function-name 'skewness) (skewness (flvector->list (NSeries-data series)))]
+    [(eq? function-name 'variance) (variance (flvector->list (nseries-data series)))]
+    [(eq? function-name 'stddev) (stddev (flvector->list (nseries-data series)))]
+    [(eq? function-name 'skewness) (skewness (flvector->list (nseries-data series)))]
     [else (error 'apply-stat-ns "Unknown stat function.")]))
 
 ; ***********************************************************
