@@ -176,7 +176,7 @@
                             (for/vector: : (Vectorof RFFixnum) ([el mf-elements]) (assert el RFFixnum?)))))
           (fixnum-null-value : Fixnum (if (fixnum? null-value) null-value DEFAULT_NULL_VALUE)))
     (if (RFIndex? labels)      
-        (ISeries labels RFFixnum-vector null-value fixnum-null-value encode data-count-encoded)
+        (ISeries labels data-vector null-value fixnum-null-value encode data-count-encoded)
         (if labels
             (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
               (check-mismatch index)
@@ -490,7 +490,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (new-BSeries v-comp #f))
+       ((= idx len) (new-BSeries v-comp))
        (vector-set! v-comp idx (comp (assert (vector-ref v1 idx) fixnum?)
                                      (assert (vector-ref v2 idx) fixnum?)))))
 
@@ -544,7 +544,7 @@
   (define: v-bop : (Vectorof Boolean) (make-vector len #f))
 
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
-       ((= idx len) (new-BSeries v-bop #f))
+       ((= idx len) (new-BSeries v-bop))
 
     (if (or (RFNoData? (vector-ref v1 idx)))
         (vector-set! v-bop idx #f)
@@ -845,7 +845,7 @@
          (do ([idx 0 (add1 idx)])
            ([>= idx len] new-data)
            (vector-set! new-data idx (vector-ref data idx)))
-         (new-GenSeries new-data (iseries-index iseries) #:fill-null (iseries-null-value iseries))))))
+         (new-GenSeries new-data #:index (iseries-index iseries) #:fill-null (iseries-null-value iseries))))))
 
 ; ***********************************************************
 ; ISeries Nominals

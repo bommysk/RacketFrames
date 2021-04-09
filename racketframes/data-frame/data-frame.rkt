@@ -34,9 +34,14 @@
  [data-frame-iloc (DataFrame (U Index (Listof Index)) (U Index (Listof Index)) -> (U Series DataFrame))]
  [data-frame-iloc-label (DataFrame (U Index (Listof Index)) LabelProjection -> (U Series DataFrame))]
  [data-frame-labels (DataFrame -> (Listof (Pair Symbol (Listof Index))))]
- [data-frame-series-names (DataFrame -> (Listof (Pair Symbol (Listof Index))))]
+ [data-frame-series-names (DataFrame -> (Listof Symbol))]
  [projection-set (LabelProjection -> (Setof Label))]
- [data-frame-all-labels-projection-set (DataFrame -> (Setof Label))])
+ [data-frame-all-labels-projection-set (DataFrame -> (Setof Label))]
+ [data-frame-contains? (DataFrame (Listof Label) -> Boolean)]
+ [data-frame-contains/any? (DataFrame (Listof Label) -> Boolean)]
+ [data-frame-get-series (DataFrame (U Label (Listof Label)) -> (U Series (Listof Series)))]
+ [data-frame-row-count (DataFrame -> Index)]
+ [data-frame-column-count (DataFrame -> Index)])
 
 (provide
  DataFrame DataFrame? Column Column? Columns Columns?
@@ -69,11 +74,12 @@
           build-index-from-labels build-index-from-list build-index-from-sequence
           label-index idx->key idx->label IndexDataType RFIndex? extract-index)
  (only-in "series-description.rkt"
-	  series-description series-length series-type series-data
+	  series-description series-length series-type 
           Series Series? SeriesType
           SeriesDescription SeriesDescription-name
-          SeriesDescription-type SeriesDescription-length
-          set-series-index get-series-index
+          SeriesDescription-type SeriesDescription-length)
+ (only-in "series.rkt"
+          series-data set-series-index get-series-index
           series-loc-boolean series-loc series-iloc indexable-series->index
           IndexableSeries IndexableSeries?)
  (only-in "generic-series.rkt"
@@ -182,19 +188,19 @@
                              (set! cols (cons (cons k
                                                     (cond                                                      
                                                       [(eq? h-ref-series-type 'CategoricalSeries)
-                                                       (new-CSeries (list->vector (assert h-ref ListofLabel?)) #f)]
+                                                       (new-CSeries (list->vector (assert h-ref ListofLabel?)))]
                                                       [(eq? h-ref-series-type 'NumericSeries)
-                                                       (new-NSeries (list->flvector (assert h-ref ListofFlonum?)) #f)]
+                                                       (new-NSeries (assert h-ref ListofFlonum?))]
                                                       [(eq? h-ref-series-type 'IntegerSeries)
                                                        (new-ISeries (assert h-ref ListofFixnum?))]
                                                       [(eq? h-ref-series-type 'BooleanSeries)
-                                                       (new-BSeries (list->vector (assert h-ref ListofBoolean?)) #f)]
+                                                       (new-BSeries (list->vector (assert h-ref ListofBoolean?)))]
                                                       [(eq? h-ref-series-type 'DatetimeSeries)
-                                                       (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)) #f)]
+                                                       (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)))]
                                                       ;[(eq? h-ref-series-type 'DateSeries)
-                                                       ;(new-DateSeries (assert h-ref ListofDate?) #f)]
+                                                       ;(new-DateSeries (list->vector (assert h-ref ListofDate?)))]
                                                       [else
-                                                       (new-GenSeries (list->vector h-ref) #f)])) cols))))))
+                                                       (new-GenSeries (list->vector h-ref))])) cols))))))
         
         cols)))
 
@@ -239,7 +245,7 @@
   (define are-all-unique?
     (lambda (v)
       (if (pair? v)
-          (and (not (member (car v) (cdr v)))
+          (and (not (memq (car v) (cdr v)))
                (are-all-unique? (cdr v)))
           #t)))
   
@@ -358,10 +364,72 @@
 ; This function consumes a DataFrame and returns a Listof pairs
 ; consisting of the column name and its associated indices in the
 ; DataFrame.
-(: data-frame-series-names (DataFrame -> (Listof (Pair Symbol (Listof Index)))))
+(: data-frame-series-names (DataFrame -> (Listof Label)))
 (define (data-frame-series-names data-frame)
-  (data-frame-labels data-frame))
+  (map (λ: ((p : (Pair Symbol (Listof Index)))) (car p)) (data-frame-labels data-frame)))
 
+; Return #t if the DataFrame contains ALL the series specified in
+; series-names
+(: data-frame-contains? (DataFrame (Listof Label) -> Boolean))
+(define (data-frame-contains? data-frame series-names)
+  (let: Boolean ((df-series-names : (Listof Label) (data-frame-series-names data-frame)))
+    (if (not (andmap (λ: ((series-name : Label)) (memq series-name df-series-names)) series-names)) #f #t)))
+
+; Return #t if the DataFrame contains ANY the series specified in
+; series-names
+(: data-frame-contains/any? (DataFrame (Listof Label) -> Boolean))
+(define (data-frame-contains/any? data-frame series-names)
+  (let: Boolean ((df-series-names : (Listof Label) (data-frame-series-names data-frame)))
+    (if (not (ormap (λ: ((series-name : Label)) (memq series-name df-series-names)) series-names)) #f #t)))
+
+; Return the series named NAME in the DataFrame
+(: data-frame-get-series (DataFrame (U Label (Listof Label)) -> (U Series (Listof Series))))
+(define (data-frame-get-series data-frame name)
+  (let* ((projection : LabelProjection (if (list? name) name (list name)))
+         (projected-series : (Listof Series) (map (λ: ((col : Column)) (cdr col)) (data-frame-explode data-frame #:project projection))))
+    (cond
+      [(eq? (length projected-series) 0) (error 'data-frame-get-series "Series does not exist in DataFrame: ~a" name)]
+      [(eq? (length projected-series) 1) (car projected-series)]
+      [else projected-series])))
+
+;; Returns the number of rows in the data frame DF.  All series inside a data
+;; frame have the same number of rows.
+(: data-frame-row-count (DataFrame -> Index))
+(define (data-frame-row-count data-frame)  
+  (let ((df-dim (data-frame-dim data-frame)))
+    (Dim-rows df-dim)))
+
+;; Returns the number of rows in the data frame DF.  All series inside a data
+;; frame have the same number of rows.
+(: data-frame-column-count (DataFrame -> Index))
+(define (data-frame-column-count data-frame)  
+  (let ((df-dim (data-frame-dim data-frame)))
+    (Dim-cols df-dim)))
+
+;; Return a sequence that produces values from a list of SERIES between START
+;; and STOP rows.  Each value in the sequence is a list of the values
+;; corresponding to the series names.  NOTE: this is intended to be used in
+;; `for` and related constructs to iterate over elements in the data frame.
+;;
+;; Example:
+;;
+;; (for ((coord (in-data-frame/list df "lat" "lon")))
+;;    (match-define (list lat lon) coord)
+;;    (printf "lat = ~a, lon = ~a~%" lat lon))
+;;
+(define (in-data-frame/list df
+                            #:start (start 0)
+                            #:stop (stop (data-frame-row-count df))
+                            . series)
+  (define generators
+    (for/list ([n (in-list series)])
+      (let ((c (data-frame-get-series df n)))
+        (in-series c start stop (if (<= start stop) 1 -1)))))
+  ;; When there are no series, the `(apply in-parallel '())` call will result
+  ;; in an infinite loop.
+  (if (null? generators)
+      (in-values-sequence (in-parallel '()))
+      (in-values-sequence (apply in-parallel generators))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -618,7 +686,7 @@
          (column (column-heading col) (assert (series-loc (column-series col) label) Series?))))
       (new-GenSeries
        (for/vector: : (Vectorof GenericType) ([col cols])
-         (series-loc (column-series col) label)) #f)))
+         (series-loc (column-series col) label)))))
 
 ; doesn't preserve index currently, just gives new Range index
 (: data-frame-iloc (DataFrame (U Index (Listof Index)) (U Index (Listof Index)) -> (U Series DataFrame)))
@@ -649,7 +717,7 @@
          (assert (series-iloc (column-series (car cols)) idx-row) Series?)
          (new-GenSeries
           (for/vector: : (Vectorof GenericType) ([col cols])
-           (series-iloc (column-series col) idx-row)) #f))))
+           (series-iloc (column-series col) idx-row))))))
 
 ; iloc works based on integer positioning. So no matter what your row labels are, you can always, e.g., get the first row by doing
 ; df.iloc[0, 0], takes in row and col indicies
@@ -686,6 +754,6 @@
          (column (column-heading col) (assert (series-iloc (column-series col) idx) Series?))))
       (new-GenSeries
        (for/vector: : (Vectorof GenericType) ([col cols])
-         (series-iloc (column-series col) idx)) #f)))
+         (series-iloc (column-series col) idx)))))
 
 ; ***********************************************************

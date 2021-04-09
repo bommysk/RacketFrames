@@ -50,6 +50,8 @@
 	  NSeries NSeries? nseries-iref)
  (only-in "datetime-series.rkt"
 	  DatetimeSeries DatetimeSeries? datetime-series-iref)
+ (only-in "date-series.rkt"
+	  DateSeries DateSeries? date-series-iref)
  (only-in "categorical-series.rkt"
 	  cseries-referencer cseries-length cseries-iref
 	  CSeries CSeries?)
@@ -243,6 +245,8 @@
               (display (car (assert (bseries-iref a-series (list row)) list?)) outp))
              ((DatetimeSeries? a-series)
               (display (car (assert (datetime-series-iref a-series (list row)) list?)) outp))
+             ((DateSeries? a-series)
+              (display (car (assert (date-series-iref a-series (list row)) list?)) outp))
              (else
               (error 'frame-head "Unknown series types ~s"
                      (series-type a-series)))))))

@@ -115,4 +115,4 @@
 
     (let ((index : SIndex (make-agg-value-hash-sindex sorted-agg-value-hash)))
       (new-GenSeries (for/vector: : (Vectorof GenericType) ([p sorted-agg-value-hash])
-                       (cdr p)) (LabelIndex index)))))
+                       (cdr p)) #:index (LabelIndex index)))))

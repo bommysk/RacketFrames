@@ -83,4 +83,4 @@
 (define (complete-BSeriesBuilder builder)  
   (let* ((data (BSeriesBuilder-data builder))
          (len (BSeriesBuilder-index builder)))
-    (new-BSeries (vector-copy data 0 len) #f)))
+    (new-BSeries (vector-copy data 0 len))))

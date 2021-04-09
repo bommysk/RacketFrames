@@ -72,4 +72,4 @@
 (define (complete-GenSeriesBuilder builder)  
   (let* ((data (GenSeriesBuilder-data builder))
          (len (GenSeriesBuilder-index builder)))
-    (new-GenSeries (vector-copy data 0 len) #f)))
+    (new-GenSeries (vector-copy data 0 len))))

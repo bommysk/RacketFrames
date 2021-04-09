@@ -10,6 +10,7 @@
 (require racket/flonum)
 
 (require "../data-frame/series-description.rkt")
+;(require "../data-frame/series.rkt")
 (require "../data-frame/indexed-series.rkt")
 (require "../data-frame/integer-series.rkt")
 (require "../data-frame/numeric-series.rkt")
@@ -87,7 +88,7 @@
 ;******************
 (define columns-mix
   (list
-   (cons 'integer-col (new-ISeries (vector 1 2 3 4)
+   (cons 'integer-col (new-ISeries (fxvector 1 2 3 4)
                             #:index (build-index-from-list (list 'a 'b 'c 'd))))
    (cons 'float-col (new-NSeries (flvector 1.5 2.5 3.5 4.5)
                             #:index (build-index-from-list (list 'a 'b 'c 'd))))
@@ -232,3 +233,19 @@
 (set! data-frame-integer (data-frame-set-index data-frame-integer (list 'ind1 'ind2 'ind3 'ind4)))
 
 (check-equal? (series-loc (data-frame-series-ref data-frame-integer 'col2) 'ind2) 6)
+
+(data-frame-series-ref data-frame-integer 'col2)
+
+(iseries-print (assert (data-frame-series-ref data-frame-integer 'col2) ISeries?))
+
+(iseries-print (assert (data-frame-series-ref data-frame-integer 'col3) ISeries?))
+
+(check-equal? (data-frame-contains? data-frame-integer (list 'col2 'col3)) #t)
+
+(check-equal? (data-frame-contains? data-frame-integer (list 'col1 'col4 'col6)) #f)
+
+(check-equal? (data-frame-contains/any? data-frame-integer (list 'col2 'col4 'col6)) #t)
+
+(check-equal? (data-frame-row-count data-frame-integer) 4)
+
+(check-equal? (data-frame-column-count data-frame-integer) 2)

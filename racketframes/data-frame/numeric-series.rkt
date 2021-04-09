@@ -19,9 +19,13 @@
 ; Provide functions in this file to other files.
 
 (provide:
- [new-NSeries (FlVector [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
+ [new-NSeries ((U (Sequenceof Flonum) FlVector) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                          [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean]  -> NSeries)]
  [set-NSeries-index (NSeries (U (Listof IndexDataType) RFIndex) -> NSeries)]
+ [set-NSeries-null-value (NSeries RFNULL -> NSeries)]
+ [nseries-custom-null-value (NSeries -> RFNULL)]
+ [nseries-null-value (NSeries -> Flonum)]
+ [set-NSeries-flonum-null-value-inplace (NSeries Flonum -> Void)]
  [nseries-iref (NSeries (Listof Index) -> (Listof Flonum))]
  [nseries-loc-boolean (NSeries (Listof Boolean) -> (U Flonum NSeries))] 
  [nseries-loc (NSeries (U Label (Listof Label) (Listof Boolean)) -> (U Flonum NSeries))]
@@ -192,16 +196,23 @@
   #:mutable
   #:transparent)
 
-(: new-NSeries (FlVector [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
+(: seq->flvector ((Sequenceof Flonum) -> FlVector))
+(define (seq->flvector seq)
+  (let ((vec : FlVector (list->flvector (sequence->list seq))))
+    vec))
+
+(: new-NSeries ((U (Sequenceof Flonum) FlVector) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                          [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean]  -> NSeries))
 (define (new-NSeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
+  (define data-flvector : FlVector (if (flvector? data) data (seq->flvector data)))
+
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
     (let ((index-length (apply + (for/list: : (Listof Index)
                                    ([value (in-hash-values (extract-index index))])
                                    (length (assert value ListofIndex?))))))
 
-      (unless (eq? (flvector-length data) index-length)
+      (unless (eq? (flvector-length data-flvector) index-length)
         (let ((k (current-continuation-marks)))
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
@@ -211,12 +222,12 @@
   (let*: ((data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or do-sort encode) (most-frequent-element-list data) #f))
           (data-vector : FlVector
                        (if (not data-count-encoded)
-                           data
+                           data-flvector
                            (assert (list->vector (most-frequent-elements data-count-encoded)) flvector?)))
           (flonum-null-value : Flonum (if (flonum? null-value) null-value DEFAULT_NULL_VALUE)))
     
     (if (RFIndex? labels)      
-        (NSeries labels data null-value flonum-null-value encode data-count-encoded)
+        (NSeries labels data-vector null-value flonum-null-value encode data-count-encoded)
         (if labels
             (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
             (check-mismatch index)
@@ -507,8 +518,8 @@
 ; which is returned.
 (: comp/ns (NSeries NSeries (Flonum Flonum -> Boolean) -> BSeries))
 (define (comp/ns ns1 ns2 comp)
-  (define v1 (NSeries-data ns1))
-  (define v2 (NSeries-data ns2))
+  (define v1 (nseries-data ns1))
+  (define v2 (nseries-data ns2))
   (define: len : Index (flvector-length v1))
   
   (unless (eqv? len (flvector-length v2))
@@ -521,7 +532,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (new-BSeries v-comp #f))
+       ((= idx len) (new-BSeries v-comp))
        (vector-set! v-comp idx (comp (flvector-ref v1 idx)
 				   (flvector-ref v2 idx)))))
 
@@ -583,7 +594,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (new-BSeries v-comp #f))
+       ((= idx len) (new-BSeries v-comp))
        (vector-set! v-comp idx (comp (flvector-ref v1 idx)
 				   (exact->inexact (assert (vector-ref v2 idx) fixnum?))))))
 
@@ -644,7 +655,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (new-BSeries v-comp #f))
+       ((= idx len) (new-BSeries v-comp))
        (vector-set! v-comp idx (comp (exact->inexact (assert (vector-ref v1 idx) fixnum?))
 				   (flvector-ref v2 idx)))))
 

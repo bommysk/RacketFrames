@@ -28,7 +28,7 @@
  DateSeries?)
 
 (provide:
- [new-DateSeries ((Vectorof date) (Option (U (Listof IndexDataType) RFIndex)) -> DateSeries)]
+ [new-DateSeries ((Vectorof date) [#:index (Option (U (Listof IndexDataType) RFIndex))] -> DateSeries)]
  [set-DateSeries-index (DateSeries (U (Listof IndexDataType) RFIndex) -> DateSeries)]
  [date-series-iref (DateSeries (Listof Index) -> (Listof date))]
  [date-series-index-ref (DateSeries IndexDataType -> (Listof date))]
@@ -97,8 +97,8 @@
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a DateSeries
 ; struct object.
-(: new-DateSeries ((Vectorof date) (Option (U (Listof IndexDataType) RFIndex)) -> DateSeries))
-(define (new-DateSeries data labels)
+(: new-DateSeries ((Vectorof date) [#:index (Option (U (Listof IndexDataType) RFIndex))] -> DateSeries))
+(define (new-DateSeries data #:index [labels #f])
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -125,7 +125,7 @@
 ; ***********************************************************
 (: set-DateSeries-index (DateSeries (U (Listof IndexDataType) RFIndex) -> DateSeries))
 (define (set-DateSeries-index date-series labels)
-  (new-DateSeries (date-series-data date-series) labels))
+  (new-DateSeries (date-series-data date-series) #:index labels))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -262,7 +262,7 @@
 
         (if (= (vector-length vals) 1)
             (vector-ref vals 0)
-            (new-DateSeries vals (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
+            (new-DateSeries vals #:index (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
 
 ; index based
 (: date-series-iloc (DateSeries (U Index (Listof Index)) -> (U date DateSeries)))
@@ -275,9 +275,9 @@
       (new-DateSeries
        (for/vector: : (Vectorof date) ([i idx])
          (vector-ref (date-series-data date-series) i))
-       (if (not (DateSeries-index date-series))
-           #f
-           (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (DateSeries-index date-series)) i)) idx))))
+       #:index (if (not (DateSeries-index date-series))
+                   #f
+                   (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (DateSeries-index date-series)) i)) idx))))
       (referencer idx))))
 
 (: date-series-iloc-range (DateSeries Index Index -> DateSeries))
@@ -285,10 +285,9 @@
   ; use vector-copy library method
   (new-DateSeries
    (vector-copy (date-series-data date-series) start end)
-   (if (not (DateSeries-index date-series))
-       #f
-       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (DateSeries-index date-series)) i)) (range start end))))))
-
+   #:index (if (not (DateSeries-index date-series))
+               #f
+               (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (DateSeries-index date-series)) i)) (range start end))))))
 
 ; label based
 ; for two different use cases:
@@ -319,7 +318,7 @@
       (if (list-ref boolean-lst 0)
           (vector-ref data 0)
           ; empty iseries
-          (new-DateSeries (vector) #f))
+          (new-DateSeries (vector)))
 
       ; to achieve the single result case
       (for ([b boolean-lst]
@@ -333,7 +332,7 @@
 
   (if (= (vector-length new-data) 1)
       (vector-ref new-data 0)
-      (new-DateSeries new-data #f)))
+      (new-DateSeries new-data)))
 
 ; ***********************************************************
 
@@ -343,9 +342,9 @@
 (define (map/date-series-data series fn)
   (let ((old-data (DateSeries-data series)))
     (DateSeries #f
-                    (build-vector (vector-length old-data)
-                                  (λ: ((idx : Natural))
-                                    (fn (vector-ref old-data idx)))))))
+                (build-vector (vector-length old-data)
+                              (λ: ((idx : Natural))
+                                (fn (vector-ref old-data idx)))))))
 
 (: bop/date-series (DateSeries DateSeries (date date -> date) -> DateSeries))
 (define (bop/date-series date-series-1 date-series-2 bop)
@@ -383,7 +382,7 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (new-BSeries v-comp #f))
+       ((= idx len) (new-BSeries v-comp))
        (vector-set! v-comp idx (comp (vector-ref v1 idx)
 				   (vector-ref v2 idx)))))
 ; ***********************************************************
