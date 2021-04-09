@@ -103,6 +103,22 @@
 (define (datetime-time datetime)
   (Datetime-time datetime))
 
+(: time-eq? (Time Time -> Boolean))
+(define (time-eq? time1 time2)
+  (equal? time1 time2))
+
+(: date-eq? (Date Date -> Boolean))
+(define (date-eq? date1 date2)
+  (equal? date1 date2))
+
+(: datetime-eq? (Datetime Datetime -> Boolean))
+(define (datetime-eq? dt1 dt2)
+  (let* ((date1 : Date (datetime-date dt1))
+         (date2 : Date (datetime-date dt2))
+         (time1 : Time (datetime-time dt1))
+         (time2 : Time (datetime-time dt2)))
+    (and (date-eq? date1 date2) (time-eq? time1 time2))))
+  
 ;; (define-type Tics Integer)
 ;; (define-type (ICtor X) (Tics -> X))
 ;; (struct: I ([millis : Tics]))

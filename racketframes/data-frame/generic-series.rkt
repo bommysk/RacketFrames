@@ -3,8 +3,9 @@
 (require math/statistics)
 
 (require
+  "../util/data-encode.rkt"
  (only-in "indexed-series.rkt"
-	  RFIndex RFIndex? build-index-from-list
+	  RFIndex RFIndex? RFNULL build-index-from-list
           IndexDataType extract-index
           Label LabelIndex-index
           LabelIndex label-index label->lst-idx key->lst-idx
@@ -20,7 +21,8 @@
  (struct-out GenSeries)
  GenSeries-index
  GenericType
- GenericType?)
+ GenericType?
+ ListofGenericType?)
 
 (define-type GenericType Any)
 
@@ -28,8 +30,10 @@
 (define-predicate ListofGenericType? (Listof GenericType))
 
 (provide:
- [new-GenSeries ((Vectorof GenericType) (Option (U (Listof IndexDataType) RFIndex)) -> GenSeries)]
+ [new-GenSeries ((Vectorof GenericType) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> GenSeries)]
  [set-GenSeries-index (GenSeries (U (Listof IndexDataType) RFIndex) -> GenSeries)]
+ [set-GenSeries-null-value (GenSeries RFNULL -> GenSeries)]
+ [set-GenSeries-any-null-value-inplace (GenSeries GenericType -> Void)]
  [gen-series-iref (GenSeries (Listof Index) -> GenericType)]
  [gen-series-index-ref (GenSeries IndexDataType -> (Listof GenericType))]
  [gen-series-label-ref (GenSeries Label -> GenericType)]
@@ -44,17 +48,43 @@
  [gen-series-iloc (GenSeries (U Index (Listof Index)) -> (U GenericType GenSeries))]
  [gen-series-iloc-range (GenSeries Index Index -> GenSeries)]
  [map/gen-s (GenSeries (GenericType -> GenericType) -> GenSeries)]
- [gen-series-print (GenSeries Output-Port -> Void)])
+ [gen-series-print (GenSeries [#:output-port Output-Port] -> Void)])
 
 ; ***********************************************************
+(define DEFAULT_NULL_VALUE : GenericType 'NA)
+(struct GenSeries
+  ([index : (Option RFIndex)]
+   [data : (Vectorof GenericType)]
+   [null-value : RFNULL]
+   ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+   [any-null-value : GenericType]
+   ; encode data by element count to optimze memory storage and read/write operations
+   ; when data vector lacks variety
+   [encoded : Boolean]
+   [data-count-encoded : (Option (Listof (Pairof Any Real)))])
+  #:mutable
+  #:transparent)
 
-(struct GenSeries ([index : (Option RFIndex)] [data : (Vectorof GenericType)]))
+; When working with very large values that occur frequently,
+; it can be more performant to use the ISeries-Nominals form
+; which will only keep one copy of the Fixnum and maintain a
+; a light weight vector of index to reference to the nominals.
+; categorical series are constructed in nominal form by default,
+; but with other series types it is not
+(struct: GenSeries-Nominals
+  ([index : (Option RFIndex)]
+   [data : (Vectorof Index)]
+   [nominals : (Vectorof GenericType)]   
+   [null-value : RFNULL])
+  #:mutable
+  #:transparent)
 
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a GenSeries
 ; struct object.
-(: new-GenSeries ((Vectorof GenericType) (Option (U (Listof IndexDataType) RFIndex)) -> GenSeries))
-(define (new-GenSeries data labels)
+(: new-GenSeries ((Vectorof GenericType) [#:index (Option (U (Listof IndexDataType) RFIndex))]
+                                         [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> GenSeries))
+(define (new-GenSeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -67,22 +97,36 @@
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
 
-  (if (RFIndex? labels)
-      (begin
-	(check-mismatch labels)
-	(GenSeries labels data))
-      (if labels
-	  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
-	    (check-mismatch index)
-	    (GenSeries index data))
-	  (GenSeries #f data))))
+  ; encode data by element count to avoid repetition if user elects to sort or encode series
+  (let*: ((data-count-encoded : (Option (Listof (Pairof Any Real))) (if (or do-sort encode) (most-frequent-element-list data) #f))
+         (data-vector : (Vectorof GenericType)
+                      (if (not data-count-encoded)
+                          data
+                          (list->vector (most-frequent-elements data-count-encoded))))
+         (any-null-value : GenericType null-value))
+         
+         (if (RFIndex? labels)      
+             (GenSeries labels data null-value any-null-value encode data-count-encoded)
+             (if labels
+                 (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
+                   (check-mismatch index)
+                   (GenSeries index data-vector null-value any-null-value encode data-count-encoded))
+                 (GenSeries #f data-vector null-value any-null-value encode data-count-encoded)))))
 
 ; ***********************************************************
 
 ; ***********************************************************
 (: set-GenSeries-index (GenSeries (U (Listof IndexDataType) RFIndex) -> GenSeries))
 (define (set-GenSeries-index gen-series labels)
-  (new-GenSeries (gen-series-data gen-series) labels))
+  (new-GenSeries (gen-series-data gen-series) #:index labels))
+
+(: set-GenSeries-null-value (GenSeries RFNULL -> GenSeries))
+(define (set-GenSeries-null-value gen-series null-value)
+  (new-GenSeries (gen-series-data gen-series) #:index (gen-series-index gen-series) #:fill-null null-value))
+
+(: set-GenSeries-any-null-value-inplace (GenSeries GenericType -> Void))
+(define (set-GenSeries-any-null-value-inplace gen-series null-value)
+  (set-GenSeries-any-null-value! gen-series null-value))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -127,6 +171,12 @@
 (define (gen-series-index series)
   (GenSeries-index series))
 
+; This function consumes an integer series and returns its
+; data vector.
+(: gen-series-null-value (GenSeries -> GenericType))
+(define (gen-series-null-value series)
+  (GenSeries-null-value series))
+
 ; This function consumes a generic series and a Label and returns
 ; the value at that Label in the series.
 (: gen-series-label-ref (GenSeries IndexDataType -> (Listof GenericType)))
@@ -144,9 +194,9 @@
 (: map/gen-s (GenSeries (GenericType -> GenericType) -> GenSeries))
 (define (map/gen-s series fn)
   (let ((old-data (GenSeries-data series)))
-    (GenSeries #f (build-vector (vector-length old-data)
-                              (λ: ((idx : Natural))
-                                (fn (vector-ref old-data idx)))))))
+    (new-GenSeries (build-vector (vector-length old-data)
+                                 (λ: ((idx : Natural))
+                                   (fn (vector-ref old-data idx)))) #:fill-null (gen-series-null-value series))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -200,7 +250,7 @@
       (if (list-ref boolean-lst 0)
           (vector-ref data 0)
           ; empty GenSeries
-          (new-GenSeries (vector) #f))
+          (new-GenSeries (vector)))
        
       (for ([b boolean-lst]
             [d data])
@@ -213,7 +263,7 @@
 
   (if (= (vector-length new-data) 1)
       (vector-ref new-data 0)
-      (new-GenSeries new-data #f)))
+      (new-GenSeries new-data)))
 
 
 (: gen-series-loc-multi-index (GenSeries (U (Listof String) ListofListofString) -> (U GenericType GenSeries)))
@@ -247,7 +297,7 @@
 
         (if (= (vector-length vals) 1)
             (vector-ref vals 0)
-            (new-GenSeries vals (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
+            (new-GenSeries vals #:index (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
 
 ; index based
 (: gen-series-iloc (GenSeries (U Index (Listof Index)) -> (U GenericType GenSeries)))
@@ -260,9 +310,9 @@
       (new-GenSeries
        (for/vector: : (Vectorof GenericType) ([i idx])
          (vector-ref (gen-series-data gen-series) i))
-       (if (not (GenSeries-index gen-series))
-           #f
-           (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (GenSeries-index gen-series)) i)) idx))))
+       #:index (if (not (GenSeries-index gen-series))
+                   #f
+                   (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (GenSeries-index gen-series)) i)) idx))))
       (referencer idx))))
 
 (: gen-series-iloc-range (GenSeries Index Index -> GenSeries))
@@ -270,15 +320,15 @@
   ; use vector-copy library method
   (new-GenSeries
    (vector-copy (gen-series-data gen-series) start end)
-   (if (not (GenSeries-index gen-series))
-       #f
-       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (GenSeries-index gen-series)) i)) (range start end))))))
+   #:index (if (not (GenSeries-index gen-series))
+               #f
+               (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (GenSeries-index gen-series)) i)) (range start end))))))
 
 ; ***********************************************************
 
 ; ***********************************************************
-(: gen-series-print (GenSeries Output-Port -> Void))
-(define (gen-series-print gen-series port)
+(: gen-series-print (GenSeries [#:output-port Output-Port] -> Void))
+(define (gen-series-print gen-series #:output-port [port (current-output-port)])
   (define v (gen-series-data gen-series))
   (let ((len (vector-length v))
 	(out (current-output-port)))

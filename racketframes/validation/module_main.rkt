@@ -294,8 +294,11 @@
 ;(Schema-SeriesTypes nba-csv-schema)
 
 ; series constructors
-(define int-series (new-series (list 1 2 3 4 5 6) #f))
+(define int-series (new-series (list 1 2 3 4 5 6 6 6 6 6 6) #f))
 (define gen-series (new-series (vector 'a 1 2 'c 'd 5.6) #f))
+
+(iseries-groupby (assert int-series ISeries?))
+(iseries-groupby (assert int-series ISeries?) #:by-value #t)
 
 (series-iref int-series 3)
 (series-print int-series (current-output-port))
@@ -306,11 +309,13 @@
 (define int-series-with-index (new-series (list 1 2 3 4 5 6) (list 'a 'b 'c 'd 'e 'f)))
 (define gen-series-with-index (new-series (vector 'a 1 2 'c 'd 5.6) (list 6 5 4 3 2 1)))
 
+(iseries-groupby (assert int-series-with-index ISeries?))
+
 (series-index-ref int-series-with-index 'e)
 (series-print int-series-with-index (current-output-port))
 
 (series-index-ref gen-series-with-index 5)
-(series-print gen-series (current-output-port))
+(series-print gen-series-with-index (current-output-port))
 
 ; dataframe constructors
 (define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3) 'b (list 3 5 6)  'c (list 3.4 5.5 6.7) 'd (list 'fizz 'buzz 'baz))))

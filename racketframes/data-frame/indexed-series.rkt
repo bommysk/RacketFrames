@@ -24,48 +24,54 @@
  [is-labeled? (LabelIndex -> Boolean)]
  [label-sort-positional (LabelIndex [#:project LabelProjection] -> Labeling)]
  [label-sort-lexical (LabelIndex -> Labeling)]
- ;[gseries-length (GSeries -> Index)]
- ;[gseries-data (All (A) (GSeries A) -> (Vectorof A))]
  [build-multi-index-from-list ((Listof (Listof GenericType)) -> LabelIndex)]
+ [build-index-from-sequence ((Sequenceof IndexDataType) -> RFIndex)]
  [build-index-from-list ((Listof IndexDataType) -> RFIndex)]
+ [build-data-vector-from-sequence ((Sequenceof GenericType) -> (Vectorof GenericType))]
  [labeling (LabelIndex -> (Listof (Pair Label (Listof Index))))]
  [get-index (RFIndex IndexDataType -> (Listof Index))]
  [extract-index (RFIndex -> IndexType)]
- [is-indexed? (RFIndex -> Boolean)])
+ [is-indexed? (RFIndex -> Boolean)]
+ [index-keys (RFIndex -> (Listof IndexDataType))]
+ [index-idxes (RFIndex -> (Listof Index))]
+ [index-keys-intersection ((Listof RFIndex) -> (Setof IndexDataType))])
 
 (provide
- SIndex IIndex FIndex DTIndex Labeling ListofLabel? ListofIndexDataType? ListofAny?
+ SIndex IIndex FIndex DTIndex Labeling ListofLabel? ListofIndexDataType? ListofAny? ListofAnyPair?
  Label Label? LabelProjection LabelProjection? LabelIndex? RFIndex? Datetime?
- RFIndex IndexDataType ListofIndex ListofIndex? ListofListofString ListofListofString?
+ RFIndex RFNULL IndexDataType ListofIndex ListofIndex? ListofListofString ListofListofString?
  LabelIndex LabelIndex-index
- FIndex FlonumIndex ListofFixnum? ListofFlonum? ListofBoolean? ListofDatetime?
- ;(struct-out GSeries)
- ;new-GSeries 
- ;gseries-iref
- ;map/GSeries 
- build-index-from-labels label-index key->lst-idx label->lst-idx idx->key idx->label)
+ FIndex FlonumIndex ListofFixnum? ListofFlonum? ListofBoolean? ListofDatetime? ListofDate?
+ build-index-from-labels label-index key->lst-idx label->lst-idx idx->key idx->label
+ (struct-out RFNoData) key-delimiter)
 ; ***********************************************************
 
 ; ***********************************************************
 (require
   "../util/datetime.rkt"
+  racket/sequence
+  racket/set
+  typed/racket/date
   (only-in racket/flonum
            make-flvector flvector? flvector
            flvector-ref flvector-set!
-           flvector-length)
-  (only-in racket/set
-           set-empty? set-member?
-           list->set))
+           flvector-length))
 ; ***********************************************************
 
 ; ***********************************************************
 (define-type Label Symbol)
+
+; series have the option to set any type of null value
+; and be converted to a GenSeries
+(define-type RFNULL Any)
 
 (define-predicate Label? Label)
 
 (define-predicate ListofLabel? (Listof Label))
 
 (define-predicate ListofFixnum? (Listof Fixnum))
+
+(define-predicate SetofIndex? (Setof Index))
 
 (define-predicate ListofIndex? (Listof Index))
 
@@ -75,8 +81,13 @@
 
 (define-predicate ListofDatetime? (Listof Datetime))
 
-(define-predicate ListofAny? (Listof (Pair Any Any)))
+(define-predicate ListofDate? (Listof Date))
 
+(define-predicate ListofAny? (Listof Any))
+
+(define-predicate ListofAnyPair? (Listof (Pair Any Any)))
+
+; Map index to a  (Listof Fixnum)
 (define-type Labeling (Listof (Pair Label (Listof Index))))
 
 (define-type SIndex (HashTable Label (Listof Index)))
@@ -88,13 +99,21 @@
 
 (define-type DTIndex (HashTable Datetime (Listof Index)))
 
-(define-type IndexDataType (U Label Fixnum Flonum Datetime))
+(define-type DIndex (HashTable date (Listof Index)))
+
+(define-type IndexDataType (U Label Fixnum Flonum Datetime date))
 
 (define-predicate ListofIndexDataType? (Listof IndexDataType))
+
+(define-predicate SetofIndexDataType? (Setof IndexDataType))
 
 (define-type LabelProjection (U (Listof Label) (Setof Label)))
 
 (define-type ListofIndex (Listof Index))
+
+(define-type ListofListofIndex (Listof (Listof Index)))
+
+(define-predicate ListofListofIndex? (Listof (Listof Index)))
 
 (define-type ListofListofString (Listof (Listof String)))
 
@@ -102,24 +121,30 @@
 
 (define-predicate LabelProjection? LabelProjection)
 
-; like in Pandas, it could be dictionary of labels to values or not
-; that's what the LabelIndex is for
-(struct LabelIndex ([index : SIndex]) #:mutable)
-(struct FixnumIndex ([index : IIndex]) #:mutable)
-(struct FlonumIndex ([index : FIndex]) #:mutable)
-(struct DatetimeIndex ([index : DTIndex]) #:mutable)
+(struct LabelIndex ([index : SIndex]) #:mutable #:transparent)
+(struct FixnumIndex ([index : IIndex]) #:mutable #:transparent)
+(struct FlonumIndex ([index : FIndex]) #:mutable #:transparent)
+(struct DatetimeIndex ([index : DTIndex]) #:mutable #:transparent)
+(struct DateIndex ([index : date]) #:mutable #:transparent)
 
-(define-type IndexType (U SIndex IIndex FIndex DTIndex))
+(define-type IndexType (U SIndex IIndex FIndex DTIndex DIndex))
 
 ; add RangeIndex later
-(define-type RFIndex (U LabelIndex FixnumIndex FlonumIndex DatetimeIndex))
+(define-type RFIndex (U LabelIndex FixnumIndex FlonumIndex DatetimeIndex DateIndex))
 
 (define-predicate RFIndex? RFIndex)
+
+(struct RFNoData () #:transparent)
 ; ***********************************************************
 
 ; ***********************************************************
 ; This function consumes a list of Labels and produces a
 ; SIndex which is a HashTable Label to Index.
+
+(: build-index-from-sequence ((Sequenceof IndexDataType) -> RFIndex))
+(define (build-index-from-sequence seq)
+  (build-index-from-list (sequence->list seq)))
+
 (: build-index-from-list ((Listof IndexDataType) -> RFIndex))
 (define (build-index-from-list lst)
   (cond
@@ -127,15 +152,21 @@
     [(ListofFixnum? lst) (FixnumIndex (build-index-from-fixnums lst))]
     [(ListofFlonum? lst) (FlonumIndex (build-index-from-flonums lst))]
     [(ListofDatetime? lst) (DatetimeIndex (build-index-from-datetimes lst))]
+    [(ListofDate? lst) (DateIndex (build-index-from-dates lst))]
     [else (error "Unsupported index datatype.")]))
+
+(: build-data-vector-from-sequence ((Sequenceof GenericType) -> (Vectorof GenericType)))
+(define (build-data-vector-from-sequence seq)
+  (list->vector (sequence->list seq)))
 
 (: get-index (RFIndex IndexDataType -> (Listof Index)))
 (define (get-index index item)
   (cond
     [(and (LabelIndex? index) (Label? item)) (label-index (LabelIndex-index index) item)]
     [(and (FixnumIndex? index) (exact-integer? item)) (fixnum-index (FixnumIndex-index index) item)]
-    [(and (FlonumIndex? index) (flonum? item)) (Flonum-index (FlonumIndex-index index) item)]
+    [(and (FlonumIndex? index) (flonum? item)) (flonum-index (FlonumIndex-index index) item)]
     [(and (DatetimeIndex? index) (Datetime? item)) (datetime-index (DatetimeIndex-index index) item)]
+    [(and (DatetimeIndex? index) (Datetime? item)) (date-index (DateIndex-index index) item)]
     [else (error "Unsupported index datatype.")]))
 
 (: extract-index (RFIndex -> IndexType))
@@ -155,7 +186,7 @@
   (cond
     [(LabelIndex? index) (is-labeled? index)]
     [(FixnumIndex? index) (has-fixnum-index? index)]
-    [(FlonumIndex? index) (has-Flonum-index? index)]
+    [(FlonumIndex? index) (has-flonum-index? index)]
     [(DatetimeIndex? index) (has-datetime-index? index)]
     [else (error "Unsupported index datatype.")]))
 
@@ -164,7 +195,7 @@
   (cond
     [(LabelIndex? index) (label->lst-idx index (assert item Label?))]
     [(FixnumIndex? index) (fixnum->lst-idx index (assert item exact-integer?))]
-    [(FlonumIndex? index) (Flonum->lst-idx index (assert item flonum?))]
+    [(FlonumIndex? index) (flonum->lst-idx index (assert item flonum?))]
     [(DatetimeIndex? index) (datetime->lst-idx index (assert item Datetime?))]
     [else (error "Unsupported index datatype.")]))
 
@@ -176,9 +207,62 @@
   (cond
     [(LabelIndex? index) (idx->label index idx)]
     [(FixnumIndex? index) (idx->fixnum index idx)]
-    [(FlonumIndex? index) (idx->Flonum index idx)]
+    [(FlonumIndex? index) (idx->flonum index idx)]
     [(DatetimeIndex? index) (idx->datetime index idx)]
     [else (error "Unsupported index datatype.")]))
+
+; perhaps put in utils
+(: universal-sort< (GenericType GenericType -> Boolean))
+(define (universal-sort< val1 val2)
+  (if (and (real? val1) (real? val2))
+      (< val1 val2)
+      (string<? (~v val1) (~v val2))))
+
+(: universal-sort> (GenericType GenericType -> Boolean))
+(define (universal-sort> val1 val2)
+  (if (and (real? val1) (real? val2))
+      (> val1 val2)
+      (string>? (~v val1) (~v val2))))
+; perhaps put in utils
+
+(: index-keys (RFIndex -> (Listof IndexDataType)))
+(define (index-keys index)
+  (sort (assert (hash-keys (extract-index index)) ListofIndexDataType?) universal-sort<))
+
+(: index-keys-set (RFIndex -> (Setof IndexDataType)))
+(define (index-keys-set index)
+  (list->set (assert (hash-keys (extract-index index)) ListofIndexDataType?)))
+
+(: index-idxes (RFIndex -> (Listof Index)))
+(define (index-idxes index)
+  (sort (assert (append* (assert (hash-values (extract-index index)) ListofListofIndex?)) ListofIndex?) universal-sort<))
+
+(: list-intersect ((Listof GenericType) (Listof GenericType) -> (Setof GenericType)))
+(define (list-intersect lst1 lst2)
+  (let ((set1 (list->set lst1))
+        (set2 (list->set lst2)))
+    (set-intersect set1
+                   set2)))
+(: seq-intersect ((Sequenceof GenericType) (Sequenceof GenericType) -> (Setof GenericType)))
+(define (seq-intersect seq1 seq2)
+  (list-intersect (sequence->list seq1) (sequence->list seq2)))
+
+(: index-keys-intersection ((Listof RFIndex) -> (Setof IndexDataType)))
+(define (index-keys-intersection indexes)
+  (assert (foldr (λ: ((set1 : (Setof IndexDataType)) (set2 : (Setof IndexDataType)))
+                   (set-intersect set1 set2))
+                 (index-keys-set (car indexes)) (map index-keys-set (cdr indexes)))
+          SetofIndexDataType?))
+
+(: list-union ((Listof GenericType) (Listof GenericType) -> (Setof GenericType)))
+(define (list-union lst1 lst2)
+  (let ((set1 (list->set lst1))
+        (set2 (list->set lst2)))
+    (set-union set1
+                   set2)))
+(: seq-union ((Sequenceof GenericType) (Sequenceof GenericType) -> (Setof GenericType)))
+(define (seq-union seq1 seq2)
+  (list-union (sequence->list seq1) (sequence->list seq2)))
 
 ; ***********************************************************
 
@@ -207,7 +291,7 @@
 
 ; ***********************************************************
 ; This function consumes a list of Labels and produces a
-; SIndex which is a HashTable Label to Index.
+; IIndex which is a HashTable Fixnum to Index.
 (: build-index-from-fixnums ((Listof Fixnum) -> IIndex))
 (define (build-index-from-fixnums fixnums)
   (let ((index : IIndex (make-hash '())))
@@ -246,8 +330,8 @@
             
             (loop (assert (+ idx 1) index?) (cdr Flonums)))))))
 
-(: Flonum-index (FIndex Flonum -> (Listof Index)))
-(define (Flonum-index index Flonum)      
+(: flonum-index (FIndex Flonum -> (Listof Index)))
+(define (flonum-index index Flonum)      
   (hash-ref index Flonum))
 ; ***********************************************************
 
@@ -272,6 +356,28 @@
 (: datetime-index (DTIndex Datetime -> (Listof Index)))
 (define (datetime-index index datetime)      
   (hash-ref index datetime))
+
+; ***********************************************************
+; This function consumes a list of dates and produces a
+; DIndex which is a HashTable date to Index.
+(: build-index-from-dates ((Listof date) -> DIndex))
+(define (build-index-from-dates dates)
+  (let ((index : DIndex (make-hash '())))
+    (let loop : DIndex ((idx : Index 0) (dates : (Listof date) dates))
+      (if (null? dates)
+          index
+          (begin
+            (hash-update! index (car dates)
+                          (λ: ((lst-index : (Listof Index)))
+                            (append lst-index (list idx)))
+                          (λ () (list)))
+
+            
+            (loop (assert (+ idx 1) index?) (cdr dates)))))))
+
+(: date-index (DIndex date -> (Listof Index)))
+(define (date-index index racket-date)      
+  (hash-ref index racket-date))
 
 #|
 B business day frequency
@@ -419,15 +525,15 @@ N nanoseconds
 ; ***********************************************************
 ; This function consumes a series and returns a boolean
 ; indicating whether series is a SIndex or not.
-(: has-Flonum-index? (FlonumIndex -> Boolean))
-(define (has-Flonum-index? index)
+(: has-flonum-index? (FlonumIndex -> Boolean))
+(define (has-flonum-index? index)
   (if (extract-index index) #t #f))
 
 ; This function consumes LabelIndex and Label and returns the
 ; numerical Index of the Label in the LabelIndex. The index
 ; must be a SIndex else an exception is raised.
-(: Flonum->lst-idx (FlonumIndex Flonum -> (Listof Index)))
-(define (Flonum->lst-idx index Flonum)
+(: flonum->lst-idx (FlonumIndex Flonum -> (Listof Index)))
+(define (flonum->lst-idx index Flonum)
   (let ((index : FIndex (FlonumIndex-index index)))
     (if index
         (hash-ref index Flonum)
@@ -437,8 +543,8 @@ N nanoseconds
 ; This function consumes LabelIndex and Label and returns the
 ; numerical Index of the Label in the LabelIndex. The index
 ; must be a SIndex else an exception is raised.
-(: idx->Flonum (FlonumIndex Index -> Flonum))
-(define (idx->Flonum index idx)
+(: idx->flonum (FlonumIndex Index -> Flonum))
+(define (idx->flonum index idx)
   (let ((index : FIndex (FlonumIndex-index index)))
     (if index
         (car (car (filter (lambda ([pair : (Pair Flonum (Listof Index))]) (member idx (cdr pair))) (hash->list index))))
@@ -515,7 +621,7 @@ N nanoseconds
 ; ***********************************************************
 ; This function consumes a LabelIndex which as long as it is
 ; a valid SIndex which is a HashTable, it converts it to a
-; list of Label Index pairs.
+; list of Label (Listof Index) pairs.
 (: labeling (LabelIndex -> (Listof (Pair Label (Listof Index)))))
 (define (labeling lindex)
   (hash->list (LabelIndex-index lindex)))
@@ -562,11 +668,11 @@ N nanoseconds
 
 (define-type GenericType Any)
 
-(define key-delimiter "\t")
+(define key-delimiter "::")
 
 ; This function consumes a Listof IndexableSeries and builds key
 ; string from the columns of a frame and a given set of col labels to use.
-; Insert a tab char between each key value, e.g., k1 + \t + k2 + \t + ...
+; Insert a tab char between each key value, e.g., k1 + :: + k2 + :: + ...
 (: key-fn-list ((Listof (Listof GenericType)) -> (Index -> String)))
 (define (key-fn-list lsts)
   (λ: ((row-id : Index))
@@ -582,6 +688,9 @@ N nanoseconds
           (display key-delimiter outp)))
       (get-output-string outp))))
 
+(: build-multi-index-from-sequence ((Sequenceof (Sequenceof GenericType)) -> LabelIndex))
+(define (build-multi-index-from-sequence seq)
+  (build-multi-index-from-list (sequence->list (sequence-map (lambda ([s : (Sequenceof GenericType)]) (sequence->list s)) seq))))
 
 (: build-multi-index-from-list ((Listof (Listof GenericType)) -> LabelIndex))
 (define (build-multi-index-from-list nested-label-lst)

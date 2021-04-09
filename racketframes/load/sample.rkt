@@ -4,6 +4,7 @@
 
 (provide:
  [determine-schema-from-sample ((Listof String) String -> Schema)]
+ [determine-generic-schema (String String -> Schema)]
  [determine-schema-from-sql-sample ((Listof String) (Listof (Vectorof Any)) -> Schema)]
  [canonicalize-to-string-or-num ((Listof String) -> (Listof (U Number String)))]
  [guess-series-type ((Listof String) -> SeriesType)]
@@ -27,7 +28,7 @@
 (: canonicalize-to-string-or-num ((Listof String) -> (Listof (U Number String))))
 (define (canonicalize-to-string-or-num strs)
   (map (λ: ((str : String))
-	   (if (string=? (string-upcase str) "N/A")
+	   (if (or (string=? (string-upcase str) "N/A") (string=? (string-upcase str) "NA") (string=? (string-upcase str) "NAN"))
 	       1
 	       (let ((num (string->number str)))
 		 (if num num str))))
@@ -230,3 +231,20 @@
         (let ((cols (transpose-rows-to-cols-sql (cdr samples))))
           (Schema #t (guess-series-meta-sql headers cols))))))
 
+; This function takes the first line from a file and checks if it can be
+; treated as a header, if not it generates anonymous headers. It then generates
+; a generic schema consisting of generic columns equal to the the number of headers.
+(: determine-generic-schema (String String -> Schema))
+(define (determine-generic-schema first-line delim)
+  (if (null? first-line)
+      (Schema #f '())
+      (let* ((first-line-delimited ((set-delimiter delim) first-line))	
+             (headers? (guess-if-headers first-line-delimited))
+             (cols-length (length first-line-delimited))
+             (headers (if headers?
+                          first-line-delimited
+                          (generate-anon-series-names cols-length))))
+        ; instead of guessing series type we just generate a schema of Generic columns
+        (Schema headers? (for/list: : (Listof ColumnInfo)
+                           ([col-name headers])
+                           (ColumnInfo (string->symbol col-name) 'GenericSeries))))))

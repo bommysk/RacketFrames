@@ -19,8 +19,10 @@
  (struct-out BSeries))
 
 (provide:
- [new-BSeries ((Vectorof Boolean) (Option (U (Listof IndexDataType) RFIndex)) -> BSeries)]
- [set-BSeries-index (BSeries (U (Listof Label) RFIndex) -> BSeries)]
+ [new-BSeries ((Vectorof Boolean) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null Boolean] -> BSeries)]
+ [set-BSeries-index (BSeries (U (Listof IndexDataType) RFIndex) -> BSeries)]
+ [set-BSeries-null-value (BSeries Boolean -> BSeries)]
+ [bseries-null-value (BSeries -> Boolean)]
  [bseries-iref (BSeries (Listof Index) -> (Listof Boolean))]
  [bseries-index-ref (BSeries IndexDataType -> (Listof Boolean))]
  [bseries-range (BSeries Index Index -> (Vectorof Boolean))]
@@ -28,6 +30,7 @@
  [bseries-referencer (BSeries -> (Index -> Boolean))]
  [bseries-data (BSeries -> (Vectorof Boolean))]
  [bseries-index (BSeries -> (U False RFIndex))]
+ [bseries-groupby (BSeries [#:by-value Boolean] -> GroupHash)]
  [map/bs (BSeries (Boolean -> Boolean) -> BSeries)]
  [bseries-loc-boolean (BSeries (Listof Boolean) -> (U Boolean BSeries))]
  [bseries-loc (BSeries (U Label (Listof Label) (Listof Boolean)) -> (U Boolean BSeries))]
@@ -54,13 +57,17 @@
 
 ; ***********************************************************
 ;; Boolean series.
-(struct BSeries ([index : (Option RFIndex)] [data : (Vectorof Boolean)]))
+(struct BSeries ([index : (Option RFIndex)]
+                 [data : (Vectorof Boolean)]
+                 [null-value : Boolean])  
+  #:mutable
+  #:transparent)
 
-; Consumes a Vector of Fixnum and a list of Labels which
-; can come in list form or SIndex form and produces a ISeries
+; Consumes a Vector of Boolean and a list of Labels which
+; can come in list form or RFIndex form and produces BSeries
 ; struct object.
-(: new-BSeries ((Vectorof Boolean) (Option (U (Listof IndexDataType) RFIndex)) -> BSeries))
-(define (new-BSeries data labels)
+(: new-BSeries ((Vectorof Boolean) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null Boolean] -> BSeries))
+(define (new-BSeries data #:index [labels #f] #:fill-null [null-value #f])
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -76,18 +83,26 @@
   (if (RFIndex? labels)
       (begin
 	(check-mismatch labels)
-	(BSeries labels data))
+	(BSeries labels data null-value))
       (if labels
-	  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
-	    (check-mismatch index)
-	    (BSeries index data))
-	  (BSeries #f data))))
+          (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
+            (check-mismatch index)
+            (BSeries index data null-value))
+          (BSeries #f data null-value))))
 ; ***********************************************************
 
 ; ***********************************************************
 (: set-BSeries-index (BSeries (U (Listof IndexDataType) RFIndex) -> BSeries))
 (define (set-BSeries-index bseries labels)
-  (new-BSeries (bseries-data bseries) labels))
+  (new-BSeries (bseries-data bseries) #:index labels))
+
+(: set-BSeries-null-value (BSeries Boolean -> BSeries))
+(define (set-BSeries-null-value bseries null-value)
+  (new-BSeries (bseries-data bseries) #:index (bseries-index bseries) #:fill-null null-value))
+
+(: bseries-null-value (BSeries -> Boolean))
+(define (bseries-null-value bseries)
+  (BSeries-null-value bseries))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -145,7 +160,7 @@
   (let ((old-data (BSeries-data series)))
     (BSeries #f (build-vector (vector-length old-data)
                               (λ: ((idx : Natural))
-                                (fn (vector-ref old-data idx)))))))
+                                (fn (vector-ref old-data idx)))) (BSeries-null-value series))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -199,7 +214,7 @@
       (if (list-ref boolean-lst 0)
           (vector-ref data 0)
           ; empty BSeries
-          (new-BSeries (vector) #f))
+          (new-BSeries (vector)))
        
       (for ([b boolean-lst]
             [d data])
@@ -212,7 +227,7 @@
 
   (if (= (vector-length new-data) 1)
       (vector-ref new-data 0)
-      (new-BSeries new-data #f)))
+      (new-BSeries new-data)))
 
 (: bseries-loc-multi-index (BSeries (U (Listof String) ListofListofString) -> (U Boolean BSeries)))
 (define (bseries-loc-multi-index bseries label)
@@ -245,7 +260,7 @@
 
         (if (= (vector-length vals) 1)
             (vector-ref vals 0)
-            (new-BSeries vals (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
+            (new-BSeries vals #:index (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
 
 
 ; index based
@@ -259,9 +274,9 @@
       (new-BSeries
        (for/vector: : (Vectorof Boolean) ([i idx])
          (referencer (assert i index?)))
-       (if (not (BSeries-index bseries))
-           #f
-           (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (BSeries-index bseries)) i)) idx))))
+       #:index (if (not (BSeries-index bseries))
+                   #f
+                   (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (BSeries-index bseries)) i)) idx))))
       (referencer idx))))
 
 (: bseries-iloc-range (BSeries Index Index -> BSeries))
@@ -269,11 +284,52 @@
   ; use vector-copy library method
   (new-BSeries
    (vector-copy (bseries-data bseries) start end)
-   (if (not (BSeries-index bseries))
-       #f
-       (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (BSeries-index bseries)) i)) (range start end))))))
+   #:index (if (not (BSeries-index bseries))
+               #f
+               (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (BSeries-index bseries)) i)) (range start end))))))
 
 ; ***********************************************************
+
+; ***********************************************************
+;; BSeries groupby
+(define-type Key String)
+(define-type GroupHash (HashTable Key (Listof Boolean)))
+
+; This function is self-explanatory, it consumes no arguments
+; and creates a hash map which will represent a JoinHash.
+(: make-group-hash (-> GroupHash))
+(define (make-group-hash)
+  (make-hash))
+
+; Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index.
+; The Series VALUES will be used to determine the groups.
+(: bseries-groupby (BSeries [#:by-value Boolean] -> GroupHash))
+(define (bseries-groupby bseries #:by-value [by-value #f])
+  (define: group-index : GroupHash (make-group-hash))
+  
+  (let ((len (bseries-length bseries))
+        (k (current-continuation-marks)))
+    (if (zero? len)
+        (raise (make-exn:fail:contract "bseries can't be empty on groupby." k))
+        (begin
+          (do ((i 0 (add1 i)))
+            ((>= i len) group-index)
+            (let* ((bool-val : (U Boolean BSeries) (bseries-iloc bseries (assert i index?)))
+                   (bool-list : (Listof Boolean) (if (boolean? bool-val) (list bool-val) (vector->list (BSeries-data bool-val))))
+                   (key (if by-value
+                            (bseries-iloc bseries (assert i index?))
+                            (if (BSeries-index bseries)
+                                (idx->key (assert (BSeries-index bseries)) (assert i index?))
+                                (assert i index?))))
+                   (key-str : String (cond
+                                       [(symbol? key) (symbol->string key)]
+                                       [(number? key) (number->string key)]
+                                       ; pretty-format anything else
+                                       [else (pretty-format key)])))  
+              (hash-update! group-index key-str
+                            (λ: ((val : (Listof Boolean)))                                
+                              (append bool-list val))
+                            (λ () (list)))))))))
 
 ; ***********************************************************
 (: bseries-print (BSeries Output-Port -> Void))
@@ -291,7 +347,7 @@
 	      ((>= i len) (void))
 	    (let ((val (vector-ref v i)))
               (if (BSeries-index bseries)
-                  (display (idx->key (BSeries-index bseries) (assert i index?)) port)
+                  (display (idx->key (assert (BSeries-index bseries)) (assert i index?)) port)
                   (display (assert i index?) port))
               (display " " port)
               (displayln val port)))))))
@@ -301,4 +357,4 @@
 (define (bseries-not bseries)
   (: inverted-boolean-vector (Vectorof Boolean))
   (define inverted-boolean-vector (vector-map (lambda ([b : Boolean]) (if b #f b)) (bseries-data bseries)))
-  (new-BSeries inverted-boolean-vector (bseries-index bseries)))
+  (new-BSeries inverted-boolean-vector #:index (bseries-index bseries)))

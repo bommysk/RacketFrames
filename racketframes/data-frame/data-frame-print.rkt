@@ -50,11 +50,13 @@
 	  NSeries NSeries? nseries-iref)
  (only-in "datetime-series.rkt"
 	  DatetimeSeries DatetimeSeries? datetime-series-iref)
+ (only-in "date-series.rkt"
+	  DateSeries DateSeries? date-series-iref)
  (only-in "categorical-series.rkt"
 	  cseries-referencer cseries-length cseries-iref
 	  CSeries CSeries?)
  (only-in "../util/datetime/format.rkt"
-          date->string))
+          datetime->string))
 
 ; ***********************************************************
 
@@ -146,9 +148,12 @@
 
 (: format-iseries (ISeries Index -> String))
 (define (format-iseries iseries row)
-  (~r (car (iseries-iref iseries (list row)))
-      #:precision 0
-      #:min-width WIDTH))
+  (let ((ref-val (car (iseries-iref iseries (list row)))))
+    (if (integer? ref-val)
+        (~r ref-val
+            #:precision 0
+            #:min-width WIDTH)
+        (pretty-format ref-val))))
 
 (: format-bseries (BSeries Index -> String))
 (define (format-bseries bseries row)
@@ -160,7 +165,7 @@
 
 (: format-datetime-series (DatetimeSeries Index -> String))
 (define (format-datetime-series datetime-series row)
-  ;(~a (date->string (car (datetime-series-iref datetime-series (list row))) "~5")
+  ;(~a (datetime->string (car (datetime-series-iref datetime-series (list row))) "~5")
       ;#:width WIDTH
       ;#:align 'left))
   (pretty-format (car (datetime-series-iref datetime-series (list row)))))
@@ -240,6 +245,8 @@
               (display (car (assert (bseries-iref a-series (list row)) list?)) outp))
              ((DatetimeSeries? a-series)
               (display (car (assert (datetime-series-iref a-series (list row)) list?)) outp))
+             ((DateSeries? a-series)
+              (display (car (assert (date-series-iref a-series (list row)) list?)) outp))
              (else
               (error 'frame-head "Unknown series types ~s"
                      (series-type a-series)))))))

@@ -284,21 +284,25 @@
 
 (data-frame-head data-frame-from-sql-customers)
 
-;(define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
+; large CSV
+(define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
 
-;(data-frame-head data-frame-nba-csv)
+(data-frame-head data-frame-nba-csv)
 
-;(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
+(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
 
-;(Schema-headers nba-csv-schema)
-;(Schema-SeriesTypes nba-csv-schema)
+(Schema-headers nba-csv-schema)
+(Schema-SeriesTypes nba-csv-schema)
 
 ; series constructors
 (define int-series (new-series (list 1 2 3 4 5 6) #f))
+(define cons-float-series (new-series (cons 5.4 (list 1.2345 2.654 3.3 4.4 5.5 6.9)) #f))
 (define gen-series (new-series (vector 'a 1 2 'c 'd 5.6) #f))
 
 (series-iref int-series 3)
 (series-print int-series (current-output-port))
+
+(series-print cons-float-series (current-output-port))
 
 (series-iref gen-series 5)
 (series-print gen-series (current-output-port))
@@ -310,7 +314,7 @@
 (series-print int-series-with-index (current-output-port))
 
 (series-index-ref gen-series-with-index 5)
-(series-print gen-series (current-output-port))
+(series-print gen-series-with-index (current-output-port))
 
 ; dataframe constructors
 (define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3) 'b (list 3 5 6)  'c (list 3.4 5.5 6.7) 'd (list 'fizz 'buzz 'baz))))

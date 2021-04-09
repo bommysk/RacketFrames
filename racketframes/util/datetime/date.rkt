@@ -366,7 +366,7 @@
 ;;         newdate
 ;;         (tm:time-error 'string->date 'bad-date-format-string (list "Incomplete date read. " newdate template-string)))))
 
-;; ;; See date->string
+;; ;; See datetime->string
 ;; ;;-- Miscellaneous Constants.
 ;; ;;-- only the tm:tai-epoch-in-jd might need changing if
 ;; ;;   a different epoch is used.

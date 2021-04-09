@@ -14,7 +14,7 @@
  (only-in racket/vector
 	  vector-copy)
  (only-in "boolean-series.rkt"
-          BSeries))
+          new-BSeries BSeries))
 
 (struct: BSeriesBuilder ([index  : Index]
 			 [data : (Vectorof Boolean)]) #:mutable)
@@ -32,9 +32,13 @@
 (define (string->boolean str)
   (cond
     [(string-ci=? str "#t") #t]
+    [(string-ci=? str "T") #t]
     [(string-ci=? str "true") #t]
+    [(string-ci=? str "#true") #t]
     [(string-ci=? str "#f") #f]
+    [(string-ci=? str "F") #f]
     [(string-ci=? str "false") #f]
+    [(string-ci=? str "#false") #f]
     [else #f]))
 
 (: append-BSeriesBuilder (BSeriesBuilder (U Boolean String) -> Void))
@@ -79,4 +83,4 @@
 (define (complete-BSeriesBuilder builder)  
   (let* ((data (BSeriesBuilder-data builder))
          (len (BSeriesBuilder-index builder)))
-    (BSeries #f (vector-copy data 0 len))))
+    (new-BSeries (vector-copy data 0 len))))

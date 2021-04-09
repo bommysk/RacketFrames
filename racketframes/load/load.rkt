@@ -140,9 +140,9 @@
   (if schema schema (determine-schema path SAMPLE-SIZE (if delim delim ","))))
 
 ; delimiter must be specified by user if no schema provided, need to still do this
-(: load-csv-file (Path-String [#:schema (Option Schema)] -> DataFrame))
-(define (load-csv-file path #:schema [schema #f])
-  (let* ((schema (schema-if-needed schema path #f)))
+(: load-csv-file (Path-String [#:schema (Option Schema)] [#:sample Boolean] -> DataFrame))
+(define (load-csv-file path #:schema [schema #f] #:sample [sample #f])
+  (let* ((schema (if sample (schema-if-needed schema path #f) (generate-generic-schema path))))
     (make-data-frame schema (read-csv-file path
                                            (Schema-has-headers schema)
                                            (new-DataFrameBuilder-from-Schema schema)))))
@@ -159,6 +159,14 @@
 (define (determine-schema fpath cnt delim)
   (check-data-file-exists fpath)
   (determine-schema-from-sample (sample-formatted-file fpath cnt) delim))
+
+(: generate-generic-schema (Path-String String) -> Schema)
+(define (generate-generic-schema fpath delim)
+  ; for generic schema we just need to check if the first line
+  ; consists of strings, if it does, we can treat it as the header
+  ; and generalize all columns as GenSeries
+  (determine-generic-schema (sample-formatted-file fpath 1) delim))
+  
 
 (: determine-schema-sql (QueryResult -> Schema))
 (define (determine-schema-sql query-result)

@@ -19,35 +19,35 @@
 
 (check-equal? (list->flvector (list 1.5 2.5 3.5)) (flvector 1.5 2.5 3.5))
 
-(NSeries-data (+/ns/is (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries #f (vector 2 2 2 2 2))))
+(NSeries-data (+/ns/is (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5)) (new-ISeries (vector 2 2 2 2 2))))
 
-(NSeries-data (-/ns/is (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries #f (vector 2 2 2 2 2))))
+(NSeries-data (-/ns/is (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5)) (new-ISeries (vector 2 2 2 2 2))))
 
-(NSeries-data (*/ns/is (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries #f (vector 2 2 2 2 2))))
+(NSeries-data (*/ns/is (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5)) (new-ISeries (vector 2 2 2 2 2))))
 
-(NSeries-data (//ns/is (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries #f (vector 2 2 2 2 2))))
+(NSeries-data (//ns/is (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5)) (new-ISeries (vector 2 2 2 2 2))))
 
-(NSeries-data (+/is/ns (ISeries #f (vector 2 2 2 2 2)) (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5))))
+(NSeries-data (+/is/ns (new-ISeries (vector 2 2 2 2 2)) (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5))))
 
-(NSeries-data (-/is/ns (ISeries #f (vector 2 2 2 2 2)) (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5))))
+(NSeries-data (-/is/ns (new-ISeries (vector 2 2 2 2 2)) (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5))))
 
-(NSeries-data (*/is/ns (ISeries #f (vector 2 2 2 2 2)) (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5))))
+(NSeries-data (*/is/ns (new-ISeries (vector 2 2 2 2 2)) (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5))))
 
-(NSeries-data (//is/ns (ISeries #f (vector 2 2 2 2 2)) (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5))))
+(NSeries-data (//is/ns (new-ISeries (vector 2 2 2 2 2)) (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5))))
 
-(BSeries-data (>/ns/is (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries #f (vector 2 2 2 2 2))))
+(BSeries-data (>/ns/is (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5)) (new-ISeries (vector 2 2 2 2 2))))
 
-(BSeries-data (</ns/is (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries #f (vector 2 2 2 2 2))))
+(BSeries-data (</ns/is (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5)) (new-ISeries (vector 2 2 2 2 2))))
 
-(BSeries-data (>=/ns/is (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries #f (vector 2 2 2 2 2))))
+(BSeries-data (>=/ns/is (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5)) (new-ISeries (vector 2 2 2 2 2))))
 
-(BSeries-data (<=/ns/is (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries #f (vector 2 2 2 2 2))))
+(BSeries-data (<=/ns/is (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5)) (new-ISeries (vector 2 2 2 2 2))))
 
-(BSeries-data (=/ns/is (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries #f (vector 2 2 2 2 2))))
+(BSeries-data (=/ns/is (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5)) (new-ISeries (vector 2 2 2 2 2))))
 
-(BSeries-data (=/ns/is (NSeries #f (flvector 2.0 2.0 2.0 2.0 2.0)) (ISeries #f (vector 2 2 2 2 2))))
+(BSeries-data (=/ns/is (new-NSeries (flvector 2.0 2.0 2.0 2.0 2.0)) (new-ISeries (vector 2 2 2 2 2))))
 
-(BSeries-data (!=/ns/is (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries #f (vector 2 2 2 2 2))))
+(BSeries-data (!=/ns/is (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5)) (ISeries (vector 2 2 2 2 2))))
 
 (BSeries-data (>/is/ns (ISeries #f (vector 2 2 2 2 2)) (NSeries #f (flvector 1.5 2.5 3.5 4.5 5.5))))
 
@@ -65,10 +65,10 @@
 
 ; create float series
 (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-                                      (build-index-from-list (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
 (define series-float-2 (new-NSeries (flvector 5.0 6.0 7.0 8.0)
-                                      (build-index-from-list (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
 ; nseries reference tests
 (check-equal? ((nseries-referencer series-float) 0) 1.5)
@@ -123,6 +123,10 @@
 
 (check-equal? (apply-agg-ns 'count series-float) 4)
 
+(apply-agg-ns 'median series-float)
+
+(apply-agg-ns 'mode series-float) 
+
 ; statistics tests
 (check-equal? (apply-stat-ns 'variance series-float) 1.035)
 
@@ -131,3 +135,10 @@
 (check-equal? (apply-stat-ns 'skewness series-float) -0.18946647505895)
 
 (nseries-print series-float (current-output-port))
+
+(define series-float (new-NSeries (flvector 1.5 2.4 5.89 3.6 4.1 4.1)
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd 'e 'f))))
+
+(apply-agg-ns 'median series-float)
+
+(apply-agg-ns 'mode series-float)

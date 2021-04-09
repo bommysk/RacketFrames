@@ -13,7 +13,7 @@
 (require
  racket/flonum
  (only-in "numeric-series.rkt"
-          NSeries))
+          NSeries new-NSeries))
 (struct: NSeriesBuilder ([index  : Index]
 			 [data : FlVector]) #:mutable)
 
@@ -51,6 +51,7 @@
   (if (< (NSeriesBuilder-index builder)         
          (flvector-length (NSeriesBuilder-data builder)))
       (let ((num (if (string? flo/str-value)
+                     ; if the string is not a valid number, we fill NAN
 		     (let ((num (string->number (string-trim flo/str-value))))
 		       (if num (assert (exact->inexact num) flonum?) +nan.0))
 		     flo/str-value)))
@@ -66,4 +67,4 @@
 (define (complete-NSeriesBuilder builder)  
   (let* ((data (NSeriesBuilder-data builder))
          (len (NSeriesBuilder-index builder)))
-    (NSeries #f (flvector-copy data 0 len))))
+    (new-NSeries (flvector-copy data 0 len))))

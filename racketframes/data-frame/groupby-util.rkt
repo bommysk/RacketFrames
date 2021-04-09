@@ -4,6 +4,8 @@
 
 ; Provide functions in this file to other files.
 (provide:
+ [gen-series-groupby (GenSeries -> GroupHash)]
+ [apply-agg-gen-series (Symbol GroupHash -> GenSeries)]
  [make-group-hash (-> GroupHash)]
  [make-agg-value-hash-sindex ((Listof (Pair String GenericType)) -> SIndex)]
  [agg-value-hash-to-gen-series (AggValueHash -> GenSeries)])
@@ -27,7 +29,8 @@
 (define (make-group-hash)
   (make-hash))
 
-;Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index. The Series VALUES will be used to determine the groups.
+; Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index.
+; The Series VALUES will be used to determine the groups.
 (: gen-series-groupby (GenSeries -> GroupHash))
 (define (gen-series-groupby gen-series)
   (define: group-index : GroupHash (make-group-hash))  
@@ -42,7 +45,7 @@
 	    (let* ((gen-val : (U GenericType GenSeries) (gen-series-iloc gen-series (assert i index?)))
                    (gen-list : (Listof GenericType) (if (GenericType? gen-val) (list gen-val) (vector->list (GenSeries-data gen-val))))
                   (key (if (GenSeries-index gen-series)
-                                   (idx->key (GenSeries-index gen-series) (assert i index?))
+                                   (idx->key (assert (GenSeries-index gen-series)) (assert i index?))
                                    (assert i index?)))
                   (key-str : String (cond
                                       [(symbol? key) (symbol->string key)]
@@ -112,4 +115,4 @@
 
     (let ((index : SIndex (make-agg-value-hash-sindex sorted-agg-value-hash)))
       (new-GenSeries (for/vector: : (Vectorof GenericType) ([p sorted-agg-value-hash])
-                       (cdr p)) (LabelIndex index)))))
+                       (cdr p)) #:index (LabelIndex index)))))

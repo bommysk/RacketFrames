@@ -2,19 +2,56 @@
 
 (provide:
  [new-series ((Sequenceof Any) (Option (U (Listof IndexDataType) RFIndex)) -> Series)]
- [series-complete (SeriesBuilder -> Series)])
+ [set-series-index (Series (U (Listof IndexDataType) RFIndex) -> Series)]
+ [series-set-null-value (Series GenericType -> Series)]
+ [series-groupby (Series [#:by-value Boolean] -> GroupHash)]
+ [series-complete (SeriesBuilder -> Series)]
+ [series-data (Series -> (U (Vectorof GenericType) FlVector (Vectorof Symbol) (Vectorof RFFixnum) (Vectorof Boolean) (Vectorof Datetime) (Vectorof date)))]
+ [series-iref (Series Index -> Any)]
+ [series-index-ref (Series IndexDataType -> Any)]
+ [series-loc-boolean (Series (Listof Boolean) -> (U Any Series))]
+ [series-loc (Series (U Label (Listof Label) (Listof Boolean)) -> (U Any Series))]
+ [series-iloc (Series (U Index (Listof Index)) -> (U Any Series))]
+ [get-series-index (Series -> RFIndex)]
+ [has-series-index? (Series -> Boolean)]
+ [indexable-series->index (IndexableSeries -> RFIndex)]
+ [series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof date) FlVector) -> (Sequenceof IndexDataType))])
+
 
 (require
+  racket/fixnum
+  racket/flonum
   (only-in "indexed-series.rkt"
-          Label RFIndex IndexDataType ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime? ListofLabel?)
+          Label RFIndex IndexDataType ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime? ListofLabel? ListofIndexDataType? build-index-from-sequence ListofListofString)
  (only-in "series-description.rkt"
-	  Series SeriesType)
- (only-in "generic-series.rkt" new-GenSeries)
- (only-in "categorical-series.rkt" new-CSeries)
- (only-in "numeric-series.rkt" new-NSeries list->flvector)
- (only-in "integer-series.rkt" new-ISeries)
- (only-in "boolean-series.rkt" new-BSeries)
- (only-in "datetime-series.rkt" new-DatetimeSeries)
+	  Series Series? SeriesList SeriesList? SeriesType IndexableSeries IndexableSeries?)
+ (only-in "groupby-util.rkt" gen-series-groupby)
+ (only-in "generic-series.rkt"
+          GenericType GenSeries GenSeries? new-GenSeries gen-series-length gen-series-data gen-series-index gen-series-iref
+          set-GenSeries-index gen-series-loc-boolean gen-series-loc gen-series-loc-multi-index gen-series-iloc gen-series-index-ref
+          set-GenSeries-null-value set-GenSeries-any-null-value-inplace)
+ (only-in "categorical-series.rkt"
+          CSeries CSeries? new-CSeries cseries-length cseries-data cseries-index cseries-iref set-CSeries-index
+          cseries-loc-boolean cseries-iloc cseries-loc cseries-loc-multi-index cseries-index-ref
+          set-CSeries-null-value cseries-null-value cseries-groupby)
+ (only-in "numeric-series.rkt"
+          NSeries NSeries? new-NSeries nseries-length nseries-data nseries-index nseries-iref
+          set-NSeries-index nseries-loc-boolean nseries-loc nseries-loc-multi-index nseries-iloc nseries-index-ref list->flvector flvector->list
+          set-NSeries-null-value nseries-null-value nseries-groupby)
+ (only-in "integer-series.rkt"
+	  ISeries ISeries? new-ISeries iseries-length iseries-data iseries-index iseries-iref
+          set-ISeries-index iseries-loc-boolean iseries-loc iseries-loc-multi-index iseries-iloc iseries-index-ref RFFixnum RFFixnum?
+          set-ISeries-null-value iseries-null-value iseries-groupby)
+ (only-in "boolean-series.rkt"
+	  BSeries BSeries? new-BSeries bseries-length bseries-data bseries-index bseries-iref
+          set-BSeries-index bseries-loc-boolean bseries-loc bseries-loc-multi-index bseries-iloc bseries-index-ref set-BSeries-null-value bseries-null-value bseries-groupby)
+ (only-in "datetime-series.rkt"
+	  DatetimeSeries DatetimeSeries? new-DatetimeSeries DatetimeSeries-index DatetimeSeries-data datetime-series-length datetime-series-data datetime-series-index datetime-series-iref
+          set-DatetimeSeries-index datetime-series-loc-boolean datetime-series-loc datetime-series-loc-multi-index datetime-series-iloc datetime-series-index-ref datetime-series-groupby)
+ (only-in "date-series.rkt"
+	  DateSeries DateSeries? new-DateSeries DateSeries-index DateSeries-data date-series-length date-series-data date-series-index date-series-iref
+          set-DateSeries-index date-series-loc-boolean date-series-loc date-series-loc-multi-index date-series-iloc date-series-index-ref)
+ 
  (only-in "series-builder.rkt" SeriesBuilder)
  (only-in "generic-series-builder.rkt"
           GenSeriesBuilder GenSeriesBuilder?
@@ -35,24 +72,26 @@
 	  DatetimeSeriesBuilder DatetimeSeriesBuilder?
 	  complete-DatetimeSeriesBuilder)
  (only-in "../load/sample.rkt"
-          guess-series-type))
+          guess-series-type)
+ (only-in "../util/datetime/types.rkt"
+          Datetime))
 
 (: new-series ((Sequenceof Any) (Option (U (Listof IndexDataType) RFIndex)) -> Series))
 (define (new-series data labels)
   (let*: ((series-type : SeriesType (guess-series-type (map ~a (sequence->list data)))))
     (cond                                                      
       [(eq? series-type 'CategoricalSeries)
-       (new-CSeries (list->vector (assert (sequence->list data) ListofLabel?)) labels)]
+       (new-CSeries (list->vector (assert (sequence->list data) ListofLabel?)) #:index labels)]
       [(eq? series-type 'NumericSeries)
-       (new-NSeries (list->flvector (assert (sequence->list data) ListofFlonum?)) labels)]
+       (new-NSeries (list->flvector (assert (sequence->list data) ListofFlonum?)) #:index labels)]
       [(eq? series-type 'IntegerSeries)
-       (new-ISeries (list->vector (assert (sequence->list data) ListofFixnum?)) labels)]
+       (new-ISeries (assert (sequence->list data) ListofFixnum?) #:index labels)]
       [(eq? series-type 'BooleanSeries)
-       (new-BSeries (list->vector (assert (sequence->list data) ListofBoolean?)) labels)]
+       (new-BSeries (list->vector (assert (sequence->list data) ListofBoolean?)) #:index labels)]
       [(eq? series-type 'DatetimeSeries)
-       (new-DatetimeSeries (list->vector (assert (sequence->list data) ListofDatetime?)) labels)]
+       (new-DatetimeSeries (list->vector (assert (sequence->list data) ListofDatetime?)) #:index labels)]
       [else
-       (new-GenSeries (list->vector (sequence->list data)) labels)])))
+       (new-GenSeries (list->vector (sequence->list data)) #:index labels)])))
 
 (: series-complete (SeriesBuilder -> Series))
 (define (series-complete builder)
@@ -70,5 +109,250 @@
     ((DatetimeSeriesBuilder? builder)
      (complete-DatetimeSeriesBuilder builder))))
 
+(: series-set-index (Series (U (Listof IndexDataType) RFIndex) -> Series))
+(define (series-set-index series labels)
+  (cond                                                      
+    [(CSeries? series)
+     (set-CSeries-index series labels)]
+    [(NSeries? series)
+     (set-NSeries-index series labels)]
+    [(ISeries? series)
+     (set-ISeries-index series labels)]
+    [(BSeries? series)
+     (set-BSeries-index series labels)]
+    [(DatetimeSeries? series)
+     (set-DatetimeSeries-index series labels)]
+    [else
+     (set-GenSeries-index series labels)]))
 
+(: series-set-null-value (Series GenericType -> Series))
+(define (series-set-null-value series null-value)
+  (cond                                                      
+    [(CSeries? series)
+     (set-CSeries-null-value series (assert null-value symbol?))]
+    [(NSeries? series)
+     (set-NSeries-null-value series (assert null-value flonum?))]
+    [(ISeries? series)
+     (set-ISeries-null-value series (assert null-value fixnum?))]
+    [(BSeries? series)
+     (set-BSeries-null-value series (assert null-value boolean?))]
+    ;[(DatetimeSeries? series)
+     ;(set-DatetimeSeries-null-value series (assert null-value Datetime?))]
+    [else
+     (set-GenSeries-null-value series null-value)]))
 
+(: get-series-null-value (Series -> GenericType))
+(define (get-series-null-value series null-value)
+  (cond                                                      
+    [(CSeries? series)
+     (cseries-null-value series (assert null-value symbol?))]
+    [(NSeries? series)
+     (nseries-null-value series (assert null-value flonum?))]
+    [(ISeries? series)
+     (iseries-null-value series (assert null-value fixnum?))]
+    [(BSeries? series)
+     (bseries-null-value series (assert null-value boolean?))]
+    ;[(DatetimeSeries? series)
+     ;(set-DatetimeSeries-null-value series (assert null-value Datetime?))]
+    [else
+     (set-GenSeries-null-value series null-value)]))
+
+(define-type Key String)
+(define-type GroupHash (HashTable Key (Listof GenericType)))
+
+; This function is self-explanatory, it consumes no arguments
+; and creates a hash map which will represent a JoinHash.
+(: make-group-hash (-> GroupHash))
+(define (make-group-hash)
+  (make-hash))
+
+(: series-groupby (Series [#:by-value Boolean] -> GroupHash))
+(define (series-groupby series #:by-value [by-value #f])
+  (cond                                                      
+    [(CSeries? series)
+     (cseries-groupby series by-value)]
+    [(NSeries? series)
+     (nseries-groupby series by-value)]
+    [(ISeries? series)
+     (iseries-groupby series by-value)]
+    [(BSeries? series)
+     (bseries-groupby series by-value)]
+    [(DatetimeSeries? series)
+     (datetime-series-groupby series by-value)]
+    [else
+     (gen-series-groupby series by-value)]))
+
+(: series-length (Series -> Index))
+(define (series-length series)
+    (cond                                                      
+    [(CSeries? series)
+     (cseries-length series)]
+    [(NSeries? series)
+     (nseries-length series )]
+    [(ISeries? series)
+     (iseries-length series)]
+    [(BSeries? series)
+     (bseries-length series)]
+    [(DatetimeSeries? series)
+     (datetime-series-length series)]
+    [else
+     (gen-series-length series)]))
+
+; ***********************************************************
+; Get series data
+
+(: series-data (Series -> (U (Vectorof GenericType) FlVector (Vectorof Symbol)
+                             (Vectorof RFFixnum) (Vectorof Boolean) (Vectorof Datetime) (Vectorof date))))
+(define (series-data series)
+  (cond
+    [(GenSeries? series) (gen-series-data series)]
+    [(NSeries? series) (nseries-data series)]    
+    [(CSeries? series) (cseries-data series)]    
+    [(ISeries? series) (iseries-data series)]
+    [(BSeries? series) (bseries-data series)]
+    [(DatetimeSeries? series) (datetime-series-data series)]
+    [(DateSeries? series) (date-series-data series)]
+    [else (error "Unknown Series type in DataFrame")]))
+
+(: series-iref (Series Index -> Any))
+(define (series-iref series idx)
+  (cond
+    [(GenSeries? series) (gen-series-iref series (list idx))]
+    [(NSeries? series) (nseries-iref series (list idx))]    
+    [(CSeries? series) (cseries-iref series (list idx))]    
+    [(ISeries? series) (iseries-iref series (list idx))]
+    [(BSeries? series) (bseries-iref series (list idx))]
+    [(DatetimeSeries? series) (datetime-series-iref series (list idx))]
+    [(DateSeries? series) (date-series-iref series (list idx))]
+    [else (error "Unknown Series type in DataFrame")]))
+
+(: series-index-ref (Series IndexDataType -> Any))
+(define (series-index-ref series idx)
+  (cond
+    [(GenSeries? series) (gen-series-index-ref series idx)]
+    [(NSeries? series) (nseries-index-ref series idx)]    
+    [(CSeries? series) (cseries-index-ref series idx)]    
+    [(ISeries? series) (iseries-index-ref series idx)]
+    [(BSeries? series) (bseries-index-ref series idx)]
+    [(DatetimeSeries? series) (datetime-series-index-ref series idx)]
+    [(DateSeries? series) (date-series-index-ref series idx)]
+    [else (error "Unknown Series type in DataFrame")]))
+
+(: series-loc-boolean (Series (Listof Boolean) -> (U Any Series)))
+(define (series-loc-boolean series boolean-lst)
+  (cond
+    [(GenSeries? series) (gen-series-loc-boolean series boolean-lst)]
+    [(NSeries? series) (nseries-loc-boolean series boolean-lst)]
+    [(CSeries? series) (cseries-loc-boolean series boolean-lst)]   
+    [(ISeries? series) (iseries-loc-boolean series boolean-lst)]
+    [(BSeries? series) (bseries-loc-boolean series boolean-lst)]
+    [(DatetimeSeries? series) (datetime-series-loc-boolean series boolean-lst)]
+    [(DateSeries? series) (date-series-loc-boolean series boolean-lst)]
+    [else (error "Unknown Series type in DataFrame")]))
+
+(: series-loc (Series (U Label (Listof Label) (Listof Boolean)) -> (U Any Series)))
+(define (series-loc series label)
+  (cond
+    [(GenSeries? series) (gen-series-loc series label)]
+    [(NSeries? series) (nseries-loc series label)]
+    [(CSeries? series) (cseries-loc series label)]   
+    [(ISeries? series) (iseries-loc series label)]
+    [(BSeries? series) (bseries-loc series label)]
+    [(DatetimeSeries? series) (datetime-series-loc series label)]
+    [(DateSeries? series) (date-series-loc series label)]
+    [else (error "Unknown Series type in DataFrame")]))
+
+(: series-loc-multi-index (Series (U (Listof String) ListofListofString) -> (U Any Series)))
+(define (series-loc-multi-index series label)
+  (cond
+    [(GenSeries? series) (gen-series-loc-multi-index series label)]
+    [(NSeries? series) (nseries-loc-multi-index series label)]
+    [(CSeries? series) (cseries-loc-multi-index series label)]   
+    [(ISeries? series) (iseries-loc-multi-index series label)]
+    [(BSeries? series) (bseries-loc-multi-index series label)]
+    [(DatetimeSeries? series) (datetime-series-loc-multi-index series label)]
+    [(DateSeries? series) (date-series-loc-multi-index series label)]
+    [else (error "Unknown Series type in DataFrame")]))
+
+(: series-iloc (Series (U Index (Listof Index)) -> (U Any Series)))
+(define (series-iloc series idx)
+  (cond
+    [(GenSeries? series) (gen-series-iloc series idx)]
+    [(NSeries? series) (nseries-iloc series idx)]
+    [(CSeries? series) (cseries-iloc series idx)]   
+    [(ISeries? series) (iseries-iloc series idx)]
+    [(BSeries? series) (bseries-iloc series idx)]
+    [(DatetimeSeries? series) (datetime-series-iloc series idx)]
+    [(DateSeries? series) (date-series-iloc series idx)]
+    [else (error "Unknown Series type in DataFrame")]))
+
+; ***********************************************************
+
+; ***********************************************************
+
+(: set-series-index (Series RFIndex -> Series))
+(define (set-series-index series index)
+  (cond
+    [(GenSeries? series) (set-GenSeries-index (assert series GenSeries?) index)]
+    [(NSeries? series) (set-NSeries-index (assert series NSeries?) index)]
+    [(CSeries? series) (set-CSeries-index (assert series CSeries?) index)]    
+    [(ISeries? series) (set-ISeries-index (assert series ISeries?) index)]
+    [(BSeries? series) (set-BSeries-index (assert series BSeries?) index)]
+    [(DatetimeSeries? series) (set-DatetimeSeries-index (assert series DatetimeSeries?) index)]
+    [(DateSeries? series) (set-DateSeries-index (assert series DateSeries?) index)]
+    [else (error "Unknown or not supported series type in DataFrame")]))
+
+(: get-series-index (Series -> RFIndex))
+(define (get-series-index series)
+  (cond
+    [(GenSeries? series) (assert (gen-series-index (assert series GenSeries?)))]
+    [(NSeries? series) (assert (nseries-index (assert series NSeries?)))]
+    [(CSeries? series) (assert (cseries-index (assert series CSeries?)))]    
+    [(ISeries? series) (assert (iseries-index (assert series ISeries?)))]
+    [(BSeries? series) (assert (bseries-index (assert series BSeries?)))]
+    [(DatetimeSeries? series) (assert (datetime-series-index (assert series DatetimeSeries?)))]
+    [(DateSeries? series) (assert (date-series-index (assert series DateSeries?)))]
+    [else (error "Unknown or not supported series type in DataFrame")]))
+
+(: has-series-index? (Series -> Boolean))
+(define (has-series-index? series)
+  (cond
+    [(GenSeries? series) (if (gen-series-index (assert series GenSeries?)) #t #f)]
+    [(NSeries? series) (if (nseries-index (assert series NSeries?)) #t #f)]
+    [(CSeries? series) (if (cseries-index (assert series CSeries?)) #t #f)]
+    [(ISeries? series) (if (iseries-index (assert series ISeries?)) #t #f)]
+    [(BSeries? series) (if (bseries-index (assert series BSeries?)) #t #f)]
+    [(DatetimeSeries? series) (if (datetime-series-index (assert series DatetimeSeries?)) #t #f)]
+    [(DateSeries? series) (if (date-series-index (assert series DateSeries?)) #t #f)]
+    [else (error "Unknown or not supported series type in DataFrame")]))
+
+; ***********************************************************
+
+(: series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof date) FlVector) -> (Sequenceof IndexDataType)))
+(define (series-data->indexable-sequence vectorof-any)
+  (let ((indexable-sequence : (Sequenceof IndexDataType)
+                            (if (flvector? vectorof-any)
+                                (flvector->list (assert vectorof-any flvector?))
+                                (assert (vector->list vectorof-any) ListofIndexDataType?))))
+    indexable-sequence))
+        
+(: indexable-series->index (IndexableSeries -> RFIndex))
+(define (indexable-series->index series)
+  (build-index-from-sequence (series-data->indexable-sequence (series-data series))))
+
+ ;(in-series (->* (series?) (exact-nonnegative-integer?
+  ;                          (or/c -1 exact-nonnegative-integer?)
+   ;                         exact-integer?)
+    ;             sequence?))
+;; Return a sequence that enumerates elements in the series between
+;; START and STOP with STEP.  This can be used in for loops.
+#|(define (in-series series [start 0] [stop (series-length series)] [step 1])  
+  (define data (series-data series))
+  
+  (if (<= start stop)
+      (unless (> step 0)
+        (raise-argument-error 'step "positive" step))      
+      (unless (< step 0)
+        (raise-argument-error 'step "negative" step)))
+  
+  (in-vector (series-data series) start stop step)) |#
