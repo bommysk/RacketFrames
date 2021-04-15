@@ -47,7 +47,8 @@
           set-BSeries-index bseries-loc-boolean bseries-loc bseries-loc-multi-index bseries-iloc bseries-index-ref set-BSeries-null-value bseries-null-value bseries-groupby)
  (only-in "datetime-series.rkt"
 	  DatetimeSeries DatetimeSeries? new-DatetimeSeries DatetimeSeries-index DatetimeSeries-data datetime-series-length datetime-series-data datetime-series-index datetime-series-iref
-          set-DatetimeSeries-index datetime-series-loc-boolean datetime-series-loc datetime-series-loc-multi-index datetime-series-iloc datetime-series-index-ref datetime-series-groupby)
+          set-DatetimeSeries-index datetime-series-loc-boolean datetime-series-loc datetime-series-loc-multi-index datetime-series-iloc datetime-series-index-ref datetime-series-groupby
+          set-DatetimeSeries-null-value)
  (only-in "date-series.rkt"
 	  DateSeries DateSeries? new-DateSeries DateSeries-index DateSeries-data date-series-length date-series-data date-series-index date-series-iref
           set-DateSeries-index date-series-loc-boolean date-series-loc date-series-loc-multi-index date-series-iloc date-series-index-ref)
@@ -152,8 +153,8 @@
      (iseries-null-value series (assert null-value fixnum?))]
     [(BSeries? series)
      (bseries-null-value series (assert null-value boolean?))]
-    ;[(DatetimeSeries? series)
-     ;(set-DatetimeSeries-null-value series (assert null-value Datetime?))]
+    [(DatetimeSeries? series)
+     (set-DatetimeSeries-null-value series (assert null-value Datetime?))]
     [else
      (set-GenSeries-null-value series null-value)]))
 
