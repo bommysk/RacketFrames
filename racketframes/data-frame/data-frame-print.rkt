@@ -269,3 +269,42 @@
        (write-frame-row (assert row index?))
        (newline outp)))
 
+;; Write in CSV format the data frame DF to the output port OUTP.  If SERIES,
+;; if non-null, denote the series to be written.  If null, all the series are
+;; written out in an unspecified order.  Rows between START and STOP are
+;; written out.
+#|(define (data-frame-write-csv df outp series #:start start #:stop stop)
+  (define first? #t)
+  (define columns (if (null? series) (df-series-names df) series))
+  (for ([header (in-list columns)])
+    (if first?
+        (set! first? #f)
+        (write-string "," outp))
+    (write-string (quote-string header) outp))
+  (newline outp)
+  (df-for-each
+   df
+   columns
+   (lambda (val)
+     (define first? #t)
+     (for ([col (in-list columns)]
+           [item (in-list val)])
+       (if first?
+           (set! first? #f)
+           (write-string "," outp))
+       (define oitem
+         (cond
+           ((df-is-na? df col item) "") ; this is not very fast...
+           ((string? item) (quote-string item))
+           ((real? item)
+            (~a
+             (if (exact-integer? item)
+                 item
+                 (exact->inexact item))))
+           ;; otherwise we write in a way that we might be able to read it
+           ;; back... this would work for transparent structs...
+           (#t (quote-string (~s item)))))
+       (write-string oitem outp))
+     (newline outp))
+   #:start start #:stop stop)) |#
+

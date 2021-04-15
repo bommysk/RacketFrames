@@ -15,7 +15,7 @@
  (only-in racket/vector
 	  vector-copy)
  (only-in "datetime-series.rkt"
-          DatetimeSeries)
+          DatetimeSeries new-DatetimeSeries)
  (only-in "../util/datetime/parse.rkt"
           parse-date parse-datetime is-valid-date? is-valid-datetime?)
  (only-in "../util/datetime/types.rkt"
@@ -75,4 +75,4 @@
 (define (complete-DatetimeSeriesBuilder builder)  
   (let* ((data (DatetimeSeriesBuilder-data builder))
          (len (DatetimeSeriesBuilder-index builder)))
-    (DatetimeSeries #f (vector-copy data 0 len))))
+    (new-DatetimeSeries (vector-copy data 0 len))))

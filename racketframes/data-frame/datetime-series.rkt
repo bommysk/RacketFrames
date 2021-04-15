@@ -65,7 +65,9 @@
  
  [datetime-series-print (DatetimeSeries Output-Port -> Void)]
 
- [datetime-series-groupby (DatetimeSeries [#:by-value Boolean] -> GroupHash)])
+ [datetime-series-groupby (DatetimeSeries [#:by-value Boolean] -> GroupHash)]
+ [set-DatetimeSeries-null (DatetimeSeries RFNULL -> DatetimeSeries)]
+ [set-DatetimeSeries-null-inplace (DatetimeSeries Datetime -> Void)])
 ; ***********************************************************
 
 (define-type RFDatetime (U Datetime RFNoData))
@@ -77,7 +79,9 @@
    ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
    [null-value : RFNULL]
    ; needed for type checking purposes and to do proper arithmetic operations in numeric series
-   [datetime-null-value : Datetime]))
+   [datetime-null-value : Datetime])
+  #:mutable
+  #:transparent)
 
 (: make-RFDatetime-vector ((U (Sequenceof Datetime) (Sequenceof RFDatetime)) -> (Vectorof RFDatetime)))
 (define (make-RFDatetime-vector seq)
@@ -121,6 +125,14 @@
 (: set-DatetimeSeries-index (DatetimeSeries (U (Listof IndexDataType) RFIndex) -> DatetimeSeries))
 (define (set-DatetimeSeries-index datetime-series labels)
   (new-DatetimeSeries (datetime-series-data datetime-series) #:index labels))
+
+(: set-DatetimeSeries-null (DatetimeSeries RFNULL -> DatetimeSeries))
+(define (set-DatetimeSeries-null datetime-series null-value)
+  (new-DatetimeSeries (datetime-series-data datetime-series) #:index (datetime-series-index datetime-series) #:fill-null null-value))
+
+(: set-DatetimeSeries-null-inplace (DatetimeSeries Datetime -> Void))
+(define (set-DatetimeSeries-null-inplace datetime-series null-value)
+  (set-DatetimeSeries-datetime-null-value! datetime-series null-value))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -579,7 +591,7 @@
                    (key (if by-value
                             (datetime->string (assert (datetime-series-iloc datetime-series (assert i index?)) Datetime?) #f)
                             (if (DatetimeSeries-index datetime-series)
-                                (idx->key (DatetimeSeries-index datetime-series) (assert i index?))
+                                (idx->key (assert (DatetimeSeries-index datetime-series)) (assert i index?))
                                 (assert i index?))))
                   (key-str : String (cond
                                       [(symbol? key) (symbol->string key)]
