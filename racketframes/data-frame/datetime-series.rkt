@@ -34,21 +34,21 @@
 (provide:
  [new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof Datetime)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DatetimeSeries)]
  [set-DatetimeSeries-index (DatetimeSeries (U (Listof IndexDataType) RFIndex) -> DatetimeSeries)]
- [datetime-series-iref (DatetimeSeries (Listof Index) -> (Listof Datetime))]
- [datetime-series-index-ref (DatetimeSeries IndexDataType -> (Listof Datetime))]
- [datetime-series-loc-multi-index (DatetimeSeries (U (Listof String) ListofListofString) -> (U Datetime DatetimeSeries))]
- [datetime-series-loc-boolean (DatetimeSeries (Listof Boolean) -> (U Datetime DatetimeSeries))]
- [datetime-series-loc (DatetimeSeries (U Label (Listof Label) (Listof Boolean)) -> (U Datetime DatetimeSeries))]
- [datetime-series-iloc (DatetimeSeries (U Index (Listof Index)) -> (U Datetime DatetimeSeries))]
+ [datetime-series-iref (DatetimeSeries (Listof Index) -> (Listof RFDatetime))]
+ [datetime-series-index-ref (DatetimeSeries IndexDataType -> (Listof RFDatetime))]
+ [datetime-series-loc-multi-index (DatetimeSeries (U (Listof String) ListofListofString) -> (U RFDatetime DatetimeSeries))]
+ [datetime-series-loc-boolean (DatetimeSeries (Listof Boolean) -> (U RFDatetime DatetimeSeries))]
+ [datetime-series-loc (DatetimeSeries (U Label (Listof Label) (Listof Boolean)) -> (U RFDatetime DatetimeSeries))]
+ [datetime-series-iloc (DatetimeSeries (U Index (Listof Index)) -> (U RFDatetime DatetimeSeries))]
  [datetime-series-iloc-range (DatetimeSeries Index Index -> DatetimeSeries)]
- [datetime-series-label-ref (DatetimeSeries Label -> (Listof Datetime))]
- [datetime-series-range (DatetimeSeries Index Index -> (Vectorof Datetime))]
+ [datetime-series-label-ref (DatetimeSeries Label -> (Listof RFDatetime))]
+ [datetime-series-range (DatetimeSeries Index Index -> (Vectorof RFDatetime))]
  [datetime-series-length (DatetimeSeries -> Index)]
- [datetime-series-referencer (DatetimeSeries -> (Index -> Datetime))]
- [datetime-series-data (DatetimeSeries -> (Vectorof Datetime))]
+ [datetime-series-referencer (DatetimeSeries -> (Index -> RFDatetime))]
+ [datetime-series-data (DatetimeSeries -> (Vectorof RFDatetime))]
  [datetime-series-index (DatetimeSeries -> (U False RFIndex))]
  [map/datetime-series-data (DatetimeSeries (Datetime -> Datetime) -> DatetimeSeries)]
- [datetime-range (Datetime (Option Symbol) (Option Index) (Option Datetime) -> (Listof Datetime))]
+ [datetime-range (Datetime (Option Symbol) (Option Index) (Option Datetime) -> (Listof RFDatetime))]
 
  [bop/datetime-series (DatetimeSeries DatetimeSeries (Datetime Datetime -> Datetime) -> DatetimeSeries)]
  [comp/datetime-series (DatetimeSeries DatetimeSeries (Datetime Datetime -> Boolean) -> BSeries)]
@@ -87,7 +87,7 @@
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a DatetimeSeries
 ; struct object.
-(: new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof Datetime))
+(: new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof RFDatetime))
                        [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DatetimeSeries))
 (define (new-DatetimeSeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE])
 
@@ -268,7 +268,7 @@
       ; make a new index from these labels using build-index-from-labels
       ; sub-vector the data vector to get the data and create a new-ISeries
       (new-DatetimeSeries
-       (for/vector: : (Vectorof Datetime) ([i idx])
+       (for/vector: : (Vectorof RFDatetime) ([i idx])
          (vector-ref (datetime-series-data datetime-series) i))
        #:index (if (not (DatetimeSeries-index datetime-series))
                    #f
@@ -301,10 +301,10 @@
 
 (: datetime-series-loc-boolean (DatetimeSeries (Listof Boolean) -> (U RFDatetime DatetimeSeries)))
 (define (datetime-series-loc-boolean datetime-series boolean-lst)
-  (: data (Vectorof Datetime))
+  (: data (Vectorof RFDatetime))
   (define data (datetime-series-data datetime-series))
 
-  (: new-data (Vectorof Datetime))
+  (: new-data (Vectorof RFDatetime))
   (define new-data (make-vector (length (filter true? boolean-lst)) DEFAULT_NULL_VALUE))
   
   (define data-idx 0)
@@ -336,11 +336,11 @@
 
 (: map/datetime-series-data (DatetimeSeries (Datetime -> Datetime) -> DatetimeSeries))
 (define (map/datetime-series-data series fn)
-  (let ((old-data (DatetimeSeries-data series)))
+  (let ((old-data (datetime-series-data series)))
     (new-DatetimeSeries
      (build-vector (vector-length old-data)
                    (λ: ((idx : Natural))
-                     (fn (vector-ref old-data idx)))))))
+                     (fn (assert (vector-ref old-data idx) Datetime?)))))))
 
 (: bop/datetime-series (DatetimeSeries DatetimeSeries (Datetime Datetime -> Datetime) -> DatetimeSeries))
 (define (bop/datetime-series datetime-series-1 datetime-series-2 bop)
@@ -380,7 +380,7 @@
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
        ((= idx len) (new-BSeries v-comp))
        (vector-set! v-comp idx (comp (assert (vector-ref v1 idx) Datetime?)
-				   (assert Datetime? (vector-ref v2 idx))))))
+				   (assert (vector-ref v2 idx) Datetime?)))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -553,7 +553,7 @@
 ;;DatetimeSeries groupby
 
 (define-type Key String)
-(define-type GroupHash (HashTable Key (Listof Datetime)))
+(define-type GroupHash (HashTable Key (Listof RFDatetime)))
 
 ; This function is self-explanatory, it consumes no arguments
 ; and creates a hash map which will represent a JoinHash.
@@ -575,7 +575,7 @@
 	  (do ((i 0 (add1 i)))
 	      ((>= i len) group-index)
 	    (let* ((datetime-val : (U RFDatetime DatetimeSeries) (datetime-series-iloc datetime-series (assert i index?)))
-                   (datetime-list : (Listof DFDatetime) (if (RFDatetime? datetime-val) (list datetime-val) (vector->list (DatetimeSeries-data datetime-val))))
+                   (datetime-list : (Listof RFDatetime) (if (RFDatetime? datetime-val) (list datetime-val) (vector->list (DatetimeSeries-data datetime-val))))
                    (key (if by-value
                             (datetime->string (assert (datetime-series-iloc datetime-series (assert i index?)) Datetime?) #f)
                             (if (DatetimeSeries-index datetime-series)
@@ -587,7 +587,7 @@
                                       ; pretty-format anything else
                                       [else (pretty-format key)])))              
               (hash-update! group-index key-str
-			      (λ: ((val : (Listof Datetime)))                                
+			      (λ: ((val : (Listof RFDatetime)))                                
 				  (append datetime-list val))
 			      (λ () (list)))))))))
 
