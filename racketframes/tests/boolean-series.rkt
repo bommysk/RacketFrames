@@ -19,10 +19,12 @@
 
 ; create boolean series
 (define series-boolean (new-BSeries (vector #f #t #t #t)
-                                    (build-index-from-list (list 'a 'b 'c 'd))))
+                                    #:index (build-index-from-list (list 'a 'b 'c 'd))))
+
+(bseries-print series-boolean)
 
 (define series-boolean-2 (new-BSeries (vector #f #t #t #f)
-                                      (build-index-from-list (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
 ; bseries reference tests
 (check-equal? ((bseries-referencer series-boolean) 0) #f)

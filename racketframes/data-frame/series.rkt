@@ -75,7 +75,7 @@
  (only-in "../load/sample.rkt"
           guess-series-type)
  (only-in "../util/datetime/types.rkt"
-          Datetime))
+          Datetime Datetime?))
 
 (: new-series ((Sequenceof Any) (Option (U (Listof IndexDataType) RFIndex)) -> Series))
 (define (new-series data labels)
@@ -137,8 +137,8 @@
      (set-ISeries-null-value series (assert null-value fixnum?))]
     [(BSeries? series)
      (set-BSeries-null-value series (assert null-value boolean?))]
-    ;[(DatetimeSeries? series)
-     ;(set-DatetimeSeries-null-value series (assert null-value Datetime?))]
+    [(DatetimeSeries? series)
+     (set-DatetimeSeries-null-value series (assert null-value Datetime?))]
     [else
      (set-GenSeries-null-value series null-value)]))
 
@@ -171,15 +171,15 @@
 (define (series-groupby series #:by-value [by-value #f])
   (cond                                                      
     [(CSeries? series)
-     (cseries-groupby series by-value)]
+     (cseries-groupby series #:by-value by-value)]
     [(NSeries? series)
-     (nseries-groupby series by-value)]
+     (nseries-groupby series #:by-value by-value)]
     [(ISeries? series)
-     (iseries-groupby series by-value)]
+     (iseries-groupby series #:by-value by-value)]
     [(BSeries? series)
-     (bseries-groupby series by-value)]
+     (bseries-groupby series #:by-value by-value)]
     [(DatetimeSeries? series)
-     (datetime-series-groupby series by-value)]
+     (datetime-series-groupby series #:by-value by-value)]
     [else
      (gen-series-groupby series by-value)]))
 

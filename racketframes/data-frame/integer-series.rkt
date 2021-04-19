@@ -20,10 +20,10 @@
  ISeries-index RFFixnum RFFixnum?)
 
 (provide:
- [new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
+ [new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum) (Vectorof Fixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                                  [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> ISeries)]
  [set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries)]
- [set-ISeries-null-value (ISeries Fixnum -> ISeries)]
+ [set-ISeries-null-value (ISeries RFNULL -> ISeries)]
  [set-ISeries-fixnum-null-value-inplace (ISeries Fixnum -> Void)]
  [iseries-iref (ISeries (Listof Index) -> (Listof RFFixnum))]
  [iseries-loc-boolean (ISeries (Listof Boolean) -> (U RFFixnum ISeries))]
@@ -151,7 +151,7 @@
 ; When this is set we run length encode on save
 ; it as the vector data and generate the index
 ; to match
-(: new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
+(: new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum) (Vectorof Fixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                                   [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> ISeries))
 (define (new-ISeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
   (define RFFixnum-vector : (Vectorof RFFixnum) (make-RFFixnum-vector data))

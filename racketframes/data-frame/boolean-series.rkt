@@ -19,7 +19,7 @@
  (struct-out BSeries))
 
 (provide:
- [new-BSeries ((Vectorof Boolean) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null Boolean] -> BSeries)]
+ [new-BSeries ((U (Sequenceof Boolean) (Vectorof Boolean)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null Boolean] -> BSeries)]
  [set-BSeries-index (BSeries (U (Listof IndexDataType) RFIndex) -> BSeries)]
  [set-BSeries-null-value (BSeries Boolean -> BSeries)]
  [bseries-null-value (BSeries -> Boolean)]
@@ -38,7 +38,7 @@
  [bseries-iloc (BSeries (U Index (Listof Index)) -> (U Boolean BSeries))]
  [bseries-iloc-range (BSeries Index Index -> BSeries)]
  [bseries-not (BSeries -> BSeries)]
- [bseries-print (BSeries Output-Port -> Void)])
+ [bseries-print (BSeries [#:output-port Output-Port] -> Void)])
 ; ***********************************************************
 
 ; ***********************************************************
@@ -63,11 +63,17 @@
   #:mutable
   #:transparent)
 
+(: make-boolean-vector ((U (Sequenceof Boolean)) -> (Vectorof Boolean)))
+(define (make-boolean-vector seq)
+  (let ((vec : (Vectorof Boolean) (list->vector (sequence->list seq))))
+    vec))
+
 ; Consumes a Vector of Boolean and a list of Labels which
 ; can come in list form or RFIndex form and produces BSeries
 ; struct object.
-(: new-BSeries ((Vectorof Boolean) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null Boolean] -> BSeries))
+(: new-BSeries ((U (Sequenceof Boolean) (Vectorof Boolean)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null Boolean] -> BSeries))
 (define (new-BSeries data #:index [labels #f] #:fill-null [null-value #f])
+  (define data-vector : (Vectorof Boolean) (make-boolean-vector data))
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -75,7 +81,7 @@
                                    ([value (in-hash-values (extract-index index))])
                                    (length (assert value ListofIndex?))))))
 
-      (unless (eq? (vector-length data) index-length)
+      (unless (eq? (vector-length data-vector) index-length)
         (let ((k (current-continuation-marks)))
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
@@ -83,12 +89,12 @@
   (if (RFIndex? labels)
       (begin
 	(check-mismatch labels)
-	(BSeries labels data null-value))
+	(BSeries labels data-vector null-value))
       (if labels
           (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
             (check-mismatch index)
-            (BSeries index data null-value))
-          (BSeries #f data null-value))))
+            (BSeries index data-vector null-value))
+          (BSeries #f data-vector null-value))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -332,8 +338,8 @@
                             (λ () (list)))))))))
 
 ; ***********************************************************
-(: bseries-print (BSeries Output-Port -> Void))
-(define (bseries-print bseries port)
+(: bseries-print (BSeries [#:output-port Output-Port] -> Void))
+(define (bseries-print bseries #:output-port [port (current-output-port)])
   (define v (bseries-data bseries))
   (let ((len (vector-length v))
 	(out (current-output-port)))

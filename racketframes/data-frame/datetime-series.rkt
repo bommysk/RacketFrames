@@ -32,8 +32,8 @@
  (struct-out DatetimeSeries))
 
 (provide:
- [new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof Datetime)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DatetimeSeries)]
- [set-DatetimeSeries-index (DatetimeSeries (U (Listof IndexDataType) RFIndex) -> DatetimeSeries)]
+ [new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof Datetime) (Sequenceof Datetime)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DatetimeSeries)] 
+ [set-DatetimeSeries-index (DatetimeSeries (U (Listof IndexDataType) RFIndex) -> DatetimeSeries)] 
  [datetime-series-iref (DatetimeSeries (Listof Index) -> (Listof RFDatetime))]
  [datetime-series-index-ref (DatetimeSeries IndexDataType -> (Listof RFDatetime))]
  [datetime-series-loc-multi-index (DatetimeSeries (U (Listof String) ListofListofString) -> (U RFDatetime DatetimeSeries))]
@@ -47,6 +47,8 @@
  [datetime-series-referencer (DatetimeSeries -> (Index -> RFDatetime))]
  [datetime-series-data (DatetimeSeries -> (Vectorof RFDatetime))]
  [datetime-series-index (DatetimeSeries -> (U False RFIndex))]
+ [datetime-series-null-value (DatetimeSeries -> RFNULL)]
+ [datetime-series-datetime-null-value (DatetimeSeries -> Datetime)]
  [map/datetime-series-data (DatetimeSeries (Datetime -> Datetime) -> DatetimeSeries)]
  [datetime-range (Datetime (Option Symbol) (Option Index) (Option Datetime) -> (Listof RFDatetime))]
 
@@ -66,8 +68,8 @@
  [datetime-series-print (DatetimeSeries Output-Port -> Void)]
 
  [datetime-series-groupby (DatetimeSeries [#:by-value Boolean] -> GroupHash)]
- [set-DatetimeSeries-null (DatetimeSeries RFNULL -> DatetimeSeries)]
- [set-DatetimeSeries-null-inplace (DatetimeSeries Datetime -> Void)])
+ [set-DatetimeSeries-null-value (DatetimeSeries RFNULL -> DatetimeSeries)]
+ [set-DatetimeSeries-datetime-null-value-inplace (DatetimeSeries Datetime -> Void)])
 ; ***********************************************************
 
 (define-type RFDatetime (U Datetime RFNoData))
@@ -91,8 +93,8 @@
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a DatetimeSeries
 ; struct object.
-(: new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof RFDatetime))
-                       [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DatetimeSeries))
+(: new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof Datetime) (Sequenceof RFDatetime))
+                       [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DatetimeSeries))
 (define (new-DatetimeSeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE])
 
   (define data-vector : (Vectorof RFDatetime) (make-RFDatetime-vector data))
@@ -126,12 +128,12 @@
 (define (set-DatetimeSeries-index datetime-series labels)
   (new-DatetimeSeries (datetime-series-data datetime-series) #:index labels))
 
-(: set-DatetimeSeries-null (DatetimeSeries RFNULL -> DatetimeSeries))
-(define (set-DatetimeSeries-null datetime-series null-value)
+(: set-DatetimeSeries-null-value (DatetimeSeries RFNULL -> DatetimeSeries))
+(define (set-DatetimeSeries-null-value datetime-series null-value)
   (new-DatetimeSeries (datetime-series-data datetime-series) #:index (datetime-series-index datetime-series) #:fill-null null-value))
 
-(: set-DatetimeSeries-null-inplace (DatetimeSeries Datetime -> Void))
-(define (set-DatetimeSeries-null-inplace datetime-series null-value)
+(: set-DatetimeSeries-datetime-null-value-inplace (DatetimeSeries Datetime -> Void))
+(define (set-DatetimeSeries-datetime-null-value-inplace datetime-series null-value)
   (set-DatetimeSeries-datetime-null-value! datetime-series null-value))
 ; ***********************************************************
 
@@ -189,6 +191,14 @@
 (: datetime-series-index (DatetimeSeries -> (U False RFIndex)))
 (define (datetime-series-index series)
   (DatetimeSeries-index series))
+
+(: datetime-series-null-value (DatetimeSeries -> RFNULL))
+(define (datetime-series-null-value datetime-series)
+  (DatetimeSeries-null-value datetime-series))
+
+(: datetime-series-datetime-null-value (DatetimeSeries -> Datetime))
+(define (datetime-series-datetime-null-value datetime-series)
+  (DatetimeSeries-datetime-null-value datetime-series))
 
 ; This function consumes an integer series and an index and
 ; returns a vector of values in the range [0:index] in the series.
@@ -269,7 +279,7 @@
 
         (if (= (vector-length vals) 1)
             (vector-ref vals 0)
-            (new-DatetimeSeries vals #:index (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
+            (new-DatetimeSeries vals #:index (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)) #:fill-null (datetime-series-null-value datetime-series))))))
 
 ; index based
 (: datetime-series-iloc (DatetimeSeries (U Index (Listof Index)) -> (U RFDatetime DatetimeSeries)))
