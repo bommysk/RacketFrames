@@ -30,23 +30,23 @@
 (provide:
  [new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> DateSeries)]
  [set-DateSeries-index (DateSeries (U (Listof IndexDataType) RFIndex) -> DateSeries)]
- [date-series-iref (DateSeries (Listof Index) -> (Listof date))]
- [date-series-index-ref (DateSeries IndexDataType -> (Listof date))]
- [date-series-loc-multi-index (DateSeries (U (Listof String) ListofListofString) -> (U date DateSeries))]
- [date-series-loc-boolean (DateSeries (Listof Boolean) -> (U date DateSeries))]
- [date-series-loc (DateSeries (U Label (Listof Label) (Listof Boolean)) -> (U date DateSeries))]
- [date-series-iloc (DateSeries (U Index (Listof Index)) -> (U date DateSeries))]
+ [date-series-iref (DateSeries (Listof Index) -> (Listof RFDate))]
+ [date-series-index-ref (DateSeries IndexDataType -> (Listof RFDate))]
+ [date-series-loc-multi-index (DateSeries (U (Listof String) ListofListofString) -> (U RFDate DateSeries))]
+ [date-series-loc-boolean (DateSeries (Listof Boolean) -> (U RFDate DateSeries))]
+ [date-series-loc (DateSeries (U Label (Listof Label) (Listof Boolean)) -> (U RFDate DateSeries))]
+ [date-series-iloc (DateSeries (U Index (Listof Index)) -> (U RFDate DateSeries))]
  [date-series-iloc-range (DateSeries Index Index -> DateSeries)]
- [date-series-label-ref (DateSeries Label -> (Listof date))]
- [date-series-range (DateSeries Index Index -> (Vectorof date))]
+ [date-series-label-ref (DateSeries Label -> (Listof RFDate))]
+ [date-series-range (DateSeries Index Index -> (Vectorof RFDate))]
  [date-series-length (DateSeries -> Index)]
- [date-series-referencer (DateSeries -> (Index -> date))]
+ [date-series-referencer (DateSeries -> (Index -> RFDate))]
  [date-series-data (DateSeries -> (Vectorof RFDate))]
  [date-series-index (DateSeries -> (U False RFIndex))]
  [date-series-null-value (DateSeries -> RFNULL)]
  [date-series-date-null-value (DateSeries -> date)]
  [map/date-series-data (DateSeries (date -> date) -> DateSeries)]
- [date-range (date (Option Symbol) (Option Index) (Option date) -> (Listof date))]
+ [date-range (date (Option Symbol) (Option Index) (Option date) -> (Listof RFDate))]
 
  [bop/date-series (DateSeries DateSeries (date date -> date) -> DateSeries)]
  [comp/date-series (DateSeries DateSeries (date date -> Boolean) -> BSeries)]
@@ -64,6 +64,7 @@
  [date-series-print (DateSeries Output-Port -> Void)]
 
  [date-series-groupby (DateSeries [#:by-value Boolean] -> GroupHash)]
+ ; in Pandas, fillna
  [set-DateSeries-null-value (DateSeries RFNULL -> DateSeries)]
  [set-DateSeries-date-null-value-inplace (DateSeries date -> Void)])
 ; ***********************************************************
@@ -198,7 +199,7 @@
 ; returns the value at that index in the series.
 (: date-series-iref (DateSeries (Listof Index) -> (Listof RFDate)))
 (define (date-series-iref date-series lst-idx)
-  (map (lambda ((idx : Index)) (vector-ref (DateSeries-data date-series) idx))
+  (map (lambda ((idx : Index)) (vector-ref (date-series-data date-series) idx))
        lst-idx))
 
 ; This function consumes a date series and returns its
@@ -600,7 +601,7 @@
 	    (let* ((date-val : (U RFDate DateSeries) (assert (date-series-iloc date-series (assert i index?)) RFDate?))
                    (date-list : (Listof RFDate) (if (RFDate? date-val) (list date-val) (vector->list (date-series-data date-val))))
                    (key (if by-value
-                            (date->string (derive-date-value date-series (date-series-iloc date-series (assert i index?))))
+                            (date->string (derive-date-value date-series (assert (date-series-iloc date-series (assert i index?)) RFDate?)))
                             (if (date-series-index date-series)
                                 (idx->key (assert (date-series-index date-series)) (assert i index?))
                                 (assert i index?))))
