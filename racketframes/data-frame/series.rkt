@@ -139,6 +139,8 @@
      (set-BSeries-null-value series (assert null-value boolean?))]
     [(DatetimeSeries? series)
      (set-DatetimeSeries-null-value series (assert null-value Datetime?))]
+    [(DateSeries? series)
+     (set-DateSeries-null-value series (assert null-value date?))]
     [else
      (set-GenSeries-null-value series null-value)]))
 
@@ -146,17 +148,19 @@
 (define (get-series-null-value series null-value)
   (cond                                                      
     [(CSeries? series)
-     (cseries-null-value series (assert null-value symbol?))]
+     (cseries-null-value series)]
     [(NSeries? series)
-     (nseries-null-value series (assert null-value flonum?))]
+     (nseries-null-value series)]
     [(ISeries? series)
-     (iseries-null-value series (assert null-value fixnum?))]
+     (iseries-null-value series)]
     [(BSeries? series)
-     (bseries-null-value series (assert null-value boolean?))]
+     (bseries-null-value series)]
     [(DatetimeSeries? series)
-     (set-DatetimeSeries-null-value series (assert null-value Datetime?))]
+     (datetime-series-null-value series)]
+    [(DateSeries? series)
+     (date-series-null-value series)]
     [else
-     (set-GenSeries-null-value series null-value)]))
+     (gen-series-null-value series null-value)]))
 
 (define-type Key String)
 (define-type GroupHash (HashTable Key (Listof GenericType)))
@@ -180,6 +184,8 @@
      (bseries-groupby series #:by-value by-value)]
     [(DatetimeSeries? series)
      (datetime-series-groupby series #:by-value by-value)]
+    [(DateSeries? series)
+     (date-series-groupby series #:by-value by-value)]
     [else
      (gen-series-groupby series by-value)]))
 
@@ -196,6 +202,8 @@
      (bseries-length series)]
     [(DatetimeSeries? series)
      (datetime-series-length series)]
+    [(DateSeries? series)
+     (date-series-length series)]
     [else
      (gen-series-length series)]))
 

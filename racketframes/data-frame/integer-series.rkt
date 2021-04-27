@@ -774,7 +774,6 @@
 (: iseries-groupby (ISeries [#:by-value Boolean] -> GroupHash))
 (define (iseries-groupby iseries #:by-value [by-value #f])
   (define: group-index : GroupHash (make-group-hash))
-  (set! iseries (iseries-filter iseries (lambda ((x : RFFixnum)) (not (RFNoData? x)))))
 
   (let ((len (iseries-length iseries))
         (k (current-continuation-marks)))
