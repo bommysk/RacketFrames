@@ -25,7 +25,7 @@
 ; Provide functions in this file to other files.
 (provide
  (struct-out DateSeries)
- DateSeries?)
+ DateSeries? RFDate RFDate? DEFAULT_NULL_VALUE GroupHash)
 
 (provide:
  [new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> DateSeries)]
@@ -176,8 +176,8 @@
 	      ((>= i len) (void))
 	    (let ((date (vector-ref date-v i))
                   (num (vector-ref v i)))
-              (if (DateSeries-index date-series)                  
-                  (display (idx->key (assert (DateSeries-index date-series)) (assert i index?)) port)
+              (if (date-series-index date-series)                  
+                  (display (idx->key (assert (date-series-index date-series)) (assert i index?)) port)
                   (display (assert i index?) port))
               (display " " port)
               (displayln date port)
@@ -191,7 +191,7 @@
 ; defined once and used repeatedly as a referencer.
 (: date-series-referencer (DateSeries -> (Index -> RFDate)))
 (define (date-series-referencer date-series)
-  (let ((data (DateSeries-data date-series)))
+  (let ((data (date-series-data date-series)))
     (λ: ((idx : Index))
 	(vector-ref data idx))))
 
@@ -244,7 +244,7 @@
 ; length of that series.
 (: date-series-length (DateSeries -> Index))
 (define (date-series-length series)
-  (vector-length (DateSeries-data series)))
+  (vector-length (date-series-data series)))
 
 (define-predicate ListofBoolean? (Listof Boolean))
 (define-predicate ListofFixnum? (Listof Fixnum))
@@ -278,7 +278,7 @@
 
   (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "\t") "\t")))
+    (string->symbol (string-append (string-join label "::") "::")))
   
   (if (ListofListofString? label)
       (date-series-loc date-series (map get-index-val label))

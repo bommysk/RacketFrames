@@ -16,7 +16,7 @@
 ; ***********************************************************
 ; Provide functions in this file to other files.
 (provide
- (struct-out BSeries))
+ (struct-out BSeries) GroupHash)
 
 (provide:
  [new-BSeries ((U (Sequenceof Boolean) (Vectorof Boolean)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null Boolean] -> BSeries)]

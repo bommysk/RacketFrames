@@ -197,8 +197,8 @@
                                                        (new-BSeries (list->vector (assert h-ref ListofBoolean?)))]
                                                       [(eq? h-ref-series-type 'DatetimeSeries)
                                                        (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)))]
-                                                      ;[(eq? h-ref-series-type 'DateSeries)
-                                                       ;(new-DateSeries (list->vector (assert h-ref ListofDate?)))]
+                                                      [(eq? h-ref-series-type 'DateSeries)
+                                                       (new-DateSeries (list->vector (assert h-ref ListofDate?)))]
                                                       [else
                                                        (new-GenSeries (list->vector h-ref))])) cols))))))
         

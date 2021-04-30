@@ -17,7 +17,7 @@
 ; Provide functions in this file to other files.
 (provide
  (struct-out ISeries)
- ISeries-index RFFixnum RFFixnum?)
+ ISeries-index RFFixnum RFFixnum? DEFAULT_NULL_VALUE GroupHash)
 
 (provide:
  [new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum) (Vectorof Fixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
@@ -787,7 +787,7 @@
   (begin          
     (do ((i 0 (add1 i)))
         ((>= i len) group-index)
-      (let* ((rffixnum-val : (U RFFixnum ISeries) (derive-fixnum-value iseries (assert (iseries-iloc iseries (assert i index?)) RFFixnum?)))
+      (let* ((rffixnum-val : (U RFFixnum ISeries) (assert (iseries-iloc iseries (assert i index?)) RFFixnum?))
                    (rffixnum-list : (Listof RFFixnum) (if (fixnum? rffixnum-val) (list rffixnum-val) (vector->list (iseries-data iseries))))
                    (key (if (assert by-value)
                             (assert (iseries-iloc iseries (assert i index?)) fixnum?)

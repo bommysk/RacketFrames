@@ -8,6 +8,11 @@
 (require racket/struct)
 (require racket/pretty)
 
+(require
+ (only-in typed/racket/date
+          date->string))
+ 
+
 ; ***********************************************************
 ; This module provides data frame printing functionality.
 ; ***********************************************************
@@ -16,7 +21,7 @@
 ; Provide functions in this file to other files.
 
 (provide:
- [data-frame-write-tab (DataFrame Output-Port [#:heading Boolean] -> Void)]
+ [data-frame-write-tab (DataFrame [#:output-port Output-Port] [#:heading Boolean] -> Void)]
  [data-frame-head (case-> (DataFrame -> Void)
 		     (DataFrame (Option Index) -> Void))])
 
@@ -170,6 +175,10 @@
       ;#:align 'left))
   (pretty-format (car (datetime-series-iref datetime-series (list row)))))
 
+(: format-date-series (DateSeries Index -> String))
+(define (format-date-series date-series row)
+  (date->string (car (date-series-iref date-series (list row)))))
+
 ; ***********************************************************
 
 ; ***********************************************************
@@ -193,6 +202,8 @@
                   (display (format-bseries a-series row)))
                  ((DatetimeSeries? a-series)
                   (display (format-datetime-series a-series row)))
+                 ((DateSeries? a-series)
+                  (display (format-date-series a-series row)))
                  (else
                   (error 'display-data-frame-row "Unknown series types ~s"
                          (series-type a-series)))))
@@ -216,8 +227,8 @@
                     (if (not count) default-head-rows count))))
     (display-data-frame-row series (in-range count))))
 
-(: data-frame-write-tab (DataFrame Output-Port [#:heading Boolean] -> Void))
-(define (data-frame-write-tab data-frame outp #:heading [heading #t])
+(: data-frame-write-tab (DataFrame [#:output-port Output-Port] [#:heading Boolean] -> Void))
+(define (data-frame-write-tab data-frame #:output-port [outp (current-output-port)] #:heading [heading #t])
 
   (define: cols     : Columns (data-frame-explode data-frame))
   (define: headings : (Listof Label) (map column-heading cols))

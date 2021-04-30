@@ -29,7 +29,7 @@
 ; ***********************************************************
 ; Provide functions in this file to other files.
 (provide
- (struct-out DatetimeSeries))
+ (struct-out DatetimeSeries) RFDatetime RFDatetime? DEFAULT_NULL_VALUE GroupHash)
 
 (provide:
  [new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof Datetime) (Sequenceof Datetime)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DatetimeSeries)] 

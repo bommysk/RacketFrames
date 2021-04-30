@@ -13,7 +13,7 @@
 (require
  racket/flonum
  (only-in "numeric-series.rkt"
-          NSeries new-NSeries))
+          NSeries new-NSeries DEFAULT_NULL_VALUE))
 (struct: NSeriesBuilder ([index  : Index]
 			 [data : FlVector]) #:mutable)
 
@@ -23,7 +23,7 @@
 		       (-> NSeriesBuilder)
 		       (Index -> NSeriesBuilder)))
 (define (new-NSeriesBuilder [len base-len])
-  (NSeriesBuilder 0 (make-flvector len +nan.0)))
+  (NSeriesBuilder 0 (make-flvector len DEFAULT_NULL_VALUE)))
 
 (: append-NSeriesBuilder (NSeriesBuilder (U Flonum String) -> Void))
 (define (append-NSeriesBuilder builder flo/str-value)
@@ -43,7 +43,7 @@
     (let* ((data (NSeriesBuilder-data builder))
 	   (curr-len (flvector-length data))
 	   (new-len  (assert (inexact->exact (round (* 1.5 curr-len))) exact-integer?)))
-      (let: ((new-data : FlVector (make-flvector new-len +nan.0)))
+      (let: ((new-data : FlVector (make-flvector new-len DEFAULT_NULL_VALUE)))
 	    (do ([idx 0 (add1 idx)])
 		([>= idx curr-len] (set-NSeriesBuilder-data! builder new-data))
 	      (flvector-set! new-data idx (flvector-ref data idx))))))
@@ -53,7 +53,7 @@
       (let ((num (if (string? flo/str-value)
                      ; if the string is not a valid number, we fill NAN
 		     (let ((num (string->number (string-trim flo/str-value))))
-		       (if num (assert (exact->inexact num) flonum?) +nan.0))
+		       (if num (assert (exact->inexact num) flonum?) DEFAULT_NULL_VALUE))
 		     flo/str-value)))
         
         (flvector-set! (NSeriesBuilder-data builder)

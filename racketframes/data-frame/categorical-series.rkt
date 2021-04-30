@@ -1,7 +1,7 @@
 #lang typed/racket
 
 (provide
- (struct-out CSeries))
+ (struct-out CSeries) DEFAULT_NULL_VALUE GroupHash)
 ;;writer-CSeries)
 
 (provide:
@@ -34,13 +34,13 @@
 
 (define-type CSeriesFn (Label -> Label))
 
-(define DEFAULT_NULL_VALUE : Label 'null)
+(define DEFAULT_NULL_VALUE : Label '||)
 (struct: CSeries ([index : (Option RFIndex)]
                   [data : (Vectorof Index)]
                   [nominals : (Vectorof Label)]
-                  ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
+                  ; when the null-value is not a symbol?, the label-null-value is set to 'null
                   [null-value : RFNULL]
-                  ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+                  ; needed for type checking purposes and to do proper symbol operations
                   [label-null-value : Label])
   #:mutable
   #:transparent)
