@@ -1,0 +1,1 @@
+event --search '| inputlookup append=t Power_Collector_Benchmarking_Per_Value_Charts_Color_Style.csv' --app megacell

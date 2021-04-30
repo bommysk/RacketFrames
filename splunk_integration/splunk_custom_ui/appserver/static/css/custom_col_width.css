@@ -1,0 +1,7 @@
+/* set column width base on column name */
+#customColWidth th[data-sort-key=_time] {
+    width: 10px;
+}
+#customColWidth th[data-sort-key=LastRun] {
+    width: 200px;
+}

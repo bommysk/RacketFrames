@@ -1,0 +1,1 @@
+kvstore --input test/input_data/small_input.json --collection pd_test23 --app mxd3

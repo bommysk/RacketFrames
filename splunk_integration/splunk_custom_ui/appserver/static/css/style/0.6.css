@@ -1,0 +1,224 @@
+.results-table th {
+  font-size: 8pt !important;
+  text-align: center !important;
+  font-weight: normal !important;
+  white-space: nowrap !important;
+}
+
+.results-table td {
+  font-size: 8pt !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.results-table td.lt_green {
+  background-color: #B6ECB5 !important;
+}
+.results-table td.lt_greenyellow {
+  background-color: #C8FB85 !important;
+}
+.results-table td.lt_yellow {
+  background-color: #FBF1BA !important;
+}
+.results-table td.lt_orange {
+  background-color: #FCC585 !important;
+}
+.results-table td.lt_red {
+  background-color: #FB7E7E !important;
+}
+.results-table td.lt_blue {
+  background-color: #CBFAF8 !important;
+}
+.results-table td.lt_purple {
+  background-color: #DDA0DD !important;
+}
+.results-table td.red {
+    background-color: #FF3232 !important;
+}
+.results-table td.yellow {
+    background-color: #FFFF94 !important;
+}
+.results-table td.orange {
+    background-color: #FCC585 !important;
+}
+.results-table td.blue             {
+    background-color: #9092FA !important;
+}
+.results-table td.green {
+    background-color: #4DB870 !important;
+}
+.results-table td.purple {
+    background-color: #D877DD !important;
+}
+.results-table td.light {
+    color: #E0E0E0 !important;
+    cursor: auto !important;
+}
+
+.results-table td.text {
+  color: #000000 !important;
+  cursor: auto !important;
+}
+
+.results-table td.link {  
+  color: #1E93C6 !important;
+  cursor: pointer !important;
+}
+
+.results-table td.align-right {
+  text-align:right;
+}
+
+.results-table td.text_lt_green {
+  color: #B6ECB5 !important;
+}
+.results-table td.text_lt_greenyellow {
+  color: #C8FB85 !important;
+}
+.results-table td.text_lt_yellow {
+  color: #FBF1BA !important;
+}
+.results-table td.text_lt_orange {
+  color: #FCC585 !important;
+}
+.results-table td.text_lt_red {
+  color: #FB7E7E !important;
+}
+.results-table td.text_lt_blue {
+  color: #CBFAF8 !important;
+}
+.results-table td.text_lt_purple {
+  color: #DDA0DD !important;
+}
+.results-table td.text_red {
+  color:#FF3232 !important;
+}
+.results-table td.text_yellow {
+  color:#FFFF94 !important;
+}
+.results-table td.text_orange {
+  color:#FCC585 !important;
+}
+.results-table td.text_blue {
+  color:#9092FA !important;
+}
+.results-table td.text_green {
+  color:#4DB870 !important;
+}
+.results-table td.text_purple {
+  color:#D877DD !important;
+}
+
+.blue_hlite       { background-color:#e8f2fc; color: black}
+.blue_hlite_all   { background-color:#e8f2fc; color:#e8f2fc}
+.drkblue_hlite    { background-color:#b9dcff; color: black}
+.green_hlite      { background-color:#66FF99; color: black}
+.red_hlite        { background-color:#FFCCFF; color: black}
+.purple_hlite     { background-color:#CC99FF; color: black}
+.yellow_hlite     { background-color:#FFFFCC; color: black}
+
+.lt_red1          { background-color:rgba(255,0,0,0.2); color: black}
+.lt_red2          { background-color:rgba(255,0,0,0.3); color: black}
+.lt_red3          { background-color:rgba(255,0,0,0.4); color: black}
+.lt_red4          { background-color:rgba(255,0,0,0.5); color: white}
+.lt_red5          { background-color:rgba(255,0,0,0.6); color: white}
+.lt_red6          { background-color:rgba(255,0,0,0.7); color: white}
+
+.stage1           { background-color:#FFC966; color: black}
+.stage2           { background-color:#FFDB99; color: black}
+.stage3           { background-color:#FFFF94; color: black}
+.stage4           { background-color:#ECFA68; color: black}
+.stage5           { background-color:#D6FF97; color: black}
+.stage5           { background-color:#DAF46A; color: black}
+.stage6           { background-color:#C7EF6C; color: black}
+.stage7           { background-color:#B5E96E; color: black}
+.stage8           { background-color:#A2E470; color: black}
+.stage9           { background-color:#51CD60; color: black}
+
+.results-table td.border_left {
+  border-left-color: lightgrey !important;
+  border-left-width: 5px !important;
+}
+
+.results-table th.border_left {
+  border-left-color: lightgrey !important;
+  border-left-width: 5px !important;
+}
+
+.results-table td.border_right {
+  border-right-color: lightgrey !important;
+  border-right-width: 5px !important;
+}
+
+.results-table th.border_right {
+  border-right-color: lightgrey !important;
+  border-right-width: 5px !important;
+}
+
+div.tooltip-inner {
+  min-width: 100px !important;
+  max-width: 500px !important;
+  word-wrap: break-word;
+  text-align: left !important;
+  font-size: 14px !important;
+  font-weight: normal !important;
+}
+
+div.dt-button-collection {
+  display: inline-block !important;  
+  width: 60% !important;
+  background:#FCC585 !important;
+}
+
+button.dt-button.buttons-columnVisibility {
+  display: inline-block !important;
+  border: none !important;
+  background: #B0B0B0 !important;
+  color: white !important;  
+  cursor: pointer !important;
+  text-align: center !important;
+}
+
+button.dt-button.buttons-columnVisibility.active {
+  display: inline-block !important;
+  border: none !important;
+  background: #65A637 !important;
+  color: white !important;  
+  cursor: pointer !important;
+  text-align: center !important;
+}
+
+table.dataTable.row-border tbody th, 
+table.dataTable.row-border tbody td, 
+table.dataTable.display tbody th, 
+table.dataTable.display tbody td,
+table.dataTable.row-border thead th, 
+table.dataTable.row-border thead td, 
+table.dataTable.display thead th, 
+table.dataTable.display thead td {
+  border-top: 1px solid #919191;
+}
+
+table.dataTable.cell-border tbody th, 
+table.dataTable.cell-border tbody td,
+table.dataTable.cell-border thead th, 
+table.dataTable.cell-border thead td {
+  border-top: 1px solid #919191;
+  border-right: 1px solid #919191;
+}
+
+table.dataTable.cell-border tbody tr th:first-child,
+table.dataTable.cell-border tbody tr td:first-child,
+table.dataTable.cell-border thead tr th:first-child,
+table.dataTable.cell-border thead tr td:first-child {
+  border-left: 1px solid #919191;
+}
+
+/* Undo Bootstrap/Splunk CSS on show_hide labels */
+.show_hide {
+  font-weight: normal !important;
+  clear: none !important;
+  display: inline-block !important;
+  margin: 3px !important;
+  padding: 0px !important;
+}

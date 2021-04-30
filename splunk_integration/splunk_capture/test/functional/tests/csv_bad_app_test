@@ -1,0 +1,1 @@
+lookup --app bad_app --input 'test/input_data/targets.csv' --schema 'test/input_data/targets_schema.json'

@@ -1,0 +1,1 @@
+event --project sicily --input 'test/input_data/small_input.json'

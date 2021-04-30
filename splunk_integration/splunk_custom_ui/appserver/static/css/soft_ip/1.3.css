@@ -1,0 +1,46 @@
+.results-table td {
+  color: #000000 !important;
+  cursor: auto !important;
+}
+
+.results-table td.text {
+  color: #000000 !important;
+  cursor: auto !important;
+}
+
+.results-table td.link {
+  color: #1e93c6 !important;
+  cursor: pointer !important;
+}
+
+.results-table td.lt_green {
+  background-color: #B6ECB5 !important;
+}
+
+.results-table td.lt_greenyellow {
+  background-color: #C8FB85 !important;
+}
+
+.results-table td.lt_yellow {
+  background-color: #FBF1BA !important;
+}
+
+.results-table td.lt_orange {
+  background-color: #FCC585 !important;
+}
+
+.results-table td.lt_red {
+  background-color: #FB7E7E !important;
+}
+
+.results-table td.lt_blue {
+  background-color: #CBFAF8 !important;
+}
+
+.results-table td.lt_purple {
+  background-color: #DDA0DD !important;
+}
+
+.results-table td.green {
+  background-color: #4DB870 !important;
+}

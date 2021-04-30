@@ -1,0 +1,1 @@
+event --index playground1 --select '{"City":"Cupertino"}' --output_mode monitor --limit 5

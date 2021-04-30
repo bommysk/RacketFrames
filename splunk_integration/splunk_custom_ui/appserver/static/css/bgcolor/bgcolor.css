@@ -1,0 +1,53 @@
+
+.results-table td.lt_green {
+  background-color: #B6ECB5 !important;
+}
+
+.results-table td.lt_greenyellow {
+  background-color: #C8FB85 !important;
+}
+
+.results-table td.lt_yellow {
+  background-color: #FBF1BA !important;
+}
+
+.results-table td.lt_orange {
+  background-color: #FCC585 !important;
+}
+
+.results-table td.lt_red {
+  background-color: #FB7E7E !important;
+}
+
+.results-table td.lt_blue {
+  background-color: #CBFAF8 !important;
+}
+
+.results-table td.lt_purple {
+  background-color: #DDA0DD !important;
+}
+
+.results-table td.lt_red1 {
+ background-color:rgba(255,0,0,0.2) !important;
+ color: black !important;
+}
+.results-table td.lt_red2 {
+ background-color:rgba(255,0,0,0.3) !important;
+ color: black !important;
+}
+.results-table td.lt_red3 {
+ background-color:rgba(255,0,0,0.4) !important;
+ color: black !important;
+}
+.results-table td.lt_red4 {
+ background-color:rgba(255,0,0,0.5) !important;
+ color: white !important;
+}
+.results-table td.lt_red5 {
+ background-color:rgba(255,0,0,0.6) !important;
+ color: white !important;
+}
+.results-table td.lt_red6 {
+ background-color:rgba(255,0,0,0.7) !important;
+ color: white !important;
+}

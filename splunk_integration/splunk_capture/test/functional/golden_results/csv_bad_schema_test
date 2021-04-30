@@ -1,0 +1,4 @@
+ERROR - CSV schema validation failed
+ERROR - Validation failed for column: TargetData using pattern: ^[A-Za-z]*$ on value: 24
+ERROR - Please fix CSV errors and re-run lookup monitor
+ERROR - Failed to copy CSV file 

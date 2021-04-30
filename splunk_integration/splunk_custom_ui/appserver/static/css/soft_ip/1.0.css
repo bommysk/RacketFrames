@@ -1,0 +1,14 @@
+.results-table td {
+  color: #000000 !important;
+  cursor: auto !important;
+}
+
+.results-table td.text {
+  color: #000000 !important;
+  cursor: auto !important;
+}
+
+.results-table td.link {
+  color: #1e93c6 !important;
+  cursor: pointer !important;
+}

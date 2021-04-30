@@ -1,0 +1,255 @@
+[app/install/install_source_checksum]
+version = 7.3.4.2
+modtime = 1611126851.884143000
+
+[collections/aruba]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/cebu]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/collections]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/cyprus]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/ellis]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/g11g]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/g12p]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/golay]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/iplib]
+access = read : [ * ], write : [ * ]
+export = none
+owner = nobody
+version = 7.3.4.2
+modtime = 1601331649.037356000
+
+[collections/jade]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/lookup_rve]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/m9]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/pd_test23]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/rve_ae_rpg]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/rve_ae]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/rve_import_status]
+access = read : [ seg-cad-rve-central-superusers, seg-cad-rve-central-viewers ], write : [ * ]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1594250043.756600000
+
+[collections/rve_lookup]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/rve_machine]
+access = read : [ seg-cad-rve-central-superusers, seg-cad-rve-central-viewers ], write : [ * ]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1594179010.011070000
+
+[collections/rve_mount]
+access = read : [ seg-cad-rve-central-superusers, seg-cad-rve-central-viewers ], write : [ * ]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1594249070.209386000
+
+[collections/rve_project]
+access = read : [ seg-cad-rve-central-superusers, seg-cad-rve-central-viewers ], write : [ * ]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1594249736.592604000
+
+[collections/rve_rpg]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/rve_rt]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/rve_rve_ae]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/rve_rve_mount]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/rve_rve_project]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/rve_rve]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/rve_technology]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/rve_vendor]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/s5e]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/sicily]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/skua]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/soft_ip]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/tinos]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/token_ddw]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/token_provision]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/token_submission]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/token_token]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/token_vendor_user]
+access = read : [ * ], write : [ admin, sseg, insights-kvstore-write-users, seg-cad ]
+
+[collections/tonga]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[collections/turks]
+access = read : [ * ], write : [ admin,sseg,insights-kvstore-write-users ]
+
+[macros/mxd_config%281%29]
+access = read : [ * ], write : [ admin ]
+export = system
+owner = nobody
+version = 7.3.4.2
+modtime = 1611022351.254048000
+
+[macros/mxd_config%282%29]
+access = read : [ * ], write : [ admin ]
+export = system
+owner = nobody
+version = 7.3.4.2
+modtime = 1611022419.464660000
+
+[macros/mxd_config%283%29]
+access = read : [ * ]
+export = system
+owner = nobody
+version = 7.3.4.2
+modtime = 1611022440.618325000
+
+[savedsearches/mxd_config]
+access = read : [ * ], write : [  ]
+export = system
+owner = nobody
+version = 7.3.4.2
+modtime = 1611026673.004271000
+
+[savedsearches/mxd_config_v2]
+access = read : [ * ], write : [  ]
+export = system
+owner = nobody
+version = 7.3.4.2
+modtime = 1611026683.270414000
+
+[transforms/iplib_lookup]
+access = read : [ * ], write : [ * ]
+export = system
+owner = nobody
+version = 6.6.1
+
+[transforms/rve_ae_lookup]
+access = read : [ seg-cad-rve-central-viewers ], write : [ admin ]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1589921266.270387000
+
+[transforms/rve_machine_lookup]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1545073207.223182000
+
+[transforms/rve_mount_lookup]
+access = read : [ seg-cad-rve-central-viewers ]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1589920704.380468000
+
+[transforms/rve_rve_ae_lookup]
+access = read : [ seg-cad-rve-central-viewers ], write : [ admin ]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1589921796.922174000
+
+[transforms/rve_rve_lookup]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1545073207.239070000
+
+[transforms/rve_rve_mount_lookup]
+access = read : [ * ], write : [ admin ]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1589923464.556765000
+
+[transforms/rve_rve_project_lookup]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1545073207.250841000
+
+[views/generate_filelist_parse_elaborate_checker]
+access = read : [ * ]
+export = none
+owner = nobody
+version = 7.3.4.2
+modtime = 1612216584.244416000
+
+[views/rve_dashboard]
+version = 6.6.1
+modtime = 1591907226.730807000
+
+[views/rve_overview]
+access = read : [ * ], write : [ admin ]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1596688675.396301000
+
+[views/rve_wprojects]
+access = read : [ * ], write : [ admin ]
+export = none
+owner = nobody
+version = 6.6.1
+modtime = 1596688622.334217000

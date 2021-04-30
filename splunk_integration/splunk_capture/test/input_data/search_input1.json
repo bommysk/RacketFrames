@@ -1,0 +1,8 @@
+[{
+	"spl": "search index=playground1 City=Cupertino | head 1 | table City, Name",
+	"tokens": {}
+},
+{
+	"spl": "search index=${index} ${filter} | head 1 | table City, Name",
+	"tokens": {"index": "playground1", "filter": "City=Cupertino"}
+}]

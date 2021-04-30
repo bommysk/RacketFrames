@@ -1,0 +1,46 @@
+.results-table td {
+  color: #000000 !important;
+  cursor: auto !important;
+}
+
+#soft_ip td.lt_green {
+  background-color: #B6ECB5;
+}
+
+#soft_ip td.lt_greenyellow {
+  background-color: #C8FB85;
+}
+
+#soft_ip td.lt_yellow {
+  background-color: #FBF1BA;
+}
+
+#soft_ip td.lt_orange {
+  background-color: #FCC585;
+}
+
+#soft_ip td.lt_red {
+  background-color: #FB7E7E;
+}
+
+#soft_ip td.lt_blue {
+  background-color: #CBFAF8;
+}
+
+#soft_ip td.lt_purple {
+  background-color: #DDA0DD;
+}
+
+#soft_ip td.green {
+  background-color: #4DB870;
+}
+
+#soft_ip td.text {
+  color: #000000;
+  cursor: auto;
+}
+
+#soft_ip td.link {
+  color: #1e93c6;
+  cursor: pointer;
+}
