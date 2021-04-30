@@ -1,0 +1,14 @@
+div.results-table table thead th.last-in-group,
+div.results-table table td.last-in-group
+{
+  border-right-style: solid !important;
+  border-right-color: lightgrey !important;
+  border-right-width: 6px !important;
+}
+div.results-table table thead th.first-in-group,
+div.results-table table td.first-in-group
+{
+  border-left-style: solid !important;
+  border-left-color: lightgrey !important;
+  border-left-width: 6px !important;
+}

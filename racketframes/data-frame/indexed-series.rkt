@@ -125,7 +125,7 @@
 (struct FixnumIndex ([index : IIndex]) #:mutable #:transparent)
 (struct FlonumIndex ([index : FIndex]) #:mutable #:transparent)
 (struct DatetimeIndex ([index : DTIndex]) #:mutable #:transparent)
-(struct DateIndex ([index : date]) #:mutable #:transparent)
+(struct DateIndex ([index : DIndex]) #:mutable #:transparent)
 
 (define-type IndexType (U SIndex IIndex FIndex DTIndex DIndex))
 

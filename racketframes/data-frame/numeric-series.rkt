@@ -85,7 +85,7 @@
 (provide
  ;flvector-print
  (struct-out NSeries)
- NSeries-index)
+ NSeries-index DEFAULT_NULL_VALUE GroupHash)
 
 ; ***********************************************************
 
@@ -313,7 +313,7 @@
 ; and returns whether it is considered to be NULL in the series.
 (: nseries-value-is-null? (NSeries Flonum -> Boolean))
 (define (nseries-value-is-null? series value)
-  (eq? (nseries-null-value series) value))
+  (or (nan? value) (eq? (nseries-null-value series) value)))
 
 (: nseries-length (NSeries -> Index))
 (define (nseries-length nseries)

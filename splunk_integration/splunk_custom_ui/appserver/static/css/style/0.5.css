@@ -1,0 +1,99 @@
+/* Undo Bootstrap CSS on labels */
+label {
+  font-weight: normal !important;
+  margin: 0px;
+}
+
+.results-table th {
+/*  font-size: 12px !important; */
+/*  font-weight: 550 !important; */
+  border-width: initial;
+  text-align: center;
+  border-color: initial;
+  border-style: initial;
+/*  line-height: initial; */
+  background-color: initial;
+  color: initial;
+  text-shadow:1px 1px 0px #e5e5ee;
+  background: initial;
+  text-shadow:1px 1px 0px #e5e5ee;
+  background: -moz-linear-gradient(top, #ededed 0%, #adadad 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ededed), color-stop(100%,#adadad)); /* Chrome,Safari4+ */
+}
+
+.results-table td {
+/*  font-size: 12px !important; */
+  font-weight: 400 !important;
+  border: #C0C0C0 solid 1px !important;
+  text-align: center;
+  color: initial;
+  background: initial;
+}
+
+.results-table .table-drilldown td {
+  color: blue !important;
+/*  font-size: 12px !important; */
+  font-weight: 400 !important;
+  border: #C0C0C0 solid 1px !important;
+  text-align: center;
+  color: initial;
+  background: initial;
+}
+
+.results-table td.lt_green {
+  background-color: #B6ECB5 !important;
+}
+.results-table td.lt_greenyellow {
+  background-color: #C8FB85 !important;
+}
+.results-table td.lt_yellow {
+  background-color: #FBF1BA !important;
+}
+.results-table td.lt_orange {
+  background-color: #FCC585 !important;
+}
+.results-table td.lt_red {
+  background-color: #FB7E7E !important;
+}
+.results-table td.lt_blue {
+  background-color: #CBFAF8 !important;
+}
+.results-table td.lt_purple {
+  background-color: #DDA0DD !important;
+}
+.results-table td.red {
+    background-color:#FB7E7E !important;
+}
+.results-table td.yellow {
+    background-color:#FFFF94 !important;
+}
+.results-table td.orange {
+    background-color:#FCC585 !important;
+}
+.results-table td.blue             {
+    background-color:#9092FA !important;
+}
+.results-table td.green {
+    background-color:#4DB870 !important;
+}
+.results-table td.purple {
+    background-color:#D877DD !important;
+}
+.results-table td.light {
+    color: #E0E0E0 !important;
+    cursor: auto !important;
+}
+
+.results-table td.text {
+  color: #000000 !important;
+  cursor: auto !important;
+}
+
+.results-table td.link {
+  color: #1e93c6 !important;
+  cursor: pointer !important;
+}
+
+.results-table td.bold {
+  font-weight: 550 !important;
+}

@@ -1,0 +1,3 @@
+{"Field": "Bitcell Type", "Color_Class": "[\"light\", \"text\"]", "Type": "mapping", "Values": "[\"NA\", \".*\"]"}
+{"Field": "Bitcell Type", "Color_Class": "[\"lt_blue\", \"lt_green\", \"lt_red\", \"light\", \"text\"]", "Type": "mapping", "Values": "[\"ULHD\", \"HC\", \"8T\", \"NA\", \".*\"]"}
+{"Field": ".*(Read|Write|Leak On|Leak Off|Leak Ret)", "Color_Class": "[\"light\", \"text align-right\"]", "Type": "mapping", "Values": "[\"NA\", \".*\"]"}

@@ -17,13 +17,14 @@
 ; Provide functions in this file to other files.
 (provide
  (struct-out ISeries)
- ISeries-index RFFixnum RFFixnum?)
+ ISeries-index RFFixnum RFFixnum? DEFAULT_NULL_VALUE GroupHash)
 
 (provide:
- [new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
+ [new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum) (Vectorof Fixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                                  [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> ISeries)]
  [set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries)]
- [set-ISeries-null-value (ISeries Fixnum -> ISeries)]
+ ; in Pandas, fillna
+ [set-ISeries-null-value (ISeries RFNULL -> ISeries)]
  [set-ISeries-fixnum-null-value-inplace (ISeries Fixnum -> Void)]
  [iseries-iref (ISeries (Listof Index) -> (Listof RFFixnum))]
  [iseries-loc-boolean (ISeries (Listof Boolean) -> (U RFFixnum ISeries))]
@@ -151,7 +152,7 @@
 ; When this is set we run length encode on save
 ; it as the vector data and generate the index
 ; to match
-(: new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
+(: new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum) (Vectorof Fixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                                   [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> ISeries))
 (define (new-ISeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
   (define RFFixnum-vector : (Vectorof RFFixnum) (make-RFFixnum-vector data))
@@ -336,7 +337,7 @@
         (new-data : (Vectorof Fixnum)
                               (build-vector (vector-length old-data)
                                             (λ: ((idx : Index))
-                                              (fn (assert (vector-ref old-data idx) fixnum?))))))
+                                              (fn (derive-fixnum-value iseries (vector-ref old-data idx)))))))
     (new-ISeries new-data #:index (iseries-index iseries) #:fill-null (iseries-null-value iseries))))
 ; ***********************************************************
 
@@ -366,8 +367,8 @@
   ; which the v-bop as the data.
   (do: : ISeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
        ((= idx len) (new-ISeries v-bop))
-       (vector-set! v-bop idx (bop (assert (vector-ref v1 idx) fixnum?)
-                                   (assert (vector-ref v2 idx) fixnum?)))))
+       (vector-set! v-bop idx (bop (derive-fixnum-value is1 (vector-ref v1 idx))
+                                   (derive-fixnum-value is2 (vector-ref v2 idx))))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -430,7 +431,7 @@
 
   (do: : ISeries ([idx : Fixnum 0 (unsafe-fx+ idx 1)])
        ((= idx len) (new-ISeries v-bop))
-       (vector-set! v-bop idx (bop #{(assert (vector-ref v1 idx) fixnum?) : Fixnum} fx))))
+       (vector-set! v-bop idx (bop #{(derive-fixnum-value is (vector-ref v1 idx)) : Fixnum} fx))))
 
 ; ***********************************************************
 
@@ -475,9 +476,9 @@
 ; a new data vector. This data vector is the data of the new ISeries
 ; which is returned.
 (: comp/is (ISeries ISeries (Fixnum Fixnum -> Boolean) -> BSeries))
-(define (comp/is ns1 ns2 comp)
-  (define v1 : (Vectorof RFFixnum) (iseries-data (iseries-notna ns1)))
-  (define v2 : (Vectorof RFFixnum) (iseries-data (iseries-notna ns2)))
+(define (comp/is is1 is2 comp)
+  (define v1 : (Vectorof RFFixnum) (iseries-data (iseries-notna is1)))
+  (define v2 : (Vectorof RFFixnum) (iseries-data (iseries-notna is2)))
   (define: len : Index (vector-length v1))
   
   (unless (eqv? len (vector-length v2))
@@ -491,8 +492,8 @@
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
        ((= idx len) (new-BSeries v-comp))
-       (vector-set! v-comp idx (comp (assert (vector-ref v1 idx) fixnum?)
-                                     (assert (vector-ref v2 idx) fixnum?)))))
+       (vector-set! v-comp idx (comp (derive-fixnum-value is1 (vector-ref v1 idx))
+                                     (derive-fixnum-value is2 (vector-ref v2 idx))))))
 
 ; ***********************************************************
 
@@ -548,7 +549,7 @@
 
     (if (or (RFNoData? (vector-ref v1 idx)))
         (vector-set! v-bop idx #f)
-        (vector-set! v-bop idx (comp #{(assert (vector-ref v1 idx) fixnum?) : Fixnum} fx)))))
+        (vector-set! v-bop idx (comp #{(derive-fixnum-value is (vector-ref v1 idx)) : Fixnum} fx)))))
 
 ; ***********************************************************
 
@@ -619,7 +620,7 @@
 
 (: apply-stat-is (Symbol ISeries -> Real))
 (define (apply-stat-is function-name series)
-  (let ((data : (Vectorof Fixnum) (vector-map (lambda ([x : RFFixnum]) (if (RFNoData? x) DEFAULT_NULL_VALUE (assert x fixnum?))) (iseries-data series))))
+  (let ((data : (Vectorof Fixnum) (vector-map (lambda ([x : RFFixnum]) (derive-fixnum-value series x)) (iseries-data series))))
     (cond 
       [(eq? function-name 'variance) (variance data)]
       [(eq? function-name 'stddev) (stddev data)]
@@ -760,6 +761,10 @@
 ; ***********************************************************
 ;; ISeries groupby
 
+(: derive-fixnum-value (ISeries RFFixnum -> Fixnum))
+(define (derive-fixnum-value iseries val)
+  (if (fixnum? val) (assert val fixnum?) (iseries-null-value iseries)))
+
 (define-type Key String)
 (define-type GroupHash (HashTable Key (Listof RFFixnum)))
 
@@ -774,7 +779,6 @@
 (: iseries-groupby (ISeries [#:by-value Boolean] -> GroupHash))
 (define (iseries-groupby iseries #:by-value [by-value #f])
   (define: group-index : GroupHash (make-group-hash))
-  (set! iseries (iseries-filter iseries (lambda ((x : RFFixnum)) (not (RFNoData? x)))))
 
   (let ((len (iseries-length iseries))
         (k (current-continuation-marks)))
@@ -783,7 +787,7 @@
   (begin          
     (do ((i 0 (add1 i)))
         ((>= i len) group-index)
-      (let* ((rffixnum-val : (U RFFixnum ISeries) (assert (iseries-iloc iseries (assert i index?)) fixnum?))
+      (let* ((rffixnum-val : (U RFFixnum ISeries) (assert (iseries-iloc iseries (assert i index?)) RFFixnum?))
                    (rffixnum-list : (Listof RFFixnum) (if (fixnum? rffixnum-val) (list rffixnum-val) (vector->list (iseries-data iseries))))
                    (key (if (assert by-value)
                             (assert (iseries-iloc iseries (assert i index?)) fixnum?)

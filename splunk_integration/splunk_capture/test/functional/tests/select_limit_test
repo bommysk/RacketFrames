@@ -1,0 +1,1 @@
+event --select '{"City":"Cupertino"}' --limit 5

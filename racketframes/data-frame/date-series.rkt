@@ -10,8 +10,8 @@
 (require
  racket/unsafe/ops
  (only-in "indexed-series.rkt"
-	  RFIndex RFIndex? build-index-from-list
-          IndexDataType extract-index
+	  RFIndex RFIndex? RFNULL RFNoData
+           build-index-from-list IndexDataType extract-index
           Label LabelIndex-index
           LabelIndex label-index label->lst-idx key->lst-idx
           idx->key is-indexed? ListofIndexDataType? ListofIndex?
@@ -25,26 +25,28 @@
 ; Provide functions in this file to other files.
 (provide
  (struct-out DateSeries)
- DateSeries?)
+ DateSeries? RFDate RFDate? DEFAULT_NULL_VALUE GroupHash)
 
 (provide:
- [new-DateSeries ((Vectorof date) [#:index (Option (U (Listof IndexDataType) RFIndex))] -> DateSeries)]
+ [new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> DateSeries)]
  [set-DateSeries-index (DateSeries (U (Listof IndexDataType) RFIndex) -> DateSeries)]
- [date-series-iref (DateSeries (Listof Index) -> (Listof date))]
- [date-series-index-ref (DateSeries IndexDataType -> (Listof date))]
- [date-series-loc-multi-index (DateSeries (U (Listof String) ListofListofString) -> (U date DateSeries))]
- [date-series-loc-boolean (DateSeries (Listof Boolean) -> (U date DateSeries))]
- [date-series-loc (DateSeries (U Label (Listof Label) (Listof Boolean)) -> (U date DateSeries))]
- [date-series-iloc (DateSeries (U Index (Listof Index)) -> (U date DateSeries))]
+ [date-series-iref (DateSeries (Listof Index) -> (Listof RFDate))]
+ [date-series-index-ref (DateSeries IndexDataType -> (Listof RFDate))]
+ [date-series-loc-multi-index (DateSeries (U (Listof String) ListofListofString) -> (U RFDate DateSeries))]
+ [date-series-loc-boolean (DateSeries (Listof Boolean) -> (U RFDate DateSeries))]
+ [date-series-loc (DateSeries (U Label (Listof Label) (Listof Boolean)) -> (U RFDate DateSeries))]
+ [date-series-iloc (DateSeries (U Index (Listof Index)) -> (U RFDate DateSeries))]
  [date-series-iloc-range (DateSeries Index Index -> DateSeries)]
- [date-series-label-ref (DateSeries Label -> (Listof date))]
- [date-series-range (DateSeries Index Index -> (Vectorof date))]
+ [date-series-label-ref (DateSeries Label -> (Listof RFDate))]
+ [date-series-range (DateSeries Index Index -> (Vectorof RFDate))]
  [date-series-length (DateSeries -> Index)]
- [date-series-referencer (DateSeries -> (Index -> date))]
- [date-series-data (DateSeries -> (Vectorof date))]
+ [date-series-referencer (DateSeries -> (Index -> RFDate))]
+ [date-series-data (DateSeries -> (Vectorof RFDate))]
  [date-series-index (DateSeries -> (U False RFIndex))]
+ [date-series-null-value (DateSeries -> RFNULL)]
+ [date-series-date-null-value (DateSeries -> date)]
  [map/date-series-data (DateSeries (date -> date) -> DateSeries)]
- [date-range (date (Option Symbol) (Option Index) (Option date) -> (Listof date))]
+ [date-range (date (Option Symbol) (Option Index) (Option date) -> (Listof RFDate))]
 
  [bop/date-series (DateSeries DateSeries (date date -> date) -> DateSeries)]
  [comp/date-series (DateSeries DateSeries (date date -> Boolean) -> BSeries)]
@@ -59,7 +61,12 @@
  [=/date-series (DateSeries DateSeries -> BSeries)]
  [!=/date-series (DateSeries DateSeries -> BSeries)]
  
- [date-series-print (DateSeries Output-Port -> Void)])
+ [date-series-print (DateSeries Output-Port -> Void)]
+
+ [date-series-groupby (DateSeries [#:by-value Boolean] -> GroupHash)]
+ ; in Pandas, fillna
+ [set-DateSeries-null-value (DateSeries RFNULL -> DateSeries)]
+ [set-DateSeries-date-null-value-inplace (DateSeries date -> Void)])
 ; ***********************************************************
 
 #|
@@ -88,17 +95,31 @@
   time-zone-offset : exact-integer?
 |#
 
+(define-type RFDate (U date RFNoData))
+(define-predicate RFDate? RFDate)
+(define DEFAULT_NULL_VALUE : date (current-date))
 (struct DateSeries
   ([index : (Option RFIndex)]
-   [data : (Vectorof date)])
+   [data : (Vectorof RFDate)]
+   ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
+   [null-value : RFNULL]
+   ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+   [date-null-value : date])
   #:mutable
   #:transparent)
+
+(: make-RFDate-vector ((U (Sequenceof date) (Sequenceof RFDate)) -> (Vectorof RFDate)))
+(define (make-RFDate-vector seq)
+  (let ((vec : (Vectorof RFDate) (list->vector (sequence->list seq))))
+    vec))
 
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a DateSeries
 ; struct object.
-(: new-DateSeries ((Vectorof date) [#:index (Option (U (Listof IndexDataType) RFIndex))] -> DateSeries))
-(define (new-DateSeries data #:index [labels #f])
+(: new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> DateSeries))
+(define (new-DateSeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE]) 
+
+  (define data-vector : (Vectorof RFDate) (make-RFDate-vector data))
 
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
@@ -106,26 +127,36 @@
                                    ([value (in-hash-values (extract-index index))])
                                    (length (assert value ListofIndex?))))))
 
-      (unless (eq? (vector-length data) index-length)
+      (unless (eq? (vector-length data-vector) index-length)
         (let ((k (current-continuation-marks)))
           (raise (make-exn:fail:contract "Cardinality of a Series' data and labels must be equal" k))))
       (void)))
 
+  (define date-null-value : date (if (date? null-value) null-value DEFAULT_NULL_VALUE))
+
   (if (RFIndex? labels)
       (begin
 	(check-mismatch (assert labels))
-	(DateSeries labels data))
+	(DateSeries labels data-vector null-value date-null-value))
       (if labels
 	  (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
 	    (check-mismatch index)
-	    (DateSeries index data))
-	  (DateSeries #f data))))
+	    (DateSeries index data-vector null-value date-null-value))
+	  (DateSeries #f data-vector null-value date-null-value))))
 ; ***********************************************************
 
 ; ***********************************************************
 (: set-DateSeries-index (DateSeries (U (Listof IndexDataType) RFIndex) -> DateSeries))
 (define (set-DateSeries-index date-series labels)
   (new-DateSeries (date-series-data date-series) #:index labels))
+
+(: set-DateSeries-null-value (DateSeries RFNULL -> DateSeries))
+(define (set-DateSeries-null-value date-series null-value)
+  (new-DateSeries (date-series-data date-series) #:index (date-series-index date-series) #:fill-null null-value))
+
+(: set-DateSeries-date-null-value-inplace (DateSeries date -> Void))
+(define (set-DateSeries-date-null-value-inplace date-series null-value)
+  (set-DateSeries-date-null-value! date-series null-value))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -145,8 +176,8 @@
 	      ((>= i len) (void))
 	    (let ((date (vector-ref date-v i))
                   (num (vector-ref v i)))
-              (if (DateSeries-index date-series)                  
-                  (display (idx->key (assert (DateSeries-index date-series)) (assert i index?)) port)
+              (if (date-series-index date-series)                  
+                  (display (idx->key (assert (date-series-index date-series)) (assert i index?)) port)
                   (display (assert i index?) port))
               (display " " port)
               (displayln date port)
@@ -158,22 +189,22 @@
 ; lambda function which consumes an index and provides the
 ; value of the data at that index in the series. It can be
 ; defined once and used repeatedly as a referencer.
-(: date-series-referencer (DateSeries -> (Index -> date)))
+(: date-series-referencer (DateSeries -> (Index -> RFDate)))
 (define (date-series-referencer date-series)
-  (let ((data (DateSeries-data date-series)))
+  (let ((data (date-series-data date-series)))
     (λ: ((idx : Index))
 	(vector-ref data idx))))
 
 ; This function consumes an integer series and an index and
 ; returns the value at that index in the series.
-(: date-series-iref (DateSeries (Listof Index) -> (Listof date)))
+(: date-series-iref (DateSeries (Listof Index) -> (Listof RFDate)))
 (define (date-series-iref date-series lst-idx)
-  (map (lambda ((idx : Index)) (vector-ref (DateSeries-data date-series) idx))
+  (map (lambda ((idx : Index)) (vector-ref (date-series-data date-series) idx))
        lst-idx))
 
 ; This function consumes a date series and returns its
 ; data vector.
-(: date-series-data (DateSeries -> (Vectorof date)))
+(: date-series-data (DateSeries -> (Vectorof RFDate)))
 (define (date-series-data series)
   (DateSeries-data series))
 
@@ -183,21 +214,29 @@
 (define (date-series-index series)
   (DateSeries-index series))
 
+(: date-series-null-value (DateSeries -> RFNULL))
+(define (date-series-null-value date-series)
+  (DateSeries-null-value date-series))
+
+(: date-series-date-null-value (DateSeries -> date))
+(define (date-series-date-null-value date-series)
+  (DateSeries-date-null-value date-series))
+
 ; This function consumes an integer series and an index and
 ; returns a vector of values in the range [0:index] in the series.
-(: date-series-range (DateSeries Index Index -> (Vectorof date)))
+(: date-series-range (DateSeries Index Index -> (Vectorof RFDate)))
 (define (date-series-range series start end)
    (vector-copy (date-series-data series) start end))
 
 ; This function consumes a series and a Label and returns
 ; the list of values at that Label in the series.
-(: date-series-label-ref (DateSeries Label -> (Listof date)))
+(: date-series-label-ref (DateSeries Label -> (Listof RFDate)))
 (define (date-series-label-ref series label)
   (date-series-iref series (key->lst-idx (assert (DateSeries-index series)) label)))
 
 ; This function consumes a series and a Label and returns
 ; the list of values at that Label in the series.
-(: date-series-index-ref (DateSeries IndexDataType -> (Listof date)))
+(: date-series-index-ref (DateSeries IndexDataType -> (Listof RFDate)))
 (define (date-series-index-ref series item)
   (date-series-iref series (key->lst-idx (assert (DateSeries-index series)) item)))
 
@@ -205,7 +244,7 @@
 ; length of that series.
 (: date-series-length (DateSeries -> Index))
 (define (date-series-length series)
-  (vector-length (DateSeries-data series)))
+  (vector-length (date-series-data series)))
 
 (define-predicate ListofBoolean? (Listof Boolean))
 (define-predicate ListofFixnum? (Listof Fixnum))
@@ -231,7 +270,7 @@
 
 (define-predicate Listofdate? (Listof date))
 
-(: date-series-loc-multi-index (DateSeries (U (Listof String) ListofListofString) -> (U date DateSeries)))
+(: date-series-loc-multi-index (DateSeries (U (Listof String) ListofListofString) -> (U RFDate DateSeries)))
 (define (date-series-loc-multi-index date-series label)
   (unless (DateSeries-index date-series)
     (let ((k (current-continuation-marks)))
@@ -239,13 +278,13 @@
 
   (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "\t") "\t")))
+    (string->symbol (string-append (string-join label "::") "::")))
   
   (if (ListofListofString? label)
       (date-series-loc date-series (map get-index-val label))
       (date-series-loc date-series (get-index-val label))))
 
-(: date-series-loc (DateSeries (U Label (Listof Label) (Listof Boolean)) -> (U date DateSeries)))
+(: date-series-loc (DateSeries (U Label (Listof Label) (Listof Boolean)) -> (U RFDate DateSeries)))
 (define (date-series-loc date-series label)
   (unless (DateSeries-index date-series)
     (let ((k (current-continuation-marks)))
@@ -255,7 +294,7 @@
       (date-series-loc-boolean date-series label)
       (let ((associated-indices-length : (Listof Integer)
                                        (map (lambda ([l : Label]) (length (date-series-label-ref date-series l))) (convert-to-label-lst label)))
-            (vals : (Vectorof date)
+            (vals : (Vectorof RFDate)
              (if (list? label)
                  (list->vector (assert (flatten (map (lambda ([l : Label]) (date-series-label-ref date-series l)) label)) Listofdate?))
                  (list->vector (assert (date-series-label-ref date-series label) Listofdate?)))))
@@ -265,7 +304,7 @@
             (new-DateSeries vals #:index (build-index-from-list (build-labels-by-count (convert-to-label-lst label) associated-indices-length)))))))
 
 ; index based
-(: date-series-iloc (DateSeries (U Index (Listof Index)) -> (U date DateSeries)))
+(: date-series-iloc (DateSeries (U Index (Listof Index)) -> (U RFDate DateSeries)))
 (define (date-series-iloc date-series idx)
   (let ((referencer (date-series-referencer date-series)))
   (if (list? idx)
@@ -273,11 +312,11 @@
       ; make a new index from these labels using build-index-from-labels
       ; sub-vector the data vector to get the data and create a new-ISeries
       (new-DateSeries
-       (for/vector: : (Vectorof date) ([i idx])
+       (for/vector: : (Vectorof RFDate) ([i idx])
          (vector-ref (date-series-data date-series) i))
-       #:index (if (not (DateSeries-index date-series))
+       #:index (if (not (date-series-index date-series))
                    #f
-                   (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (DateSeries-index date-series)) i)) idx))))
+                   (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (date-series-index date-series)) i)) idx))))
       (referencer idx))))
 
 (: date-series-iloc-range (DateSeries Index Index -> DateSeries))
@@ -285,9 +324,9 @@
   ; use vector-copy library method
   (new-DateSeries
    (vector-copy (date-series-data date-series) start end)
-   #:index (if (not (DateSeries-index date-series))
+   #:index (if (not (date-series-index date-series))
                #f
-               (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (DateSeries-index date-series)) i)) (range start end))))))
+               (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (date-series-index date-series)) i)) (range start end))))))
 
 ; label based
 ; for two different use cases:
@@ -303,12 +342,12 @@
 (define (true? boolean)
   (not (false? boolean)))
 
-(: date-series-loc-boolean (DateSeries (Listof Boolean) -> (U date DateSeries)))
+(: date-series-loc-boolean (DateSeries (Listof Boolean) -> (U RFDate DateSeries)))
 (define (date-series-loc-boolean date-series boolean-lst)
-  (: data (Vectorof date))
+  (: data (Vectorof RFDate))
   (define data (date-series-data date-series))
 
-  (: new-data (Vectorof date))
+  (: new-data (Vectorof RFDate))
   (define new-data (make-vector (length (filter true? boolean-lst)) (current-date)))
   
   (define data-idx 0)
@@ -338,18 +377,21 @@
 
 ; ***********************************************************
 
+(: derive-date-value (DateSeries RFDate -> date))
+(define (derive-date-value date-series val)
+  (if (date? val) (assert val date?) (date-series-date-null-value date-series)))
+
 (: map/date-series-data (DateSeries (date -> date) -> DateSeries))
 (define (map/date-series-data series fn)
-  (let ((old-data (DateSeries-data series)))
-    (DateSeries #f
-                (build-vector (vector-length old-data)
-                              (λ: ((idx : Natural))
-                                (fn (vector-ref old-data idx)))))))
+  (let ((old-data (date-series-data series)))
+    (new-DateSeries (build-vector (vector-length old-data)
+                                  (λ: ((idx : Natural))
+                                    (fn (derive-date-value series (vector-ref old-data idx))))))))
 
 (: bop/date-series (DateSeries DateSeries (date date -> date) -> DateSeries))
 (define (bop/date-series date-series-1 date-series-2 bop)
-  (define v1 (DateSeries-data date-series-1))
-  (define v2 (DateSeries-data date-series-2))
+  (define v1 (date-series-data date-series-1))
+  (define v2 (date-series-data date-series-2))
   (define: len : Index (vector-length v1))
   
   (unless (eqv? len (vector-length v2))
@@ -362,14 +404,14 @@
   ; through the whole vector, the resulting new ISeries is returned
   ; which the v-bop as the data.
   (do: : DateSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
-       ((= idx len) (DateSeries #f v-bop))
-       (vector-set! v-bop idx (bop (vector-ref v1 idx)
-				   (vector-ref v2 idx)))))
+       ((= idx len) (new-DateSeries v-bop))
+       (vector-set! v-bop idx (bop (derive-date-value date-series-1 (vector-ref v1 idx))
+				   (derive-date-value date-series-2 (vector-ref v2 idx))))))
 
 (: comp/date-series (DateSeries DateSeries (date date -> Boolean) -> BSeries))
 (define (comp/date-series date-series-1 date-series-2 comp)
-  (define v1 (DateSeries-data date-series-1))
-  (define v2 (DateSeries-data date-series-2))
+  (define v1 (date-series-data date-series-1))
+  (define v2 (date-series-data date-series-2))
   (define: len : Index (vector-length v1))
   
   (unless (eqv? len (vector-length v2))
@@ -383,8 +425,8 @@
   ; which the v-bop as the data.
   (do: : BSeries ([idx : Fixnum 0 (unsafe-fx+ idx #{1 : Fixnum})])
        ((= idx len) (new-BSeries v-comp))
-       (vector-set! v-comp idx (comp (vector-ref v1 idx)
-				   (vector-ref v2 idx)))))
+       (vector-set! v-comp idx (comp (derive-date-value date-series-1 (vector-ref v1 idx))
+                                     (derive-date-value date-series-2 (vector-ref v2 idx))))))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -535,7 +577,7 @@
 ;;DateSeries groupby
 
 (define-type Key String)
-(define-type GroupHash (HashTable Key (Listof date)))
+(define-type GroupHash (HashTable Key (Listof RFDate)))
 
 ; This function is self-explanatory, it consumes no arguments
 ; and creates a hash map which will represent a JoinHash.
@@ -556,10 +598,10 @@
 	(begin          
 	  (do ((i 0 (add1 i)))
 	      ((>= i len) group-index)
-	    (let* ((date-val : (U date DateSeries) (date-series-iloc date-series (assert i index?)))
-                   (date-list : (Listof date) (if (date? date-val) (list date-val) (vector->list (date-series-data date-val))))
+	    (let* ((date-val : (U RFDate DateSeries) (assert (date-series-iloc date-series (assert i index?)) RFDate?))
+                   (date-list : (Listof RFDate) (if (RFDate? date-val) (list date-val) (vector->list (date-series-data date-val))))
                    (key (if by-value
-                            (date->string (assert (date-series-iloc date-series (assert i index?)) date?) #f)
+                            (date->string (derive-date-value date-series (assert (date-series-iloc date-series (assert i index?)) RFDate?)))
                             (if (date-series-index date-series)
                                 (idx->key (assert (date-series-index date-series)) (assert i index?))
                                 (assert i index?))))
@@ -569,7 +611,7 @@
                                       ; pretty-format anything else
                                       [else (pretty-format key)])))              
               (hash-update! group-index key-str
-			      (λ: ((val : (Listof date)))                                
+			      (λ: ((val : (Listof RFDate)))                                
 				  (append date-list val))
 			      (λ () (list)))))))))
 

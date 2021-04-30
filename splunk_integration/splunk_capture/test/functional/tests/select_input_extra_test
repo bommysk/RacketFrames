@@ -1,0 +1,1 @@
+event --index playground1 --select '{"extra": "extra_data"}' --limit 1

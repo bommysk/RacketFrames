@@ -1,0 +1,31 @@
+.results-table td.lt_green {
+  background-color: #B6ECB5;
+}
+
+.results-table td.lt_greenyellow {
+  background-color: #C8FB85;
+}
+
+.results-table td.lt_yellow {
+  background-color: #FBF1BA;
+}
+
+.results-table td.lt_orange {
+  background-color: #FCC585;
+}
+
+.results-table td.lt_red {
+  background-color: #FB7E7E;
+}
+
+.results-table td.lt_blue {
+  background-color: #CBFAF8;
+}
+
+.results-table td.lt_purple {
+  background-color: #DDA0DD;
+}
+
+.results-table td.green {
+  background-color: #4DB870;
+}

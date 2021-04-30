@@ -1,0 +1,4 @@
+{
+	"spl" : "search index=prj_${project}_main | head ${head}",
+	"tokens" : {"project": "ellis", "head": 100}
+}

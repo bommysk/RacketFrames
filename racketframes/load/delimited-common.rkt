@@ -7,6 +7,8 @@
  [read-formatted-file (Path-String Boolean DataFrameBuilder LineParser -> (Listof Boolean))]
  [read-sql-query ((Listof String) (Listof (Vectorof Any)) DataFrameBuilder -> (Listof Boolean))])
 
+(require typed/racket/date)
+
 (require
  (only-in "../data-frame/series-builder.rkt"
 	  SeriesBuilder)
@@ -30,13 +32,16 @@
  (only-in "../data-frame/datetime-series-builder.rkt"
 	  DatetimeSeriesBuilder DatetimeSeriesBuilder?
 	  append-DatetimeSeriesBuilder)
+ (only-in "../data-frame/date-series-builder.rkt"
+	  DateSeriesBuilder DateSeriesBuilder?
+	  append-DateSeriesBuilder)
  (only-in "data-frame-builder.rkt"	  
 	  DataFrameBuilder DataFrameBuilder-builders
 	  append-data-fields append-sql-data-fields)
  (only-in "../util/datetime/types.rkt"
           Datetime Date)
   (only-in "../util/datetime/parse.rkt"
-          parse-date parse-datetime is-valid-date? is-valid-datetime?)
+          parse-date parse-racket-date parse-datetime parse-racket-datetime is-valid-date? is-valid-datetime?)
  (only-in "schema.rkt"
 	  Schema)
  (only-in "types.rkt"
@@ -64,6 +69,9 @@
            [(DatetimeSeriesBuilder? builder)
             (λ: ((str : String))
               (append-DatetimeSeriesBuilder builder str))]
+           [(DateSeriesBuilder? builder)
+            (λ: ((str : String))
+              (append-DateSeriesBuilder builder str))]
            [else (λ: ((str : String)) (void))]))
        (DataFrameBuilder-builders data-frame-builder)))
 
@@ -91,6 +99,11 @@
               (let* ([trimmed-val : String (string-trim (assert val string?))]
                      [dt : Datetime (if (not (parse-datetime trimmed-val)) (assert (parse-date trimmed-val)) (assert (parse-datetime trimmed-val)))])
                 (append-DatetimeSeriesBuilder builder (assert dt Datetime?))))]
+           [(DateSeriesBuilder? builder)
+            (λ: ((val : Any))
+              (let* ([trimmed-val : String (string-trim (assert val string?))]
+                     [dt : date (if (not (parse-racket-datetime trimmed-val)) (assert (parse-racket-date trimmed-val)) (assert (parse-racket-datetime trimmed-val)))])
+                (append-DateSeriesBuilder builder (assert dt date?))))]
            [else (λ: ((val : Any)) (void))]))
        (DataFrameBuilder-builders data-frame-builder)))
 

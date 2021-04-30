@@ -1,10 +1,11 @@
 #lang typed/racket
 
-(require math/statistics)
+(require math/statistics
+         (only-in racket/format ~a))
 
 ; Provide functions in this file to other files.
 (provide:
- [gen-series-groupby (GenSeries -> GroupHash)]
+ [gen-series-groupby (GenSeries [#:by-value Boolean] -> GroupHash)]
  [apply-agg-gen-series (Symbol GroupHash -> GenSeries)]
  [make-group-hash (-> GroupHash)]
  [make-agg-value-hash-sindex ((Listof (Pair String GenericType)) -> SIndex)]
@@ -13,11 +14,12 @@
 (provide GroupHash AggValueHash)
  
 (require
-   (only-in "indexed-series.rkt"
-	  LabelIndex SIndex Label Labeling LabelProjection idx->key)
-   (only-in "generic-series.rkt"
-         GenSeries GenSeries? GenSeries-data GenSeries-index GenericType GenericType? gen-series-iloc gen-series-iref
-         gen-series-length new-GenSeries gen-series-referencer))
+  "../util/data-encode.rkt"
+  (only-in "indexed-series.rkt"
+           LabelIndex SIndex Label Labeling LabelProjection idx->key)
+  (only-in "generic-series.rkt"
+           GenSeries GenSeries? gen-series-data gen-series-index GenericType GenericType? gen-series-iloc gen-series-iref
+           gen-series-length new-GenSeries gen-series-referencer))
 
 (define-type Key String)
 (define-type GroupHash (HashTable Key (Listof GenericType)))
@@ -31,8 +33,8 @@
 
 ; Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index.
 ; The Series VALUES will be used to determine the groups.
-(: gen-series-groupby (GenSeries -> GroupHash))
-(define (gen-series-groupby gen-series)
+(: gen-series-groupby (GenSeries [#:by-value Boolean] -> GroupHash))
+(define (gen-series-groupby gen-series #:by-value [by-value #f])
   (define: group-index : GroupHash (make-group-hash))  
 
   (let ((len (gen-series-length gen-series))
@@ -43,19 +45,21 @@
 	  (do ((i 0 (add1 i)))
 	      ((>= i len) group-index)
 	    (let* ((gen-val : (U GenericType GenSeries) (gen-series-iloc gen-series (assert i index?)))
-                   (gen-list : (Listof GenericType) (if (GenericType? gen-val) (list gen-val) (vector->list (GenSeries-data gen-val))))
-                  (key (if (GenSeries-index gen-series)
-                                   (idx->key (assert (GenSeries-index gen-series)) (assert i index?))
-                                   (assert i index?)))
-                  (key-str : String (cond
-                                      [(symbol? key) (symbol->string key)]
-                                      [(number? key) (number->string key)]
-                                      ; pretty-format anything else
-                                      [else (pretty-format key)])))              
+                   (gen-list : (Listof GenericType) (if (GenericType? gen-val) (list gen-val) (vector->list (gen-series-data gen-val))))
+                   (key (if (assert by-value)
+                            (gen-series-iloc gen-series (assert i index?))
+                            (if (gen-series-index gen-series)
+                                (idx->key (assert (gen-series-index gen-series)) (assert i index?))
+                                (assert i index?))))
+                   (key-str : String (cond
+                                       [(symbol? key) (symbol->string key)]
+                                       [(number? key) (number->string key)]
+                                       ; pretty-format anything else
+                                       [else (pretty-format key)])))              
               (hash-update! group-index key-str
-			      (λ: ((val : (Listof GenericType)))                                
-				  (append gen-list val))
-			      (λ () (list)))))))))
+                            (λ: ((val : (Listof GenericType)))                                
+                              (append gen-list val))
+                            (λ () (list)))))))))
 
 (define-predicate ListofReal? (Listof Real))
 
@@ -76,9 +80,9 @@
                      (hash-set! agg-value-hash key
                                 (cond 
                                   [(eq? function-name 'sum) (apply + val)]
-                                  [(eq? function-name 'mean) (mean val)]
-                                  ;[(eq? function-name 'median) (median (vector->list (ISeries-data series)))]
-                                  ;[(eq? function-name 'mode) (mode (vector->list (ISeries-data series)))]
+                                  [(eq? function-name 'mean) (mean val)]                                  
+                                  [(eq? function-name 'median) (median (lambda ([val1 : GenericType] [val2 : GenericType]) (string-ci<=? (~a val1) (~a val2))) val)]
+                                  [(eq? function-name 'mode) (most-frequent-element val)]
                                   [(eq? function-name 'count) (length val)]
                                   [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) val)]
                                   [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) val)]

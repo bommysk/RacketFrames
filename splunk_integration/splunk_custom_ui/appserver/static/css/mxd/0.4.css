@@ -1,0 +1,37 @@
+.results-table th {
+     font-size: 8pt;
+     text-align:center;
+     padding:2px 2px 2px 2px;
+}
+
+.results-table td {
+     font-size: 8pt;
+}
+td.lt_green {
+  background-color: #B6ECB5;
+}
+
+td.lt_greenyellow {
+  background-color: #C8FB85;
+}
+
+td.lt_yellow {
+  background-color: #FBF1BA;
+}
+
+td.lt_orange {
+  background-color: #FCC585;
+}
+
+td.lt_red {
+  background-color: #FB7E7E;
+}
+
+td.lt_blue {
+  background-color: #CBFAF8;
+}
+
+td.lt_purple {
+  background-color: #DDA0DD;
+}
+

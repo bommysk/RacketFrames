@@ -1,0 +1,92 @@
+#!/bin/csh -f
+#
+# Script to deploy splunk_capture as an eda tool.
+#
+
+# help
+if ($#argv == 1 && (($argv[1] == "-h") || ($argv[1] == "-help"))) then
+   cat << EOF
+Usage: source deploy_splunk_capture.sh release_number deploy_version
+release_number and deploy_version are required arguments.
+
+Example: source deploy_splunk_capture.sh v014 beta
+will deploy splunk_capture to beta as version v014.
+
+Deploys splunk_capture to eda tools so it can be used in CE.
+
+Before running this script, please make sure the master branch of splunk_capture is tested and ready to be deployed.
+EOF
+   exit 0;
+endif
+
+# args: [release_number, deploy_version]
+if ($#argv != 2) then
+   cat << EOF
+Usage: source deploy_splunk_capture.sh release_number deploy_version
+release_number and deploy_version are required arguments.
+
+Example: source deploy_splunk_capture.sh v014 beta
+will deploy splunk_capture to beta as version v014.
+
+Deploys splunk_capture to eda tools so it can be used in CE.
+
+Before running this script, please make sure the master branch of splunk_capture is tested and ready to be deployed.
+EOF
+   exit 1;
+endif
+
+set DEPLOY_PATH="/org/seg/tools/eda/apple/splunk/splunk_capture";
+set RELEASE_NUMBER=$argv[1];
+set DEPLOY_VERSION=$argv[2];
+
+echo "Deploying splunk_capture $RELEASE_NUMBER to $DEPLOY_VERSION";
+# cd to deploy path
+cd $DEPLOY_PATH;
+
+# remove $RELEASE_NUMBER directory if exists
+if (-e $RELEASE_NUMBER) then 
+	echo "Creating fresh $RELEASE_NUMBER directory";
+	chmod -R 755 $RELEASE_NUMBER;
+	chmod -R 755 $RELEASE_NUMBER/*;
+	rm -rf $RELEASE_NUMBER/*;
+	rm -rf $RELEASE_NUMBER; 
+endif
+
+git clone gitlab@gitlab.csg.apple.com:splunk-cli/splunk_capture.git $RELEASE_NUMBER;
+# compile to pyc
+python -mcompileall $RELEASE_NUMBER/*;
+# (remove source code .py files)
+find $RELEASE_NUMBER -iname '*.py' -exec rm -f {} \;;
+# (remove .git* files)
+find $RELEASE_NUMBER -iname '.git*' -exec rm -rf {} \;;
+# unlink existing DEPLOY_VERSION link if exists
+if (-e $DEPLOY_VERSION) then 
+	unlink $DEPLOY_VERSION; 
+endif
+# link new version to DEPLOY_VERSION
+ln -s $RELEASE_NUMBER $DEPLOY_VERSION;
+# change mode
+chmod -R -w $DEPLOY_VERSION;
+
+echo;
+# test deployment
+echo "*************************";
+echo "Testing $DEPLOY_VERSION deployment";
+echo "*************************";
+echo "% ls -al $DEPLOY_VERSION";
+ls -al $DEPLOY_VERSION;
+echo "----------------------------------------";
+echo "% env SPLUNK_CAPTURE_VERSION=$DEPLOY_VERSION splunk_capture -h";
+env SPLUNK_CAPTURE_VERSION=$DEPLOY_VERSION splunk_capture -h;
+echo "----------------------------------------";
+echo "% env SPLUNK_CAPTURE_VERSION=$DEPLOY_VERSION splunk_capture login -h";
+env SPLUNK_CAPTURE_VERSION=$DEPLOY_VERSION splunk_capture login -h;
+echo "----------------------------------------";
+echo "% env SPLUNK_CAPTURE_VERSION=$DEPLOY_VERSION splunk_capture event -h";
+env SPLUNK_CAPTURE_VERSION=$DEPLOY_VERSION splunk_capture event -h;
+echo "----------------------------------------";
+echo "% env SPLUNK_CAPTURE_VERSION=$DEPLOY_VERSION splunk_capture kvstore -h";
+env SPLUNK_CAPTURE_VERSION=$DEPLOY_VERSION splunk_capture kvstore -h;
+echo "----------------------------------------";
+echo "% env SPLUNK_CAPTURE_VERSION=$DEPLOY_VERSION splunk_capture lookup -h";
+env SPLUNK_CAPTURE_VERSION=$DEPLOY_VERSION splunk_capture lookup -h;

@@ -14,7 +14,6 @@
  (only-in "../load/types.rkt"
           ListofString?))
 
-
 ; ***********************************************************
 ; Provide functions in this file to other files.
 (provide
@@ -42,6 +41,7 @@
  [gen-series-referencer (GenSeries -> (Index -> GenericType))]
  [gen-series-data (GenSeries -> (Vectorof GenericType))]
  [gen-series-index (GenSeries -> (U False RFIndex))]
+ [gen-series-null-value (GenSeries -> GenericType)]
  [gen-series-loc-boolean (GenSeries (Listof Boolean) -> (U GenericType GenSeries))]
  [gen-series-loc (GenSeries (U Label (Listof Label) (Listof Boolean)) -> (U GenericType GenSeries))]
  [gen-series-loc-multi-index (GenSeries (U (Listof String) ListofListofString) -> (U GenericType GenSeries))]
@@ -51,7 +51,7 @@
  [gen-series-print (GenSeries [#:output-port Output-Port] -> Void)])
 
 ; ***********************************************************
-(define DEFAULT_NULL_VALUE : GenericType 'NA)
+(define DEFAULT_NULL_VALUE : GenericType null)
 (struct GenSeries
   ([index : (Option RFIndex)]
    [data : (Vectorof GenericType)]

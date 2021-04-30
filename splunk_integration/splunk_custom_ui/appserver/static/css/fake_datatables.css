@@ -1,0 +1,16 @@
+/* Datatables look-alike */
+div.splunk-table .table th, div.splunk-table .table td {
+    font-family: sans-serif, helvetica, arial;
+    font-size: 11px;
+    padding: 2px;
+}
+div.splunk-table .table th{
+    font-weight: bold !important;
+}
+.table a .icon-sorts {
+    display: none;
+}
+.results-table table th {
+    white-space: normal !important;
+    text-align: center;
+}
