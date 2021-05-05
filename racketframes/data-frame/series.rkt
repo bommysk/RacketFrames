@@ -365,11 +365,11 @@
 (: in-series (GenericType Series -> Boolean))
 (define (in-series val series)
   (cond
-    ;[(GenSeries? series) (gen-series-iloc series idx)]
+    ;[(GenSeries? series) (in-gen-series val (assert series GenSeries?))]
     [(NSeries? series) (in-nseries (assert val flonum?) (assert series NSeries?))]
     ;[(CSeries? series) (cseries-iloc series idx)]   
     [(ISeries? series) (in-iseries (assert val RFFixnum?) (assert series ISeries?))]
-    ;[(BSeries? series) (bseries-iloc series idx)]
-    ;[(DatetimeSeries? series) (datetime-series-iloc series idx)]
-    ;[(DateSeries? series) (date-series-iloc series idx)]
+    ;[(BSeries? series) (in-bseries (assert val boolean?) (assert series BSeries?))]
+    ;[(DatetimeSeries? series) (in-datetime-series (assert val Datetime?) (assert series DatetimeSeries?))]
+    ;[(DateSeries? series) (in-date-series (assert val date?) (assert series DateSeries?))]
     [else (error "Unknown Series type in DataFrame")]))
