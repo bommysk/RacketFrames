@@ -77,11 +77,11 @@
 	  series-description series-length series-type 
           Series Series? SeriesType
           SeriesDescription SeriesDescription-name
-          SeriesDescription-type SeriesDescription-length)
+          SeriesDescription-type SeriesDescription-length
+          IndexableSeries IndexableSeries?)
  (only-in "series.rkt"
           series-data set-series-index get-series-index
-          series-loc-boolean series-loc series-iloc indexable-series->index
-          IndexableSeries IndexableSeries?)
+          series-loc-boolean series-loc series-iloc indexable-series->index)
  (only-in "generic-series.rkt"
          GenSeries GenericType GenSeries?
          GenSeries-data

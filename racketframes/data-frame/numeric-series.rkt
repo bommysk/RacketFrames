@@ -37,6 +37,7 @@
  [nseries-referencer (NSeries -> (Index -> Flonum))]
  [nseries-length (NSeries -> Index)]
  [nseries-data (NSeries -> FlVector)]
+ [in-nseries (Flonum NSeries -> Boolean)]
  [nseries-groupby (NSeries [#:by-value Boolean] -> GroupHash)]
  [apply-agg-nseries (Symbol GroupHash -> GenSeries)]
  [nseries-index (NSeries -> (U False RFIndex))]
@@ -79,6 +80,7 @@
  [apply-agg-ns (Symbol NSeries -> GenericType)]
  [apply-stat-ns (Symbol NSeries -> Real)]
  [flvector->list (FlVector [#:index Fixnum] -> (Listof Flonum))]
+ [flvector->vector (FlVector [#:index Fixnum] -> (Vectorof Flonum))]
  [list->flvector ((Listof Flonum) -> FlVector)]
  [nseries-print (NSeries [#:output-port Output-Port] -> Void)])
 
@@ -336,6 +338,14 @@
     (flvector-set! result-flvector i flo))
 
   result-flvector)
+
+(: flvector->vector (FlVector [#:index Fixnum] -> (Vectorof Flonum)))
+(define (flvector->vector flvec #:index [idx 0])
+  (list->vector (flvector->list flvec #:index idx)))
+
+(: in-nseries (Flonum NSeries -> Boolean))
+(define (in-nseries val series)
+  (if (vector-memq val (flvector->vector (nseries-data series))) #t #f))
 
 ; ***********************************************************
 

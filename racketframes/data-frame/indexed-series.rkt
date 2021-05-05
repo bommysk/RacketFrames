@@ -41,7 +41,7 @@
  Label Label? LabelProjection LabelProjection? LabelIndex? RFIndex? Datetime?
  RFIndex RFNULL IndexDataType ListofIndex ListofIndex? ListofListofString ListofListofString?
  LabelIndex LabelIndex-index
- FIndex FlonumIndex ListofFixnum? ListofFlonum? ListofBoolean? ListofDatetime? ListofDate?
+ FIndex FlonumIndex ListofFixnum? ListofFlonum? ListofBoolean? ListofDatetime? ListofDate? Listofdate?
  build-index-from-labels label-index key->lst-idx label->lst-idx idx->key idx->label
  (struct-out RFNoData) key-delimiter)
 ; ***********************************************************
@@ -82,6 +82,8 @@
 (define-predicate ListofDatetime? (Listof Datetime))
 
 (define-predicate ListofDate? (Listof Date))
+
+(define-predicate Listofdate? (Listof date))
 
 (define-predicate ListofAny? (Listof Any))
 

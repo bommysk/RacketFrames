@@ -37,6 +37,7 @@
  [iseries-length (ISeries -> Index)]
  [iseries-referencer (ISeries -> (Index -> RFFixnum))]
  [iseries-data (ISeries -> (Vectorof RFFixnum))]
+ [in-iseries (RFFixnum ISeries -> Boolean)]
  [iseries-index (ISeries -> (U False RFIndex))]
  [iseries-null-value (ISeries -> Fixnum)]
  [iseries-custom-null-value (ISeries -> RFNULL)]
@@ -301,6 +302,10 @@
 (: iseries-length (ISeries -> Index))
 (define (iseries-length series)
   (vector-length (ISeries-data series)))
+
+(: in-iseries (RFFixnum ISeries -> Boolean))
+(define (in-iseries val series)
+  (if (vector-memq val (iseries-data series)) #t #f))
 
 (: iseries-notna (ISeries -> ISeries))
 (define (iseries-notna iseries)

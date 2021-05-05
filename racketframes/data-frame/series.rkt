@@ -15,16 +15,17 @@
  [get-series-index (Series -> RFIndex)]
  [has-series-index? (Series -> Boolean)]
  [indexable-series->index (IndexableSeries -> RFIndex)]
- [series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof Fixnum) (Vectorof Symbol) (Vectorof date) FlVector) -> (Sequenceof IndexDataType))])
+ [series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector) -> (Sequenceof IndexDataType))])
 
 
 (require
   racket/fixnum
   racket/flonum
+  racket/vector
   (only-in "indexed-series.rkt"
-          Label RFIndex IndexDataType ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime? ListofDate? ListofLabel? ListofIndexDataType? build-index-from-sequence ListofListofString)
+          Label RFIndex IndexDataType ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime? ListofDate? Listofdate? ListofLabel? ListofIndexDataType? build-index-from-sequence ListofListofString)
  (only-in "series-description.rkt"
-	  Series Series? SeriesList SeriesList? SeriesType IndexableSeries IndexableSeries?)
+	  Series Series? SeriesList SeriesList? SeriesType IndexableSeries IndexableSeries? series-type)
  (only-in "groupby-util.rkt" gen-series-groupby [GroupHash gen-series-grouphash])
  (only-in "generic-series.rkt"
           GenericType GenSeries GenSeries? new-GenSeries gen-series-length gen-series-data gen-series-index gen-series-iref
@@ -35,11 +36,11 @@
           cseries-loc-boolean cseries-iloc cseries-loc cseries-loc-multi-index cseries-index-ref
           set-CSeries-null-value cseries-null-value cseries-groupby [GroupHash cseries-grouphash])
  (only-in "numeric-series.rkt"
-          NSeries NSeries? new-NSeries nseries-length nseries-data nseries-index nseries-iref
+          NSeries NSeries? new-NSeries nseries-length nseries-data nseries-index nseries-iref in-nseries
           set-NSeries-index nseries-loc-boolean nseries-loc nseries-loc-multi-index nseries-iloc nseries-index-ref list->flvector flvector->list
-          set-NSeries-null-value nseries-null-value nseries-groupby [GroupHash nseries-grouphash])
+          set-NSeries-null-value nseries-null-value nseries-groupby [GroupHash nseries-grouphash] flvector->vector)
  (only-in "integer-series.rkt"
-	  ISeries ISeries? new-ISeries iseries-length iseries-data iseries-index iseries-iref
+	  ISeries ISeries? new-ISeries iseries-length iseries-data iseries-index in-iseries iseries-iref
           set-ISeries-index iseries-loc-boolean iseries-loc iseries-loc-multi-index iseries-iloc iseries-index-ref RFFixnum RFFixnum?
           set-ISeries-null-value iseries-null-value iseries-groupby [GroupHash iseries-grouphash])
  (only-in "boolean-series.rkt"
@@ -97,7 +98,7 @@
       [(eq? series-type 'DatetimeSeries)
        (new-DatetimeSeries (list->vector (assert (sequence->list data) ListofDatetime?)) #:index labels)]
       [(eq? series-type 'DateSeries)
-       (new-DateSeries (list->vector (assert (sequence->list data) ListofDate?)) #:index labels)]
+       (new-DateSeries (assert (sequence->list data) Listofdate?) #:index labels)]
       [else
        (new-GenSeries (list->vector (sequence->list data)) #:index labels)])))
 
@@ -156,7 +157,7 @@
      (set-GenSeries-null-value series null-value)]))
 
 (: get-series-null-value (Series -> GenericType))
-(define (get-series-null-value series null-value)
+(define (get-series-null-value series)
   (cond                                                      
     [(CSeries? series)
      (cseries-null-value series)]
@@ -171,7 +172,7 @@
     [(DateSeries? series)
      (date-series-null-value series)]
     [else
-     (gen-series-null-value series null-value)]))
+     (gen-series-null-value series)]))
 
 (define-type GroupHash (U gen-series-grouphash cseries-grouphash nseries-grouphash iseries-grouphash bseries-grouphash datetime-series-grouphash date-series-grouphash))
 
@@ -309,7 +310,7 @@
 
 ; ***********************************************************
 
-(: set-series-index (Series RFIndex -> Series))
+(: set-series-index (Series (U (Listof IndexDataType) RFIndex) -> Series))
 (define (set-series-index series index)
   (cond
     [(GenSeries? series) (set-GenSeries-index (assert series GenSeries?) index)]
@@ -347,7 +348,7 @@
 
 ; ***********************************************************
 
-(: series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof Fixnum) (Vectorof Symbol) (Vectorof date) FlVector) -> (Sequenceof IndexDataType)))
+(: series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector) -> (Sequenceof IndexDataType)))
 (define (series-data->indexable-sequence vectorof-any)
   (let ((indexable-sequence : (Sequenceof IndexDataType)
                             (if (flvector? vectorof-any)
@@ -359,19 +360,16 @@
 (define (indexable-series->index series)
   (build-index-from-sequence (series-data->indexable-sequence (series-data series))))
 
- ;(in-series (->* (series?) (exact-nonnegative-integer?
-  ;                          (or/c -1 exact-nonnegative-integer?)
-   ;                         exact-integer?)
-    ;             sequence?))
-;; Return a sequence that enumerates elements in the series between
-;; START and STOP with STEP.  This can be used in for loops.
-#|(define (in-series series [start 0] [stop (series-length series)] [step 1])  
-  (define data (series-data series))
-  
-  (if (<= start stop)
-      (unless (> step 0)
-        (raise-argument-error 'step "positive" step))      
-      (unless (< step 0)
-        (raise-argument-error 'step "negative" step)))
-  
-  (in-vector (series-data series) start stop step)) |#
+(define-type SeriesDataVectorType (U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector))
+
+(: in-series (GenericType Series -> Boolean))
+(define (in-series val series)
+  (cond
+    ;[(GenSeries? series) (gen-series-iloc series idx)]
+    [(NSeries? series) (in-nseries (assert val flonum?) (assert series NSeries?))]
+    ;[(CSeries? series) (cseries-iloc series idx)]   
+    [(ISeries? series) (in-iseries (assert val RFFixnum?) (assert series ISeries?))]
+    ;[(BSeries? series) (bseries-iloc series idx)]
+    ;[(DatetimeSeries? series) (datetime-series-iloc series idx)]
+    ;[(DateSeries? series) (date-series-iloc series idx)]
+    [else (error "Unknown Series type in DataFrame")]))
