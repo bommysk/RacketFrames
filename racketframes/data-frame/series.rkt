@@ -347,8 +347,8 @@
     [else (error "Unknown or not supported series type in DataFrame")]))
 
 ; ***********************************************************
-
-(: series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector) -> (Sequenceof IndexDataType)))
+(define-type SeriesDataVectorType (U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector))
+(: series-data->indexable-sequence (SeriesDataVectorType -> (Sequenceof IndexDataType)))
 (define (series-data->indexable-sequence vectorof-any)
   (let ((indexable-sequence : (Sequenceof IndexDataType)
                             (if (flvector? vectorof-any)
@@ -359,8 +359,6 @@
 (: indexable-series->index (IndexableSeries -> RFIndex))
 (define (indexable-series->index series)
   (build-index-from-sequence (series-data->indexable-sequence (series-data series))))
-
-(define-type SeriesDataVectorType (U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector))
 
 (: in-series (GenericType Series -> Boolean))
 (define (in-series val series)
