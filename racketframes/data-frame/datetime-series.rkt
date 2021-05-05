@@ -20,6 +20,7 @@
           Label LabelIndex-index
           LabelIndex label-index label->lst-idx key->lst-idx
           idx->key is-indexed? ListofIndexDataType? ListofIndex?
+          ListofBoolean? ListofFixnum?
           ListofListofString ListofListofString? RFNoData RFNULL)
  (only-in "boolean-series.rkt"
           new-BSeries BSeries))
@@ -49,6 +50,7 @@
  [datetime-series-index (DatetimeSeries -> (U False RFIndex))]
  [datetime-series-null-value (DatetimeSeries -> RFNULL)]
  [datetime-series-datetime-null-value (DatetimeSeries -> Datetime)]
+ [in-datetime-series (Datetime DatetimeSeries -> Boolean)]
  [map/datetime-series-data (DatetimeSeries (Datetime -> Datetime) -> DatetimeSeries)]
  [datetime-range (Datetime (Option Symbol) (Option Index) (Option Datetime) -> (Listof RFDatetime))]
 
@@ -224,8 +226,9 @@
 (define (datetime-series-length series)
   (vector-length (DatetimeSeries-data series)))
 
-(define-predicate ListofBoolean? (Listof Boolean))
-(define-predicate ListofFixnum? (Listof Fixnum))
+(: in-datetime-series (Datetime DatetimeSeries -> Boolean))
+(define (in-datetime-series val series)
+  (if (vector-memq val (datetime-series-data series)) #t #f))
 
 ; indexing
 

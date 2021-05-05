@@ -28,11 +28,11 @@
 	  Series Series? SeriesList SeriesList? SeriesType IndexableSeries IndexableSeries? series-type)
  (only-in "groupby-util.rkt" gen-series-groupby [GroupHash gen-series-grouphash])
  (only-in "generic-series.rkt"
-          GenericType GenSeries GenSeries? new-GenSeries gen-series-length gen-series-data gen-series-index gen-series-iref
+          GenericType GenSeries GenSeries? new-GenSeries gen-series-length gen-series-data gen-series-index gen-series-iref in-gen-series
           set-GenSeries-index gen-series-loc-boolean gen-series-loc gen-series-loc-multi-index gen-series-iloc gen-series-index-ref
           set-GenSeries-null-value set-GenSeries-any-null-value-inplace gen-series-null-value)
  (only-in "categorical-series.rkt"
-          CSeries CSeries? new-CSeries cseries-length cseries-data cseries-index cseries-iref set-CSeries-index
+          CSeries CSeries? new-CSeries cseries-length cseries-data cseries-index cseries-iref in-cseries set-CSeries-index
           cseries-loc-boolean cseries-iloc cseries-loc cseries-loc-multi-index cseries-index-ref
           set-CSeries-null-value cseries-null-value cseries-groupby [GroupHash cseries-grouphash])
  (only-in "numeric-series.rkt"
@@ -44,15 +44,15 @@
           set-ISeries-index iseries-loc-boolean iseries-loc iseries-loc-multi-index iseries-iloc iseries-index-ref RFFixnum RFFixnum?
           set-ISeries-null-value iseries-null-value iseries-groupby [GroupHash iseries-grouphash])
  (only-in "boolean-series.rkt"
-	  BSeries BSeries? new-BSeries bseries-length bseries-data bseries-index bseries-iref
+	  BSeries BSeries? new-BSeries bseries-length bseries-data bseries-index bseries-iref in-bseries
           set-BSeries-index bseries-loc-boolean bseries-loc bseries-loc-multi-index bseries-iloc bseries-index-ref
           set-BSeries-null-value bseries-null-value bseries-groupby [GroupHash bseries-grouphash])
  (only-in "datetime-series.rkt"
-	  DatetimeSeries DatetimeSeries? new-DatetimeSeries DatetimeSeries-index DatetimeSeries-data datetime-series-length datetime-series-data datetime-series-index datetime-series-iref
+	  DatetimeSeries DatetimeSeries? new-DatetimeSeries DatetimeSeries-index DatetimeSeries-data datetime-series-length datetime-series-data datetime-series-index datetime-series-iref in-datetime-series
           set-DatetimeSeries-index datetime-series-loc-boolean datetime-series-loc datetime-series-loc-multi-index datetime-series-iloc datetime-series-index-ref datetime-series-groupby
           set-DatetimeSeries-null-value datetime-series-null-value [GroupHash datetime-series-grouphash] RFDatetime RFDatetime?)
  (only-in "date-series.rkt"
-	  DateSeries DateSeries? new-DateSeries DateSeries-index DateSeries-data date-series-length date-series-data date-series-index date-series-iref date-series-groupby [GroupHash date-series-grouphash]
+	  DateSeries DateSeries? new-DateSeries DateSeries-index DateSeries-data date-series-length date-series-data date-series-index date-series-iref in-date-series date-series-groupby [GroupHash date-series-grouphash]
           set-DateSeries-index set-DateSeries-null-value date-series-null-value date-series-loc-boolean date-series-loc date-series-loc-multi-index date-series-iloc date-series-index-ref
           RFDate RFDate?)
  
@@ -365,11 +365,11 @@
 (: in-series (GenericType Series -> Boolean))
 (define (in-series val series)
   (cond
-    ;[(GenSeries? series) (in-gen-series val (assert series GenSeries?))]
+    [(GenSeries? series) (in-gen-series val (assert series GenSeries?))]
     [(NSeries? series) (in-nseries (assert val flonum?) (assert series NSeries?))]
-    ;[(CSeries? series) (cseries-iloc series idx)]   
+    [(CSeries? series) (in-cseries (assert val symbol?) series)]   
     [(ISeries? series) (in-iseries (assert val RFFixnum?) (assert series ISeries?))]
-    ;[(BSeries? series) (in-bseries (assert val boolean?) (assert series BSeries?))]
-    ;[(DatetimeSeries? series) (in-datetime-series (assert val Datetime?) (assert series DatetimeSeries?))]
-    ;[(DateSeries? series) (in-date-series (assert val date?) (assert series DateSeries?))]
-    [else (error "Unknown Series type in DataFrame")]))
+    [(BSeries? series) (in-bseries (assert val boolean?) (assert series BSeries?))]
+    [(DatetimeSeries? series) (in-datetime-series (assert val Datetime?) (assert series DatetimeSeries?))]
+    [(DateSeries? series) (in-date-series (assert val date?) (assert series DateSeries?))]
+    [else (error "Unknown or not supported series type in DataFrame")]))

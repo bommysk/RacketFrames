@@ -41,6 +41,7 @@
  [gen-series-referencer (GenSeries -> (Index -> GenericType))]
  [gen-series-data (GenSeries -> (Vectorof GenericType))]
  [gen-series-index (GenSeries -> (U False RFIndex))]
+ [in-gen-series (GenericType GenSeries -> Boolean)]
  [gen-series-null-value (GenSeries -> GenericType)]
  [gen-series-loc-boolean (GenSeries (Listof Boolean) -> (U GenericType GenSeries))]
  [gen-series-loc (GenSeries (U Label (Listof Label) (Listof Boolean)) -> (U GenericType GenSeries))]
@@ -170,6 +171,10 @@
 (: gen-series-index (GenSeries -> (U False RFIndex)))
 (define (gen-series-index series)
   (GenSeries-index series))
+
+(: in-gen-series (GenericType GenSeries -> Boolean))
+(define (in-gen-series val series)
+  (if (vector-memq val (gen-series-data series)) #t #f))
 
 ; This function consumes an integer series and returns its
 ; data vector.

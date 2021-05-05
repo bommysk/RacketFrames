@@ -30,6 +30,7 @@
  [bseries-referencer (BSeries -> (Index -> Boolean))]
  [bseries-data (BSeries -> (Vectorof Boolean))]
  [bseries-index (BSeries -> (U False RFIndex))]
+ [in-bseries (Boolean BSeries -> Boolean)]
  [bseries-groupby (BSeries [#:by-value Boolean] -> GroupHash)]
  [map/bs (BSeries (Boolean -> Boolean) -> BSeries)]
  [bseries-loc-boolean (BSeries (Listof Boolean) -> (U Boolean BSeries))]
@@ -158,6 +159,10 @@
 (: bseries-length (BSeries -> Index))
 (define (bseries-length series)
   (vector-length (BSeries-data series)))
+
+(: in-bseries (Boolean BSeries -> Boolean))
+(define (in-bseries val series)
+  (if (vector-memq val (bseries-data series)) #t #f))
 ; ***********************************************************
 
 ; ***********************************************************

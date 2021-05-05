@@ -13,9 +13,11 @@
  [cseries-iref        (CSeries (Listof Index) -> (Listof Label))]
  [cseries-range (CSeries Index -> (Vectorof Label))]
  [cseries-data        (CSeries -> (Vectorof Label))]
+ [cseries-nominal-data (CSeries -> (Vectorof Label))]
  [cseries-index (CSeries -> (U False RFIndex))]
  [cseries-null-value (CSeries -> Label)]
  [cseries-custom-null-value (CSeries -> RFNULL)]
+ [in-cseries (Label CSeries -> Boolean)]
  [cseries-value-is-null? (CSeries Label -> Boolean)]
  [cseries-referencer (CSeries -> (Fixnum -> Label))]
  [cseries-iloc (CSeries (U Index (Listof Index)) -> (U Label CSeries))]
@@ -149,6 +151,10 @@
 (: cseries-index (CSeries -> (U False RFIndex)))
 (define (cseries-index series)
   (CSeries-index series))
+
+(: in-cseries (Label CSeries -> Boolean))
+(define (in-cseries val series)
+  (if (vector-memq val (cseries-nominal-data series)) #t #f))
 
 ; This function consumes an integer series and returns its
 ; data vector.
