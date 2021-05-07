@@ -44,104 +44,104 @@
 
 (displayln "data-frame+ Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame+ data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame+ data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 
 (displayln "data-frame- Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame- data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame- data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame* Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame* data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame* data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame/ Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame/ data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame/ data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame% Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame% data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame% data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame-r Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame-r data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame-r data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame= Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame= data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame= data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame!= Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame!= data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame!= data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame< Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame< data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame< data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame> Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame> data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame> data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame<= Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame<= data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame<= data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame>= Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame>= data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame>= data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (displayln "data-frame-abs Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
 (define columns-integer-3
   (list 
@@ -153,17 +153,17 @@
 ; create new data-frame-integer-3
 (define data-frame-integer-3 (new-data-frame columns-integer-3))
 
-(data-frame-write-tab data-frame-integer-3 (current-output-port))
+(data-frame-write-delim data-frame-integer-3 (current-output-port))
 
-(data-frame-write-tab (data-frame-abs data-frame-integer-1) (current-output-port))
+(data-frame-write-delim (data-frame-abs data-frame-integer-1) (current-output-port))
 
-(data-frame-write-tab (data-frame-abs data-frame-integer-3) (current-output-port))
+(data-frame-write-delim (data-frame-abs data-frame-integer-3) (current-output-port))
 
 (displayln "data-frame-filter test")
 
 (displayln "data-frame-integer-3")
-(data-frame-write-tab data-frame-integer-3 (current-output-port))
+(data-frame-write-delim data-frame-integer-3 (current-output-port))
 
 ; data-frame-filter tests
 (displayln "data-frame-filter result")
-(data-frame-write-tab (data-frame-filter data-frame-integer-3 (new-BSeries (vector #f #t #t #f) #f)) (current-output-port))
+(data-frame-write-delim (data-frame-filter data-frame-integer-3 (new-BSeries (vector #f #t #t #f) #f)) (current-output-port))

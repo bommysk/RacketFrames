@@ -12,7 +12,8 @@
   (only-in "../util/format.rkt"
            ~a)
   (only-in "categorical-series.rkt"
-           CSeries new-CSeries cseries-data CSeries-nominals cseries-length cseries-referencer)
+           CSeries new-CSeries cseries-data cseries-nominal-data cseries-index
+           cseries-length cseries-referencer)
   (only-in "categorical-series-builder.rkt"
            CSeriesBuilder
            new-CSeriesBuilder
@@ -43,24 +44,16 @@
 
 (: cseries-unique (CSeries -> CSeries))
 (define (cseries-unique cseries)
-  (define noms (vector-copy (CSeries-nominals cseries)))
-  
-  (define len (vector-length noms))
-  (define: data : (Vectorof Index) (make-vector len 0))
-
-  (do ([i 0 (add1 i)])
-      ((>= i len) (CSeries #f data noms))
-    (let: ((i : Index (assert i index?)))
-	  (vector-set! data i i))))
-
+  (new-CSeries (cseries-nominal-data cseries) #:index (cseries-index cseries)))
+   
 (define default-cseries-rows 10)
 
 (: cseries-head (CSeries [#:rows Index] -> CSeries))
 (define (cseries-head cseries #:rows [rows 10])
   (define cref (cseries-referencer cseries))
   (if (< (vector-length (cseries-data cseries)) rows)
-      (new-CSeries (for/vector: : (Vectorof Symbol) ([i (vector-length (cseries-data cseries))]) (cref i)) (build-index-from-list (vector->list (cseries-data cseries))))
-      (new-CSeries (for/vector: : (Vectorof Symbol) ([i rows]) (cref i)) (build-index-from-list (vector->list (cseries-data cseries))))))
+      (new-CSeries (for/vector: : (Vectorof Symbol) ([i (vector-length (cseries-data cseries))]) (cref i)) #:index (build-index-from-list (vector->list (cseries-data cseries))))
+      (new-CSeries (for/vector: : (Vectorof Symbol) ([i rows]) (cref i)) #:index (build-index-from-list (vector->list (cseries-data cseries))))))
 
 (: cseries-head-display (CSeries [#:rows Index] -> Void))
 (define (cseries-head-display cseries #:rows [rows default-cseries-rows])

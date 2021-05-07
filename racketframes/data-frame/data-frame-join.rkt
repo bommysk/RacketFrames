@@ -44,12 +44,11 @@
  (only-in "indexed-series.rkt"
 	  LabelIndex SIndex Label Labeling LabelProjection key-delimiter)
  (only-in "series.rkt"
-	  series-complete)
+	  series-complete series-data series-iref series-referencer)
  (only-in "series-description.rkt"
 	  SeriesType Series
 	  SeriesDescription-type
-	  series-type series-length
-          series-data series-iref
+	  series-type series-length          
           IndexableSeries)
  (only-in "data-frame.rkt"
 	  DataFrame Column Columns Columns? new-data-frame data-frame-names
@@ -73,6 +72,9 @@
  (only-in "datetime-series.rkt"
           DatetimeSeries DatetimeSeries? datetime-series-iref
           new-DatetimeSeries datetime-series-referencer)
+ (only-in "date-series.rkt"
+          DateSeries DateSeries? date-series-iref
+          new-DateSeries date-series-referencer)
  (only-in "../util/datetime/types.rkt"
           Datetime Datetime? Date Time)
  (only-in "series-builder.rkt"
@@ -103,8 +105,12 @@
 	  DatetimeSeriesBuilder DatetimeSeriesBuilder?
 	  append-DatetimeSeriesBuilder complete-DatetimeSeriesBuilder
 	  new-DatetimeSeriesBuilder)
+ (only-in "date-series-builder.rkt"
+	  DateSeriesBuilder DateSeriesBuilder?
+	  append-DateSeriesBuilder complete-DateSeriesBuilder
+	  new-DateSeriesBuilder)
  (only-in "data-frame-print.rkt"
-          data-frame-write-tab)
+          data-frame-write-delim)
  (only-in "groupby-util.rkt"
           make-agg-value-hash-sindex agg-value-hash-to-gen-series GroupHash
           AggValueHash))
@@ -159,6 +165,7 @@
 	       ((IntegerSeries)     (new-ISeriesBuilder len))
                ((BooleanSeries)     (new-BSeriesBuilder len))
                ((DatetimeSeries)    (new-DatetimeSeriesBuilder len))
+               ((DateSeries)    (new-DateSeriesBuilder len))
 	       (else (error 'dest-mapping-series-builders
 			    "Unknown series type ~a."
 			    (SeriesDescription-type series))))))
@@ -177,15 +184,15 @@
        (string<=? (symbol->string (car kc1))
 		  (symbol->string (car kc2))))))
 
-; This function consumes a Listof Column and filters it for
-; only columns of CSeries or ISeries and returns those series
-; in list form.
+; Get indexable Series from Columns
 (: key-cols-series (Columns -> (Listof IndexableSeries)))
 (define (key-cols-series cols)
   (filter (λ: ((s : Series)) (or (GenSeries? s)
                               (CSeries? s)
                               (ISeries? s)
-                              (NSeries? s)))
+                              (NSeries? s)
+                              (DatetimeSeries? s)
+                              (DateSeries? s)))
 	  (map column-series cols)))
 
 ; This function consumes a Listof IndexableSeries and builds key
@@ -195,13 +202,7 @@
 (define (key-fn cols)
   (let: ((col-refs : (Listof (Index -> GenericType))
 		   (for/list ([col (in-list cols)])
-                     (if (GenSeries? col)
-                         (gen-series-referencer col)
-			     (if (CSeries? col)
-				 (cseries-referencer col)
-                                 (if (ISeries? col)
-				 (iseries-referencer col)
-                                 (nseries-referencer col)))))))
+                     (series-referencer col))))
 	(λ: ((row-id : Index))
 	    (let ((outp (open-output-string)))
 	      (for ([col-ref (in-list col-refs)])
@@ -883,8 +884,8 @@
 ;; DataFrame agg ops
 
 ; Applies the aggregate function specificed by function-name to the values in
-; the column-name column. Currently supports 3: sum, mean, count, min, max.
-(: apply-agg-data-frame (Symbol GroupHash -> Series))
+; the column-name column.
+(: apply-agg-data-frame (Symbol GroupHash -> GenSeries))
 (define (apply-agg-data-frame function-name group-hash)
   (define len (hash-count group-hash))
 
@@ -900,8 +901,8 @@
                                 (cond 
                                   [(eq? function-name 'sum) (apply + val)]
                                   [(eq? function-name 'mean) (mean val)]
-                                  [(eq? function-name 'median) (median < (vector->list (ISeries-data series)))]
-                                  [(eq? function-name 'mode) (most-frequent-element (vector->list (ISeries-data series)))]
+                                  [(eq? function-name 'median) (median (lambda ([val1 : GenericType] [val2 : GenericType]) (< val1 val2)) val)]
+                                  [(eq? function-name 'mode) (most-frequent-element val)]
                                   [(eq? function-name 'count) (length val)]
                                   [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) val)]
                                   [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) val)]

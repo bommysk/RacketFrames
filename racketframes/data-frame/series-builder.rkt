@@ -15,7 +15,9 @@
   (only-in "boolean-series-builder.rkt"
            BSeriesBuilder)
   (only-in "datetime-series-builder.rkt"
-           DatetimeSeriesBuilder))
+           DatetimeSeriesBuilder)
+  (only-in "date-series-builder.rkt"
+           DateSeriesBuilder))
 
-(define-type SeriesBuilder (U GenSeriesBuilder ISeriesBuilder CSeriesBuilder NSeriesBuilder BSeriesBuilder DatetimeSeriesBuilder))
+(define-type SeriesBuilder (U GenSeriesBuilder ISeriesBuilder CSeriesBuilder NSeriesBuilder BSeriesBuilder DatetimeSeriesBuilder DateSeriesBuilder))
 

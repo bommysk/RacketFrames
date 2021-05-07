@@ -41,7 +41,8 @@
  [data-frame-contains/any? (DataFrame (Listof Label) -> Boolean)]
  [data-frame-get-series (DataFrame (U Label (Listof Label)) -> (U Series (Listof Series)))]
  [data-frame-row-count (DataFrame -> Index)]
- [data-frame-column-count (DataFrame -> Index)])
+ [data-frame-column-count (DataFrame -> Index)]
+ [in-data-frame (GenericType DataFrame -> Boolean)])
 
 (provide
  DataFrame DataFrame? Column Column? Columns Columns?
@@ -69,7 +70,7 @@
           Dim Dim-rows Dim-cols)
  (only-in "indexed-series.rkt"
 	  RFIndex label-sort-positional ListofLabel? Label? LabelIndex?
-          ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime? ListofDate? ListofIndex?
+          ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime? ListofDate? Listofdate? ListofIndex?
           Label LabelProjection LabelProjection? LabelIndex LabelIndex-index
           build-index-from-labels build-index-from-list build-index-from-sequence
           label-index idx->key idx->label IndexDataType RFIndex? extract-index)
@@ -80,7 +81,7 @@
           SeriesDescription-type SeriesDescription-length
           IndexableSeries IndexableSeries?)
  (only-in "series.rkt"
-          series-data set-series-index get-series-index
+          series-data set-series-index get-series-index in-series
           series-loc-boolean series-loc series-iloc indexable-series->index)
  (only-in "generic-series.rkt"
          GenSeries GenericType GenSeries?
@@ -111,7 +112,7 @@
  (only-in "date-series.rkt"
 	  DateSeries DateSeries?
 	  DateSeries-data
-	  new-DateSeries)
+	  new-DateSeries derive-date-value)
  (only-in  "../util/datetime.rkt"
            Datetime)
  (only-in "../load/sample.rkt"
@@ -198,7 +199,7 @@
                                                       [(eq? h-ref-series-type 'DatetimeSeries)
                                                        (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)))]
                                                       [(eq? h-ref-series-type 'DateSeries)
-                                                       (new-DateSeries (list->vector (assert h-ref ListofDate?)))]
+                                                       (new-DateSeries (assert h-ref Listofdate?))]
                                                       [else
                                                        (new-GenSeries (list->vector h-ref))])) cols))))))
         
@@ -406,30 +407,13 @@
   (let ((df-dim (data-frame-dim data-frame)))
     (Dim-cols df-dim)))
 
-;; Return a sequence that produces values from a list of SERIES between START
-;; and STOP rows.  Each value in the sequence is a list of the values
-;; corresponding to the series names.  NOTE: this is intended to be used in
-;; `for` and related constructs to iterate over elements in the data frame.
-;;
-;; Example:
-;;
-;; (for ((coord (in-data-frame/list df "lat" "lon")))
-;;    (match-define (list lat lon) coord)
-;;    (printf "lat = ~a, lon = ~a~%" lat lon))
-;;
-(define (in-data-frame/list df
-                            #:start (start 0)
-                            #:stop (stop (data-frame-row-count df))
-                            . series)
-  (define generators
-    (for/list ([n (in-list series)])
-      (let ((c (data-frame-get-series df n)))
-        (in-series c start stop (if (<= start stop) 1 -1)))))
-  ;; When there are no series, the `(apply in-parallel '())` call will result
-  ;; in an infinite loop.
-  (if (null? generators)
-      (in-values-sequence (in-parallel '()))
-      (in-values-sequence (apply in-parallel generators))))
+; in-data-frame
+(: in-data-frame (GenericType DataFrame -> Boolean))
+(define (in-data-frame val data-frame)
+  (ormap (λ: ((series : Series))
+	   (in-series val series))
+          (vector->list (data-frame-series data-frame))))
+
 ; ***********************************************************
 
 ; ***********************************************************

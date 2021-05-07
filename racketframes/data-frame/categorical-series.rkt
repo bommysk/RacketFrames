@@ -5,7 +5,7 @@
 ;;writer-CSeries)
 
 (provide:
- [new-CSeries ((Vectorof Label) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> CSeries)]
+ [new-CSeries ((Vectorof Label) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> CSeries)]
  [set-CSeries-index (CSeries (U (Listof IndexDataType) RFIndex) -> CSeries)]
  [set-CSeries-null-value (CSeries RFNULL -> CSeries)]
  [set-CSeries-label-null-value-inplace (CSeries Label -> Void)]
@@ -19,7 +19,7 @@
  [cseries-custom-null-value (CSeries -> RFNULL)]
  [in-cseries (Label CSeries -> Boolean)]
  [cseries-value-is-null? (CSeries Label -> Boolean)]
- [cseries-referencer (CSeries -> (Fixnum -> Label))]
+ [cseries-referencer (CSeries -> (Index -> Label))]
  [cseries-iloc (CSeries (U Index (Listof Index)) -> (U Label CSeries))]
  [cseries-groupby (CSeries [#:by-value Boolean] -> GroupHash)]
  [cseries-index-ref (CSeries IndexDataType -> (Listof Label))]
@@ -47,7 +47,7 @@
   #:mutable
   #:transparent)
 
-(: new-CSeries ((Vectorof Label) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> CSeries))
+(: new-CSeries ((Vectorof Label) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> CSeries))
 (define (new-CSeries nominals #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE])
 
   (: nominal-code (HashTable Label Index))
@@ -99,7 +99,7 @@
 ; ***********************************************************
 (: set-CSeries-index (CSeries (U (Listof IndexDataType) RFIndex) -> CSeries))
 (define (set-CSeries-index cseries labels)
-  (new-CSeries (CSeries-nominals cseries) #:index labels))
+  (new-CSeries (cseries-nominal-data cseries) #:index labels))
 
 (: set-CSeries-null-value (CSeries RFNULL -> CSeries))
 (define (set-CSeries-null-value cseries null-value)
@@ -110,7 +110,15 @@
   (set-CSeries-label-null-value! cseries null-value))
 ; ***********************************************************
 
-(: cseries-referencer (CSeries -> (Fixnum -> Label)))
+(: cseries-data (CSeries -> (Vectorof Label)))
+(define (cseries-data series)
+  (vector-map (lambda ([i : Index]) (car (cseries-iref series (list i)))) (CSeries-data series)))
+
+(: cseries-index (CSeries -> (U False RFIndex)))
+(define (cseries-index series)
+  (CSeries-index series))
+
+(: cseries-referencer (CSeries -> (Index -> Label)))
 (define (cseries-referencer cseries)
   (let ((data (CSeries-data cseries))
 	(noms (CSeries-nominals cseries)))
@@ -125,16 +133,15 @@
                      (vector-ref (CSeries-data cseries) idx)))
        lst-idx))
 
-; This function consumes an integer series and an index and
+; This function consumes an categorical series and an index and
 ; returns a vector of values in the range [0:index] in the series.
 (: cseries-range (CSeries Index -> (Vectorof Label)))
 (define (cseries-range series pos)
-  (vector-map (lambda ([idx : Index]) (vector-ref (CSeries-nominals series) idx))
-              (vector-take (CSeries-data series) pos)))
+  (vector-take (cseries-data series) pos))
 
 (: cseries-length (CSeries -> Index))
 (define (cseries-length series)
-  (vector-length (CSeries-data series)))
+  (vector-length (cseries-data series)))
 
 (: cseries-nominal-data (CSeries -> (Vectorof Label)))
 (define (cseries-nominal-data series)
@@ -144,19 +151,11 @@
 (define (cseries-ref-idx-data series)
   (CSeries-data series))
 
-(: cseries-data (CSeries -> (Vectorof Label)))
-(define (cseries-data series)
-  (vector-map (lambda ([i : Index]) (car (cseries-iref series (list i)))) (CSeries-data series)))
-
-(: cseries-index (CSeries -> (U False RFIndex)))
-(define (cseries-index series)
-  (CSeries-index series))
-
 (: in-cseries (Label CSeries -> Boolean))
 (define (in-cseries val series)
   (if (vector-memq val (cseries-nominal-data series)) #t #f))
 
-; This function consumes an integer series and returns its
+; This function consumes an categorical series and returns its
 ; data vector.
 (: cseries-custom-null-value (CSeries -> RFNULL))
 (define (cseries-custom-null-value cseries)

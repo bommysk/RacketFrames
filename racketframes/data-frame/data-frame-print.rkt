@@ -21,7 +21,7 @@
 ; Provide functions in this file to other files.
 
 (provide:
- [data-frame-write-tab (DataFrame [#:output-port Output-Port] [#:heading Boolean] -> Void)]
+ [data-frame-write-delim (DataFrame [#:output-port Output-Port] [#:heading Boolean] [#:delim String] -> Void)]
  [data-frame-head (case-> (DataFrame -> Void)
 		     (DataFrame (Option Index) -> Void))])
 
@@ -100,6 +100,8 @@
             (display (format-heading heading)))
            ((DatetimeSeries? series)
             (display (format-heading heading)))
+           ((DateSeries? series)
+            (display (format-heading heading)))
 	  (else
 	   (error 'data-frame-head "Heading for unknown series types ~s"
 		  (series-type series)))))
@@ -177,14 +179,14 @@
 
 (: format-date-series (DateSeries Index -> String))
 (define (format-date-series date-series row)
-  (date->string (car (date-series-iref date-series (list row)))))
+  (date->string (assert (car (date-series-iref date-series (list row))) date?)))
 
 ; ***********************************************************
 
 ; ***********************************************************
 
-(: display-data-frame-row ((Vectorof Series) (Sequenceof Index) -> Void))
-(define (display-data-frame-row series rows)
+(: display-data-frame-row ((Vectorof Series) (Sequenceof Index) [#:delim String] -> Void))
+(define (display-data-frame-row series rows #:delim [delim " "])
   ;;  (define: cols : (Sequenceof  (in-range (vector-length series)))
   (for: ([row : Index rows])
 	(for ([col (in-range (vector-length series))])
@@ -207,7 +209,7 @@
                  (else
                   (error 'display-data-frame-row "Unknown series types ~s"
                          (series-type a-series)))))
-          (display " "))
+          (display delim))
         (newline)))
 
 (define default-head-rows 10)
@@ -227,8 +229,8 @@
                     (if (not count) default-head-rows count))))
     (display-data-frame-row series (in-range count))))
 
-(: data-frame-write-tab (DataFrame [#:output-port Output-Port] [#:heading Boolean] -> Void))
-(define (data-frame-write-tab data-frame #:output-port [outp (current-output-port)] #:heading [heading #t])
+(: data-frame-write-delim (DataFrame [#:output-port Output-Port] [#:heading Boolean] [#:delim String] -> Void))
+(define (data-frame-write-delim data-frame #:output-port [outp (current-output-port)] #:heading [heading #t] #:delim [delim "\t"])
 
   (define: cols     : Columns (data-frame-explode data-frame))
   (define: headings : (Listof Label) (map column-heading cols))
@@ -240,7 +242,7 @@
   (define (write-frame-row row)
     (for ([col (in-range col-num)])
 	 (unless (zero? col)
-		 (display "\t" outp))
+		 (display delim outp))
 	 (let ((a-series (vector-ref series col)))
 	   (cond
              ((GenSeries? a-series)
@@ -268,7 +270,7 @@
 	   ((list-rest col1 cols)
 	    (display (car col1) outp)
 	    (for ([col cols])
-		 (display "\t" outp)
+		 (display delim outp)
 		 (display (car col) outp))
 	    (newline outp))
 	   (else (void))))
@@ -284,38 +286,7 @@
 ;; if non-null, denote the series to be written.  If null, all the series are
 ;; written out in an unspecified order.  Rows between START and STOP are
 ;; written out.
-#|(define (data-frame-write-csv df outp series #:start start #:stop stop)
-  (define first? #t)
-  (define columns (if (null? series) (df-series-names df) series))
-  (for ([header (in-list columns)])
-    (if first?
-        (set! first? #f)
-        (write-string "," outp))
-    (write-string (quote-string header) outp))
-  (newline outp)
-  (df-for-each
-   df
-   columns
-   (lambda (val)
-     (define first? #t)
-     (for ([col (in-list columns)]
-           [item (in-list val)])
-       (if first?
-           (set! first? #f)
-           (write-string "," outp))
-       (define oitem
-         (cond
-           ((df-is-na? df col item) "") ; this is not very fast...
-           ((string? item) (quote-string item))
-           ((real? item)
-            (~a
-             (if (exact-integer? item)
-                 item
-                 (exact->inexact item))))
-           ;; otherwise we write in a way that we might be able to read it
-           ;; back... this would work for transparent structs...
-           (#t (quote-string (~s item)))))
-       (write-string oitem outp))
-     (newline outp))
-   #:start start #:stop stop)) |#
+(: data-frame-write-csv (DataFrame String -> Void))
+(define (data-frame-write-csv data-frame out-file-path)
+  (data-frame-write-delim data-frame #:output-port (open-output-file out-file-path) #:heading #t #:delim ","))
 

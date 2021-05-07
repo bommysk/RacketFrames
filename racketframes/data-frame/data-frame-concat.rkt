@@ -85,7 +85,7 @@
 	  append-BSeriesBuilder complete-BSeriesBuilder
 	  new-BSeriesBuilder)
  (only-in "data-frame-print.rkt"
-          data-frame-write-tab))
+          data-frame-write-delim))
 
 ; This functions consumes a Vectorof Series and Vectorof SeriesBuilder
 ; and an Index and does not return any value. It copies an entire row

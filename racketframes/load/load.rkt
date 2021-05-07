@@ -1,7 +1,7 @@
 #lang typed/racket
 
 (provide:
- [determine-schema (Path-String Integer String -> Schema)]
+ [determine-schema (Path-String Index String -> Schema)]
  [load-csv-file (Path-String [#:schema (Option Schema)] -> DataFrame)]
  [load-delimited-file (Path-String String [#:schema (Option Schema)] -> DataFrame)]
  [data-frame-from-sql (Connection Boolean String (Listof Any) -> DataFrame)]
@@ -52,15 +52,18 @@
 	  DatetimeSeriesBuilder?
 	  complete-DatetimeSeriesBuilder
 	  append-DatetimeSeriesBuilder)
+  (only-in "../data-frame/date-series-builder.rkt"
+    new-DateSeriesBuilder
+    DateSeriesBuilder
+    DateSeriesBuilder?
+    complete-DateSeriesBuilder
+    append-DateSeriesBuilder)
  (only-in "../data-frame/series-description.rkt"
 	  Series SeriesType)
  (only-in "../data-frame/data-frame.rkt"
 	  DataFrame
 	  new-data-frame
           data-frame-explode)
- (only-in "../data-frame/data-frame-print.rkt"
-          data-frame-write-tab
-          data-frame-head)
  "data-frame-builder.rkt"
  (only-in "delimited-common.rkt"
 	  sample-formatted-file
@@ -70,6 +73,7 @@
 	  Schema)
  (only-in "sample.rkt"
 	  determine-schema-from-sample
+          determine-generic-schema
           determine-schema-from-sql-sample)
  (only-in "csv-delimited.rkt"
 	  read-csv-file)
@@ -92,7 +96,8 @@
       ['IntegerSeries     (new-ISeriesBuilder)]
       ['NumericSeries     (new-NSeriesBuilder)]
       ['BooleanSeries     (new-BSeriesBuilder)]
-      ['DatetimeSeries    (new-DatetimeSeriesBuilder)]))
+      ['DatetimeSeries    (new-DatetimeSeriesBuilder)]
+      ['DateSeries        (new-DateSeriesBuilder)]))
 
   (DataFrameBuilder ((inst map SeriesBuilder SeriesType)
 		 determine-SeriesBuilder
@@ -114,6 +119,8 @@
             (complete-NSeriesBuilder builder)]
            [(DatetimeSeriesBuilder? builder)
             (complete-DatetimeSeriesBuilder builder)]
+           [(DateSeriesBuilder? builder)
+            (complete-DateSeriesBuilder builder)]
            [else (error "Inconsistent DataFrameBuilder")]))
        (DataFrameBuilder-builders frame-builder)))
 
@@ -142,7 +149,7 @@
 ; delimiter must be specified by user if no schema provided, need to still do this
 (: load-csv-file (Path-String [#:schema (Option Schema)] [#:sample Boolean] -> DataFrame))
 (define (load-csv-file path #:schema [schema #f] #:sample [sample #f])
-  (let* ((schema (if sample (schema-if-needed schema path #f) (generate-generic-schema path))))
+  (let* ((schema (if sample (schema-if-needed schema path #f) (generate-generic-schema path ","))))
     (make-data-frame schema (read-csv-file path
                                            (Schema-has-headers schema)
                                            (new-DataFrameBuilder-from-Schema schema)))))
@@ -155,22 +162,25 @@
                                                  (new-DataFrameBuilder-from-Schema schema)
                                                  delim))))
 
-(: determine-schema (Path-String Integer String -> Schema))
+(: determine-schema (Path-String Index String -> Schema))
 (define (determine-schema fpath cnt delim)
   (check-data-file-exists fpath)
   (determine-schema-from-sample (sample-formatted-file fpath cnt) delim))
 
-(: generate-generic-schema (Path-String String) -> Schema)
+(: generate-generic-schema (Path-String String -> Schema))
 (define (generate-generic-schema fpath delim)
   ; for generic schema we just need to check if the first line
   ; consists of strings, if it does, we can treat it as the header
   ; and generalize all columns as GenSeries
-  (determine-generic-schema (sample-formatted-file fpath 1) delim))
+  (determine-generic-schema (car (sample-formatted-file fpath 1)) delim))
   
 
 (: determine-schema-sql (QueryResult -> Schema))
 (define (determine-schema-sql query-result)
   (determine-schema-from-sql-sample (QueryResult-headers query-result) (QueryResult-rows query-result)))
+
+(define-type ListofPairs (Listof (Pairof Any Any)))
+(define-predicate ListofPairs? ListofPairs)
 
 (: get-query-result (Connection String (Listof Any) -> QueryResult))
 (define (get-query-result conn sql-query params)
@@ -183,7 +193,7 @@
 
   (define headers
     (for/list: : (Listof Any) ([hdr (rows-result-headers (assert result rows-result?))])
-      (cond [(assq 'name (assert hdr ListofAny?)) => cdr]
+      (cond [(assq 'name (assert hdr ListofPairs?)) => cdr]
             [else "unnamed"])))
     
   (define rows (rows-result-rows (assert result rows-result?)))

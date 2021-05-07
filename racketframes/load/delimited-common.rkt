@@ -2,7 +2,7 @@
 
 (provide:
  [check-data-file-exists (Path-String -> Void)]
- [sample-formatted-file (Path-String Integer -> (Listof String))]
+ [sample-formatted-file (Path-String Index -> (Listof String))]
  [data-frame-builder-appenders (DataFrameBuilder -> (Listof (Line -> Void)))]
  [read-formatted-file (Path-String Boolean DataFrameBuilder LineParser -> (Listof Boolean))]
  [read-sql-query ((Listof String) (Listof (Vectorof Any)) DataFrameBuilder -> (Listof Boolean))])
@@ -125,7 +125,7 @@
   (map (λ: ((row : (Vectorof Any)))
          (append-sql-data-fields (data-frame-builder-sql-appenders data-frame-builder) (vector->list row))) rows))
 
-(: sample-formatted-file (Path-String Integer -> (Listof String)))
+(: sample-formatted-file (Path-String Index -> (Listof String)))
 (define (sample-formatted-file path cnt)
   (check-data-file-exists path)
   (take (file->lines path) cnt))

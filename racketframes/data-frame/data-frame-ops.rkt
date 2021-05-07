@@ -33,12 +33,11 @@
  (only-in "indexed-series.rkt"
 	  Label Labeling LabelProjection)
  (only-in "series.rkt"
-	  series-complete)
+	  series-complete series-data)
  (only-in "series-description.rkt"
 	  SeriesType Series
 	  SeriesDescription-type
-	  series-type series-length
-          series-data)
+	  series-type series-length)
  (only-in "data-frame.rkt"
 	  DataFrame Columns new-data-frame data-frame-names column-heading
 	  data-frame-series data-frame-cseries data-frame-nseries data-frame-iseries data-frame-explode
@@ -87,7 +86,7 @@
 	  append-BSeriesBuilder complete-BSeriesBuilder
 	  new-BSeriesBuilder)
  (only-in "data-frame-print.rkt"
-          data-frame-write-tab))
+          data-frame-write-delim))
 
 
 ;(: data-frame+ (DataFrame DataFrame -> DataFrame))

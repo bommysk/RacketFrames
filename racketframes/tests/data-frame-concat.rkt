@@ -40,11 +40,11 @@
 
 (displayln "Concat Test 1")
 
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1 (current-output-port))
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2 (current-output-port))
 
-(data-frame-write-tab (data-frame-concat-vertical data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame-concat-vertical data-frame-integer-1 data-frame-integer-2) (current-output-port))
 
 (define columns-mixed-1
   (list 
@@ -68,17 +68,17 @@
 
 (displayln "Concat Test")
 
-(data-frame-write-tab data-frame-mixed-1 (current-output-port))
+(data-frame-write-delim data-frame-mixed-1 (current-output-port))
 
-(data-frame-write-tab data-frame-mixed-2 (current-output-port))
+(data-frame-write-delim data-frame-mixed-2 (current-output-port))
 
 (displayln "Vertical Concat")
 
-(data-frame-write-tab (data-frame-concat-vertical data-frame-mixed-1 data-frame-mixed-2) (current-output-port))
+(data-frame-write-delim (data-frame-concat-vertical data-frame-mixed-1 data-frame-mixed-2) (current-output-port))
 
 (displayln "Horizontal Concat")
 
-(data-frame-write-tab (data-frame-concat-horizontal data-frame-mixed-1 data-frame-mixed-2) (current-output-port))
+(data-frame-write-delim (data-frame-concat-horizontal data-frame-mixed-1 data-frame-mixed-2) (current-output-port))
 
 (define columns-mixed-3
   (list 
@@ -90,6 +90,6 @@
 ; create new data-frame-mixed-3
 (define data-frame-mixed-3 (new-data-frame columns-mixed-3))
 
-(data-frame-write-tab data-frame-mixed-3 (current-output-port))
+(data-frame-write-delim data-frame-mixed-3 (current-output-port))
 
-(data-frame-write-tab (data-frame-concat-horizontal data-frame-mixed-2 data-frame-mixed-3) (current-output-port))
+(data-frame-write-delim (data-frame-concat-horizontal data-frame-mixed-2 data-frame-mixed-3) (current-output-port))

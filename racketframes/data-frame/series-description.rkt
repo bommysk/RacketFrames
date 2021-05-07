@@ -70,7 +70,7 @@
 
 (define-type SeriesType (U 'GenericSeries 'NumericSeries 'CategoricalSeries 'IntegerSeries 'BooleanSeries 'DatetimeSeries 'DateSeries))
 
-(define-type IndexableSeries (U GenSeries CSeries ISeries NSeries DateSeries))
+(define-type IndexableSeries (U GenSeries CSeries ISeries NSeries DatetimeSeries DateSeries))
 
 (define-predicate IndexableSeries? IndexableSeries)
 

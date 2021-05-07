@@ -9,15 +9,55 @@
 (require racket/fixnum)
 (require racket/flonum)
 
-(require "../data-frame/series-description.rkt")
-;(require "../data-frame/series.rkt")
-(require "../data-frame/indexed-series.rkt")
-(require "../data-frame/integer-series.rkt")
-(require "../data-frame/numeric-series.rkt")
-(require "../data-frame/categorical-series.rkt")
-(require "../data-frame/generic-series.rkt")
-(require "../data-frame/data-frame.rkt")
-(require "../data-frame/data-frame-print.rkt")
+(require "../data-frame/series-description.rkt"
+         "../data-frame/series.rkt"
+         "../data-frame/data-frame.rkt"
+         "../data-frame/data-frame-print.rkt"
+         (only-in "../data-frame/indexed-series.rkt"
+    RFIndex label-sort-positional ListofLabel? Label? LabelIndex?
+          ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime? ListofDate? Listofdate? ListofIndex?
+          Label LabelProjection LabelProjection? LabelIndex LabelIndex-index
+          build-index-from-labels build-index-from-list build-index-from-sequence
+          label-index idx->key idx->label IndexDataType RFIndex? extract-index)
+ (only-in "../data-frame/series-description.rkt"
+    series-description series-length series-type 
+          Series Series? SeriesType
+          SeriesDescription SeriesDescription-name
+          SeriesDescription-type SeriesDescription-length
+          IndexableSeries IndexableSeries?)
+ (only-in "../data-frame/series.rkt"
+          series-data set-series-index get-series-index in-series
+          series-loc-boolean series-loc series-iloc indexable-series->index)
+ (only-in "../data-frame/generic-series.rkt"
+         GenSeries GenericType GenSeries?
+         GenSeries-data
+         new-GenSeries)
+ (only-in "../data-frame/categorical-series.rkt"
+          CSeries CSeries?
+          CSeries-data
+          new-CSeries)
+ (only-in "../data-frame/numeric-series.rkt"
+          NSeries NSeries? 
+          NSeries-data
+          new-NSeries
+          list->flvector)
+ (only-in "../data-frame/integer-series.rkt"
+    ISeries ISeries?
+    ISeries-data
+    new-ISeries
+          list->fxvector iseries-print)
+ (only-in "../data-frame/boolean-series.rkt"
+    BSeries BSeries?
+    BSeries-data
+    new-BSeries)
+ (only-in "../data-frame/datetime-series.rkt"
+    DatetimeSeries DatetimeSeries?
+    DatetimeSeries-data
+    new-DatetimeSeries)
+ (only-in "../data-frame/date-series.rkt"
+    DateSeries DateSeries?
+    DateSeries-data
+    new-DateSeries derive-date-value))
 
 ; ***********************************************************
 ; Test Cases
@@ -41,7 +81,7 @@
 
 (data-frame-iloc data-frame-integer (list 1 2) 2)
 
-(data-frame-write-tab data-frame-integer (current-output-port))
+(data-frame-write-delim data-frame-integer)
 
 ;******************
 ;data-frame-float
@@ -64,9 +104,9 @@
 
 (label-index (LabelIndex-index data-frame-float) 'col1)
 
-(data-frame-write-tab (assert (data-frame-iloc data-frame-float (list 1 2) (list 0 1)) DataFrame?) (current-output-port))
+(data-frame-write-delim (assert (data-frame-iloc data-frame-float (list 1 2) (list 0 1)) DataFrame?))
 
-(data-frame-write-tab data-frame-float (current-output-port))
+(data-frame-write-delim data-frame-float)
 
 ;******************
 ;data-frame-categorical
@@ -81,7 +121,7 @@
 ; create new data-frame-categorical
 (define data-frame-categorical (new-data-frame columns-categorical))
 
-(data-frame-write-tab data-frame-categorical (current-output-port))
+(data-frame-write-delim data-frame-categorical)
 
 ;******************
 ;data-frame-mix
@@ -97,7 +137,7 @@
 ; create new data-frame-mix
 (define data-frame-mix (new-data-frame columns-mix))
 
-(data-frame-write-tab data-frame-mix (current-output-port))
+(data-frame-write-delim data-frame-mix)
 
 ; ************************
 ; data-frame-integer tests
@@ -156,7 +196,7 @@
 
 ; check col-one is gone
 
-(data-frame-write-tab data-frame-float (current-output-port))
+(data-frame-write-delim data-frame-float)
 
 ; ************************
 ; data-frame-categorical tests
@@ -224,7 +264,7 @@
 (set! data-frame-integer (data-frame-set-index data-frame-integer (list 'a 'b 'c 'd)))
 ;(LabelIndex-index (cdr (list-ref (data-frame-explode data-frame-integer) 0)))
 
-(data-frame-write-tab data-frame-integer (current-output-port))
+(data-frame-write-delim data-frame-integer)
 
 (check-equal? (series-data (data-frame-series-ref data-frame-integer 'col3)) (vector 9 10 11 12))
 

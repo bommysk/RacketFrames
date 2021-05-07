@@ -60,7 +60,7 @@
 ; create new data-frame-categorical
 (define data-frame-categorical (new-data-frame columns-categorical))
 
-(data-frame-write-tab data-frame-integer (current-output-port))
+(data-frame-write-delim data-frame-integer (current-output-port))
 
 (displayln "data-frame-groupby")
 (data-frame-groupby data-frame-integer (list 'col1))
@@ -168,7 +168,7 @@
 
 ;(series-data (complete-CSeriesBuilder cseries-builder-b))
 
-;(data-frame-write-tab (data-frame-join-left data-frame-integer data-frame-categorical) (current-output-port))
+;(data-frame-write-delim (data-frame-join-left data-frame-integer data-frame-categorical) (current-output-port))
 
 (define columns-integer-2
   (list 
@@ -192,13 +192,13 @@
 
 (data-frame-join-left data-frame-integer-2 data-frame-integer-3 #:on (list 'col1))
 
-(data-frame-write-tab (data-frame-join-left data-frame-integer-2 data-frame-integer-3 #:on (list 'col1)) (current-output-port))
+(data-frame-write-delim (data-frame-join-left data-frame-integer-2 data-frame-integer-3 #:on (list 'col1)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-left data-frame-integer-2 data-frame-integer-3 #:on (list 'col2)) (current-output-port))
+(data-frame-write-delim (data-frame-join-left data-frame-integer-2 data-frame-integer-3 #:on (list 'col2)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-right data-frame-integer-2 data-frame-integer-3 #:on (list 'col1)) (current-output-port))
+(data-frame-write-delim (data-frame-join-right data-frame-integer-2 data-frame-integer-3 #:on (list 'col1)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-right data-frame-integer-2 data-frame-integer-3 #:on (list 'col2)) (current-output-port))
+(data-frame-write-delim (data-frame-join-right data-frame-integer-2 data-frame-integer-3 #:on (list 'col2)) (current-output-port))
 
 (define columns-integer-4
   (list 
@@ -220,15 +220,15 @@
 ; create new data-frame-integer-5
 (define data-frame-integer-5 (new-data-frame columns-integer-5))
 
-(data-frame-write-tab (data-frame-join-left data-frame-integer-4 data-frame-integer-5 #:on (list 'co3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-left data-frame-integer-4 data-frame-integer-5 #:on (list 'co3)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-inner data-frame-integer-2 data-frame-integer-3 #:on (list 'col1)) (current-output-port))
+(data-frame-write-delim (data-frame-join-inner data-frame-integer-2 data-frame-integer-3 #:on (list 'col1)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-inner data-frame-integer-4 data-frame-integer-5 #:on (list 'col2)) (current-output-port))
+(data-frame-write-delim (data-frame-join-inner data-frame-integer-4 data-frame-integer-5 #:on (list 'col2)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-outer data-frame-integer-4 data-frame-integer-5 #:on (list 'col2)) (current-output-port))
+(data-frame-write-delim (data-frame-join-outer data-frame-integer-4 data-frame-integer-5 #:on (list 'col2)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-outer data-frame-integer-4 data-frame-integer-5 #:on (list 'col3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-outer data-frame-integer-4 data-frame-integer-5 #:on (list 'col3)) (current-output-port))
 
 (define columns-mixed-1
   (list 
@@ -248,9 +248,9 @@
 ; create new data-frame-mixed-2
 (define data-frame-mixed-2 (new-data-frame columns-mixed-2))
 
-;(data-frame-write-tab (data-frame-join-outer data-frame-mixed-1 data-frame-mixed-2 #:on (list 'col2)) (current-output-port))
+;(data-frame-write-delim (data-frame-join-outer data-frame-mixed-1 data-frame-mixed-2 #:on (list 'col2)) (current-output-port))
 
-;(data-frame-write-tab (data-frame-join-outer data-frame-mixed-1 data-frame-mixed-2 #:on (list 'col3)) (current-output-port))
+;(data-frame-write-delim (data-frame-join-outer data-frame-mixed-1 data-frame-mixed-2 #:on (list 'col3)) (current-output-port))
 
 (define columns-mixed-3
   (list 
@@ -270,7 +270,7 @@
 ; create new data-frame-mixed-4
 (define data-frame-mixed-4 (new-data-frame columns-mixed-4))
 
-;(data-frame-write-tab (data-frame-join-outer data-frame-mixed-3 data-frame-mixed-4 #:on (list 'col2)) (current-output-port))
+;(data-frame-write-delim (data-frame-join-outer data-frame-mixed-3 data-frame-mixed-4 #:on (list 'col2)) (current-output-port))
 
 (define columns-mixed-5
   (list 
@@ -290,17 +290,17 @@
 ; create new data-frame-mixed-6
 (define data-frame-mixed-6 (new-data-frame columns-mixed-6))
 
-(data-frame-write-tab data-frame-mixed-5 (current-output-port))
+(data-frame-write-delim data-frame-mixed-5 (current-output-port))
 
-(data-frame-write-tab data-frame-mixed-6 (current-output-port))
+(data-frame-write-delim data-frame-mixed-6 (current-output-port))
 
-(data-frame-write-tab (data-frame-join-left data-frame-mixed-5 data-frame-mixed-6 #:on (list 'col3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-left data-frame-mixed-5 data-frame-mixed-6 #:on (list 'col3)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-inner data-frame-mixed-5 data-frame-mixed-6 #:on (list 'col2)) (current-output-port))
+(data-frame-write-delim (data-frame-join-inner data-frame-mixed-5 data-frame-mixed-6 #:on (list 'col2)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-right data-frame-mixed-5 data-frame-mixed-6 #:on (list 'col2)) (current-output-port))
+(data-frame-write-delim (data-frame-join-right data-frame-mixed-5 data-frame-mixed-6 #:on (list 'col2)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-outer data-frame-mixed-5 data-frame-mixed-6 #:on (list 'col2)) (current-output-port))
+(data-frame-write-delim (data-frame-join-outer data-frame-mixed-5 data-frame-mixed-6 #:on (list 'col2)) (current-output-port))
 
 (define columns-mixed-7
   (list 
@@ -322,17 +322,17 @@
 ; create new data-frame-mixed-8
 (define data-frame-mixed-8 (new-data-frame columns-mixed-8))
 
-(data-frame-write-tab data-frame-mixed-7 (current-output-port))
+(data-frame-write-delim data-frame-mixed-7 (current-output-port))
 
-(data-frame-write-tab data-frame-mixed-8 (current-output-port))
+(data-frame-write-delim data-frame-mixed-8 (current-output-port))
 
-(data-frame-write-tab (data-frame-join-left data-frame-mixed-7 data-frame-mixed-8 #:on (list 'col3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-left data-frame-mixed-7 data-frame-mixed-8 #:on (list 'col3)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-right data-frame-mixed-7 data-frame-mixed-8 #:on (list 'col3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-right data-frame-mixed-7 data-frame-mixed-8 #:on (list 'col3)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-inner data-frame-mixed-7 data-frame-mixed-8 #:on (list 'col3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-inner data-frame-mixed-7 data-frame-mixed-8 #:on (list 'col3)) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-outer data-frame-mixed-7 data-frame-mixed-8 #:on (list 'col2 'col3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-outer data-frame-mixed-7 data-frame-mixed-8 #:on (list 'col2 'col3)) (current-output-port))
 
 (define columns-mixed-9
   (list 
@@ -355,9 +355,9 @@
 (define data-frame-mixed-10 (new-data-frame columns-mixed-10))
 
 (displayln "No provided join column test")
-(data-frame-write-tab (data-frame-join-left data-frame-mixed-7 data-frame-mixed-8 #:on '()) (current-output-port))
+(data-frame-write-delim (data-frame-join-left data-frame-mixed-7 data-frame-mixed-8 #:on '()) (current-output-port))
 
-(data-frame-write-tab (data-frame-join-inner data-frame-mixed-9 data-frame-mixed-10 #:on '()) (current-output-port))
+(data-frame-write-delim (data-frame-join-inner data-frame-mixed-9 data-frame-mixed-10 #:on '()) (current-output-port))
 
 (displayln "multi-index-from-cols test")
 (build-multi-index-from-cols (list (new-ISeries (vector 1 2 3 4) #f)

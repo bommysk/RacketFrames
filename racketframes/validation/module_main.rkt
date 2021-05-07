@@ -17,7 +17,7 @@
 ; create new data-frame-mix
 (define data-frame-mix (new-data-frame columns-mix))
 
-(data-frame-write-tab data-frame-mix (current-output-port))
+(data-frame-write-delim data-frame-mix)
 
 ; no schema
 (define salary-data-frame-csv-no-schema (load-csv-file "../sample-csv/salary_date.csv" #:schema #f))
@@ -72,33 +72,33 @@
 (define data-frame-integer-2 (new-data-frame columns-integer-2))
 
 (displayln "Sample DataFrames")
-(data-frame-write-tab data-frame-integer-1 (current-output-port))
+(data-frame-write-delim data-frame-integer-1)
 
-(data-frame-write-tab data-frame-integer-2 (current-output-port))
+(data-frame-write-delim data-frame-integer-2)
 (display "\n")
 
 (displayln "data-frame+")
-(data-frame-write-tab (data-frame+ data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame+ data-frame-integer-1 data-frame-integer-2))
 (display "\n")
 
 (displayln "data-frame-")
-(data-frame-write-tab (data-frame- data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame- data-frame-integer-1 data-frame-integer-2))
 (display "\n")
 
 (displayln "data-frame*")
-(data-frame-write-tab (data-frame* data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame* data-frame-integer-1 data-frame-integer-2))
 (display "\n")
 
 (displayln "data-frame/")
-(data-frame-write-tab (data-frame/ data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame/ data-frame-integer-1 data-frame-integer-2))
 (display "\n")
 
 (displayln "data-frame%")
-(data-frame-write-tab (data-frame% data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame% data-frame-integer-1 data-frame-integer-2))
 (display "\n")
 
 (displayln "data-frame-r")
-(data-frame-write-tab (data-frame-r data-frame-integer-1 data-frame-integer-2) (current-output-port))
+(data-frame-write-delim (data-frame-r data-frame-integer-1 data-frame-integer-2))
 (display "\n")
 
 
@@ -122,15 +122,15 @@
 (define data-frame-categorical (new-data-frame columns-categorical))
 
 (displayln "DataFrame Left Join")
-(data-frame-write-tab (data-frame-join-left data-frame-integer data-frame-categorical) (current-output-port))
+(data-frame-write-delim (data-frame-join-left data-frame-integer data-frame-categorical))
 (display "\n")
 
 (displayln "DataFrame Right Join")
-(data-frame-write-tab (data-frame-join-right data-frame-integer-1 data-frame-integer-2 #:on (list 'col1)) (current-output-port))
+(data-frame-write-delim (data-frame-join-right data-frame-integer-1 data-frame-integer-2 #:on (list 'col1)))
 (display "\n")
 
 (displayln "DataFrame Right Join")
-(data-frame-write-tab (data-frame-join-right data-frame-integer-1 data-frame-integer-2 #:on (list 'col2)) (current-output-port))
+(data-frame-write-delim (data-frame-join-right data-frame-integer-1 data-frame-integer-2 #:on (list 'col2)))
 (display "\n")
 
 (define columns-mixed-5
@@ -152,18 +152,18 @@
 (define data-frame-mixed-6 (new-data-frame columns-mixed-6))'
 
 (displayln "DataFrame Mixed")
-(data-frame-write-tab data-frame-mixed-5 (current-output-port))
+(data-frame-write-delim data-frame-mixed-5)
 
 (displayln "DataFrame Mixed")
-(data-frame-write-tab data-frame-mixed-6 (current-output-port))
+(data-frame-write-delim data-frame-mixed-6)
 
 (displayln "DataFrame Inner Join")
-(data-frame-write-tab (data-frame-join-inner data-frame-mixed-5  data-frame-mixed-6 #:on (list 'col2)) (current-output-port))
+(data-frame-write-delim (data-frame-join-inner data-frame-mixed-5  data-frame-mixed-6 #:on (list 'col2)))
 
 (display "\n")
 
 (displayln "DataFrame Outer Join")
-(data-frame-write-tab (data-frame-join-outer data-frame-mixed-5  data-frame-mixed-6 #:on (list 'col2)) (current-output-port))
+(data-frame-write-delim (data-frame-join-outer data-frame-mixed-5  data-frame-mixed-6 #:on (list 'col2)))
 
 (displayln "DataFrame iloc")
 
@@ -179,13 +179,13 @@
 ; create new data-frame-integer
 (define data-frame-integer-labeled (new-data-frame columns-integer-labeled))
 
-(data-frame-write-tab data-frame-integer-labeled
-                      (current-output-port))
+(data-frame-write-delim data-frame-integer-labeled
+                     )
 
 (displayln "data-frame-loc")
-(data-frame-write-tab
+(data-frame-write-delim
  (assert (data-frame-loc data-frame-integer-labeled (list 'i 'k) (list 'col3)) DataFrame?)
- (current-output-port))
+)
 
 (define columns-integer-labeled-2
   (list 
@@ -200,19 +200,19 @@
 (define data-frame-integer-labeled-2 (new-data-frame columns-integer-labeled-2))
 
 (displayln "data-frame-loc-2")
-(data-frame-write-tab
+(data-frame-write-delim
  (assert (data-frame-loc data-frame-integer-labeled-2 (list 'b 'c 'd) (list 'col2 'col3)) DataFrame?)
- (current-output-port))
+)
 
 (set! data-frame-integer-labeled (data-frame-set-index data-frame-integer-labeled (list 'a 'b 'c 'd)))
 
-(data-frame-write-tab
+(data-frame-write-delim
  (assert (data-frame-loc data-frame-integer-labeled (list 'b 'c 'd) (list 'col2 'col3)) DataFrame?)
- (current-output-port))
+)
 
-(data-frame-write-tab
+(data-frame-write-delim
  (assert (data-frame-iloc data-frame-integer-labeled (list 1 2 3) (list 0 1)) DataFrame?)
- (current-output-port))
+)
 
 (println "Hash list")
 (hash->list (LabelIndex-index data-frame-integer-labeled))
@@ -221,9 +221,9 @@
 
 (gen-series-data (assert (data-frame-iloc data-frame-integer-labeled 3 1) GenSeries?))
 
-(data-frame-write-tab
+(data-frame-write-delim
  (assert (data-frame-iloc-label data-frame-integer-labeled (list 1 2 3) (list 'col1 'col2)) DataFrame?)
- (current-output-port))
+)
 
 (gen-series-data (assert (data-frame-iloc-label data-frame-integer-labeled 1 (list 'col1 'col2)) GenSeries?))
 
@@ -301,10 +301,10 @@
 (iseries-groupby (assert int-series ISeries?) #:by-value #t)
 
 (series-iref int-series 3)
-(series-print int-series (current-output-port))
+(series-print int-series)
 
 (series-iref gen-series 5)
-(series-print gen-series (current-output-port))
+(series-print gen-series)
 
 (define int-series-with-index (new-series (list 1 2 3 4 5 6) (list 'a 'b 'c 'd 'e 'f)))
 (define gen-series-with-index (new-series (vector 'a 1 2 'c 'd 5.6) (list 6 5 4 3 2 1)))
@@ -312,10 +312,10 @@
 (iseries-groupby (assert int-series-with-index ISeries?))
 
 (series-index-ref int-series-with-index 'e)
-(series-print int-series-with-index (current-output-port))
+(series-print int-series-with-index)
 
 (series-index-ref gen-series-with-index 5)
-(series-print gen-series-with-index (current-output-port))
+(series-print gen-series-with-index)
 
 ; dataframe constructors
 (define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3) 'b (list 3 5 6)  'c (list 3.4 5.5 6.7) 'd (list 'fizz 'buzz 'baz))))

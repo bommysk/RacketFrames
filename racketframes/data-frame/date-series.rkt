@@ -63,12 +63,14 @@
  [=/date-series (DateSeries DateSeries -> BSeries)]
  [!=/date-series (DateSeries DateSeries -> BSeries)]
  
- [date-series-print (DateSeries Output-Port -> Void)]
+ [date-series-print (DateSeries [#:output-port Output-Port] -> Void)]
 
  [date-series-groupby (DateSeries [#:by-value Boolean] -> GroupHash)]
  ; in Pandas, fillna
  [set-DateSeries-null-value (DateSeries RFNULL -> DateSeries)]
- [set-DateSeries-date-null-value-inplace (DateSeries date -> Void)])
+ [set-DateSeries-date-null-value-inplace (DateSeries date -> Void)]
+
+ [derive-date-value (DateSeries RFDate -> date)])
 ; ***********************************************************
 
 #|
@@ -118,7 +120,7 @@
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a DateSeries
 ; struct object.
-(: new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> DateSeries))
+(: new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DateSeries))
 (define (new-DateSeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE]) 
 
   (define data-vector : (Vectorof RFDate) (make-RFDate-vector data))
@@ -162,8 +164,8 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: date-series-print (DateSeries Output-Port -> Void))
-(define (date-series-print date-series port)
+(: date-series-print (DateSeries [#:output-port Output-Port] -> Void))
+(define (date-series-print date-series #:output-port [port (current-output-port)])
   (define date-v (date-series-data date-series))
   (define v (date-series-data date-series))
   (let ((len (vector-length v))
