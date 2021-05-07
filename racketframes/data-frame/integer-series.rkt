@@ -20,7 +20,7 @@
  ISeries-index RFFixnum RFFixnum? DEFAULT_NULL_VALUE GroupHash)
 
 (provide:
- [new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum) (Vectorof Fixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
+ [new-ISeries ((U FxVector (Vectorof Fixnum) (Sequenceof Fixnum) (Sequenceof RFFixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                                  [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> ISeries)]
  [set-ISeries-index (ISeries (U (Sequenceof IndexDataType) RFIndex) -> ISeries)]
  ; in Pandas, fillna
@@ -153,7 +153,7 @@
 ; When this is set we run length encode on save
 ; it as the vector data and generate the index
 ; to match
-(: new-ISeries ((U FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum) (Vectorof Fixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
+(: new-ISeries ((U (Vectorof Fixnum) FxVector (Sequenceof Fixnum) (Sequenceof RFFixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                                   [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> ISeries))
 (define (new-ISeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
   (define RFFixnum-vector : (Vectorof RFFixnum) (make-RFFixnum-vector data))

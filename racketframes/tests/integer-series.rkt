@@ -9,6 +9,7 @@
 (require "../data-frame/indexed-series.rkt")
 (require "../data-frame/integer-series.rkt")
 (require racket/unsafe/ops)
+(require racket/fixnum)
 
 ; ***********************************************************
 ; Test Cases
@@ -31,6 +32,11 @@
 
 (define series-integer-3 : ISeries (new-ISeries (list 5 5 6 7 8)
                                                 #:index (build-index-from-list (list 'a 'a 'b 'c 'd))))
+
+(define series-fxvector : ISeries (new-ISeries (fxvector 1 2 3 4)
+                                              #:index (build-index-from-list (list 'fxa 'fxb 'fxc 'fxd))))
+
+(iseries-print series-fxvector)
 
 (extract-index (build-index-from-list (list 'a 'b 'c 'a 'd)))
 

@@ -22,6 +22,9 @@
 
 (provide:
  [data-frame-write-delim (DataFrame [#:output-port Output-Port] [#:heading Boolean] [#:delim String] -> Void)]
+ [data-frame-write-csv (DataFrame Path-String -> Void)]
+ [data-frame-write-json (DataFrame [#:output-port Output-Port] -> Void)]
+ [data-frame-write-json-file (DataFrame Path-String -> Void)]
  [data-frame-head (case-> (DataFrame -> Void)
 		     (DataFrame (Option Index) -> Void))])
 
@@ -286,7 +289,72 @@
 ;; if non-null, denote the series to be written.  If null, all the series are
 ;; written out in an unspecified order.  Rows between START and STOP are
 ;; written out.
-(: data-frame-write-csv (DataFrame String -> Void))
+(: data-frame-write-csv (DataFrame Path-String -> Void))
 (define (data-frame-write-csv data-frame out-file-path)
-  (data-frame-write-delim data-frame #:output-port (open-output-file out-file-path) #:heading #t #:delim ","))
+  (define out-file (open-output-file out-file-path #:exists 'truncate))
+  {begin 
+    (data-frame-write-delim data-frame #:output-port out-file #:heading #t #:delim ",")
+    (close-output-port out-file)})
 
+(: data-frame-write-json (DataFrame [#:output-port Output-Port] -> Void))
+(define (data-frame-write-json data-frame #:output-port [outp (current-output-port)])
+
+  (define: cols     : Columns (data-frame-explode data-frame))
+  (define: headings : (Listof Label) (map column-heading cols))
+  (define: series   : (Vectorof Series) (list->vector (map column-series cols)))
+  (define: row-num  : Index (Dim-rows (data-frame-dim data-frame)))
+  (define: col-num  : Index (vector-length series))
+  (define: delim : String ",")
+
+  (display "[" outp)
+
+  (: write-frame-row (Index -> Void))
+  (define (write-frame-row row)
+    (for ([col (in-range col-num)])
+      (display "\"" outp)
+      (display (car (list-ref cols col)) outp)
+      (display "\"" outp)
+      (display ":" outp)            
+      (display "\"" outp)
+      (let ((a-series (vector-ref series col)))
+        (cond
+          ((GenSeries? a-series)
+           (display (car (assert (gen-series-iref a-series (list row)) list?)) outp))
+          ((NSeries? a-series)
+           (let ((n (car (assert (nseries-iref a-series (list row)) list?))))
+             (display n outp)))
+          ((CSeries? a-series)
+           (display (car (assert (cseries-iref a-series (list row)) list?)) outp))
+          ((ISeries? a-series)
+           (display (car (assert (iseries-iref a-series (list row)) list?)) outp))
+          ((BSeries? a-series)
+           (display (car (assert (bseries-iref a-series (list row)) list?)) outp))
+          ((DatetimeSeries? a-series)
+           (display (car (assert (datetime-series-iref a-series (list row)) list?)) outp))
+          ((DateSeries? a-series)
+           (display (car (assert (date-series-iref a-series (list row)) list?)) outp))
+          (else
+           (error 'frame-head "Unknown series types ~s"
+                  (series-type a-series)))))
+      (display "\"" outp)      
+      (unless (eq? col (sub1 col-num))
+        (display delim outp))
+      ))
+
+  (for ([row (in-range row-num)])
+    (unless (zero? row)
+      (display delim outp)
+      (newline outp))
+    (display "{" outp)
+    (write-frame-row (assert row index?))
+    (display "}" outp))
+  
+  (display "]" outp)
+  (newline outp))
+
+(: data-frame-write-json-file (DataFrame Path-String -> Void))
+(define (data-frame-write-json-file data-frame out-file-path)
+  (define out-file (open-output-file out-file-path #:exists 'truncate))
+  {begin 
+    (data-frame-write-json data-frame #:output-port out-file)
+    (close-output-port out-file)})
