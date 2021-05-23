@@ -81,7 +81,9 @@
                                 (cond 
                                   [(eq? function-name 'sum) (apply + val)]
                                   [(eq? function-name 'mean) (mean val)]                                  
-                                  [(eq? function-name 'median) (median (lambda ([val1 : GenericType] [val2 : GenericType]) (string-ci<=? (~a val1) (~a val2))) val)]
+                                  [(eq? function-name 'median) (median (lambda ([val1 : GenericType] [val2 : GenericType]) (if (and (real? val1) (real? val2))
+                                                                                                                               (< val1 val2)
+                                                                                                                               (string-ci<=? (~a val1) (~a val2)))) val)]
                                   [(eq? function-name 'mode) (most-frequent-element val)]
                                   [(eq? function-name 'count) (length val)]
                                   [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) val)]

@@ -80,7 +80,8 @@
  [list->fxvector ((Listof Fixnum) -> FxVector)]
  [iseries-notna (ISeries -> ISeries)]
  [iseries-isna (ISeries -> ISeries)]
- [make-RFFixnum-vector ((U (Sequenceof Fixnum) (Sequenceof RFFixnum)) -> (Vectorof RFFixnum))])
+ [make-RFFixnum-vector ((U (Sequenceof Fixnum) (Sequenceof RFFixnum)) -> (Vectorof RFFixnum))]
+ (derive-fixnum-value (ISeries RFFixnum -> Fixnum)))
 ; ***********************************************************
 
 ; ***********************************************************

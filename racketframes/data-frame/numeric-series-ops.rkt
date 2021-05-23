@@ -47,7 +47,7 @@
 
 (: nseries-unique (NSeries -> NSeries))
 (define (nseries-unique nseries)
-  (NSeries #f (list->flvector (remove-duplicates (flvector->list (nseries-data nseries) 0)))))
+  (new-NSeries (list->flvector (remove-duplicates (flvector->list (nseries-data nseries))))))
 
 (define default-nseries-rows 10)
 
@@ -58,7 +58,7 @@
     (define data (make-flvector rows))
     (for ([i rows])
       (flvector-set! data i (nref (assert i index?))))
-    (new-NSeries data #f)))
+    (new-NSeries data)))
 
 (: nseries-head-display (NSeries [#:rows Index] -> Void))
 (define (nseries-head-display nseries #:rows [rows default-nseries-rows])
@@ -92,7 +92,7 @@
       (if (= (nref (assert i index?)) -nan.0)
           (vector-set! data i #t)
           (vector-set! data i #f)))
-    (new-BSeries data #f)))
+    (new-BSeries data)))
 
 
 ; Series.notna() Return a boolean same-sized object indicating if the values are not NA.
@@ -105,7 +105,7 @@
       (if (= (nref (assert i index?)) -nan.0)
           (vector-set! data i #t)
           (vector-set! data i #f)))
-    (new-BSeries data #f)))
+    (new-BSeries data)))
 
 (define N (expt 10 4))
 (: col-d-data FlVector)

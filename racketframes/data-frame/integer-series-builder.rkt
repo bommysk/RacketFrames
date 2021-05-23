@@ -7,7 +7,7 @@
  [new-ISeriesBuilder (case-> 
 		      (-> ISeriesBuilder)
 		      (Index -> ISeriesBuilder))]
- [append-ISeriesBuilder   (ISeriesBuilder (U Fixnum String) -> Void)]
+ [append-ISeriesBuilder   (ISeriesBuilder (U RFFixnum String) -> Void)]
  [complete-ISeriesBuilder (ISeriesBuilder -> ISeries)])
 
 (require
@@ -15,10 +15,10 @@
  (only-in racket/vector
 	  vector-copy)
  (only-in "integer-series.rkt"
-          new-ISeries ISeries DEFAULT_NULL_VALUE))
+          new-ISeries ISeries RFFixnum DEFAULT_NULL_VALUE))
 
 (struct: ISeriesBuilder ([index  : Index]
-			 [data : (Vectorof Fixnum)]) #:mutable)
+			 [data : (Vectorof RFFixnum)]) #:mutable)
 
 (define base-len 512)
 
@@ -28,7 +28,7 @@
 (define (new-ISeriesBuilder [len base-len])
   (ISeriesBuilder 0 (make-vector len DEFAULT_NULL_VALUE)))
 
-(: append-ISeriesBuilder (ISeriesBuilder (U Fixnum String) -> Void))
+(: append-ISeriesBuilder (ISeriesBuilder (U RFFixnum String) -> Void))
 (define (append-ISeriesBuilder builder int/str-value)
   
   (define-syntax bump
@@ -46,7 +46,7 @@
     (let* ((data (ISeriesBuilder-data builder))
 	   (curr-len (vector-length data))
 	   (new-len  (assert (inexact->exact (round (* 1.5 curr-len))) exact-integer?)))
-      (let: ((new-data : (Vectorof Fixnum) ((inst make-vector Fixnum) new-len DEFAULT_NULL_VALUE)))
+      (let: ((new-data : (Vectorof RFFixnum) ((inst make-vector RFFixnum) new-len DEFAULT_NULL_VALUE)))
 	    (do ([idx 0 (add1 idx)])
 		([>= idx curr-len] (set-ISeriesBuilder-data! builder new-data))
 	      (vector-set! new-data idx (vector-ref data idx))))))

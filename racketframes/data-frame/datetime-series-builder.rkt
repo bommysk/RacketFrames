@@ -7,7 +7,7 @@
  [new-DatetimeSeriesBuilder (case-> 
 		      (-> DatetimeSeriesBuilder)
 		      (Index -> DatetimeSeriesBuilder))]
- [append-DatetimeSeriesBuilder   (DatetimeSeriesBuilder (U Datetime String) -> Void)]
+ [append-DatetimeSeriesBuilder   (DatetimeSeriesBuilder (U RFDatetime String) -> Void)]
  [complete-DatetimeSeriesBuilder (DatetimeSeriesBuilder -> DatetimeSeries)])
 
 (require
@@ -15,14 +15,14 @@
  (only-in racket/vector
 	  vector-copy)
  (only-in "datetime-series.rkt"
-          DatetimeSeries new-DatetimeSeries DEFAULT_NULL_VALUE)
+          DatetimeSeries new-DatetimeSeries RFDatetime RFDatetime? DEFAULT_NULL_VALUE)
  (only-in "../util/datetime/parse.rkt"
           parse-date parse-datetime is-valid-date? is-valid-datetime?)
  (only-in "../util/datetime/types.rkt"
           Datetime Datetime? Date Time))
 
 (struct: DatetimeSeriesBuilder ([index  : Index]
-                                [data : (Vectorof Datetime)]) #:mutable)
+                                [data : (Vectorof RFDatetime)]) #:mutable)
 
 (define base-len 512)
 
@@ -32,7 +32,7 @@
 (define (new-DatetimeSeriesBuilder [len base-len])
   (DatetimeSeriesBuilder 0 (make-vector len DEFAULT_NULL_VALUE)))
 
-(: append-DatetimeSeriesBuilder (DatetimeSeriesBuilder (U Datetime String) -> Void))
+(: append-DatetimeSeriesBuilder (DatetimeSeriesBuilder (U RFDatetime String) -> Void))
 (define (append-DatetimeSeriesBuilder builder datetime/str-value)
   
   (define-syntax bump
@@ -50,7 +50,7 @@
     (let* ((data (DatetimeSeriesBuilder-data builder))
 	   (curr-len (vector-length data))
 	   (new-len  (assert (inexact->exact (round (* 1.5 curr-len))) exact-integer?)))
-      (let: ((new-data : (Vectorof Datetime) ((inst make-vector Datetime) new-len DEFAULT_NULL_VALUE)))
+      (let: ((new-data : (Vectorof RFDatetime) ((inst make-vector RFDatetime) new-len DEFAULT_NULL_VALUE)))
 	    (do ([idx 0 (add1 idx)])
 		([>= idx curr-len] (set-DatetimeSeriesBuilder-data! builder new-data))
 	      (vector-set! new-data idx (vector-ref data idx))))))

@@ -33,7 +33,8 @@
  (struct-out DatetimeSeries) RFDatetime RFDatetime? DEFAULT_NULL_VALUE GroupHash)
 
 (provide:
- [new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof Datetime) (Sequenceof Datetime)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DatetimeSeries)] 
+ [new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof Datetime) (Sequenceof RFDatetime))
+                      [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DatetimeSeries)]
  [set-DatetimeSeries-index (DatetimeSeries (U (Listof IndexDataType) RFIndex) -> DatetimeSeries)] 
  [datetime-series-iref (DatetimeSeries (Listof Index) -> (Listof RFDatetime))]
  [datetime-series-index-ref (DatetimeSeries IndexDataType -> (Listof RFDatetime))]

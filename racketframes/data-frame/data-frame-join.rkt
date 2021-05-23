@@ -65,13 +65,14 @@
           nseries-referencer)
  (only-in "integer-series.rkt"
 	  ISeries ISeries? iseries-iref new-ISeries
-	  iseries-referencer)
+	  iseries-referencer RFFixnum)
  (only-in "boolean-series.rkt"
 	  BSeries BSeries? bseries-iref new-BSeries
 	  bseries-referencer)
  (only-in "datetime-series.rkt"
           DatetimeSeries DatetimeSeries? datetime-series-iref
-          new-DatetimeSeries datetime-series-referencer)
+          new-DatetimeSeries datetime-series-referencer RFDatetime
+          [DEFAULT_NULL_VALUE datetime-series-default-null-value])
  (only-in "date-series.rkt"
           DateSeries DateSeries? date-series-iref
           new-DateSeries date-series-referencer)
@@ -338,7 +339,7 @@
                   (append-CSeriesBuilder builder nom)
                   (copy-column-row-error series col))))
            ((ISeries? series)
-            (let: ((num : Fixnum (car (iseries-iref series (list row-id)))))
+            (let: ((num : RFFixnum (car (iseries-iref series (list row-id)))))
               (if (ISeriesBuilder? builder)
                   (append-ISeriesBuilder builder num)
                   (copy-column-row-error series col))))
@@ -348,7 +349,7 @@
                   (append-BSeriesBuilder builder bool)
                   (copy-column-row-error series col))))
            ((DatetimeSeries? series)
-            (let: ((dt : Datetime (car (datetime-series-iref series (list row-id)))))
+            (let: ((dt : RFDatetime (car (datetime-series-iref series (list row-id)))))
               (if (DatetimeSeriesBuilder? builder)
                   (append-DatetimeSeriesBuilder builder dt)
                   (copy-column-row-error series col))))))))
@@ -901,7 +902,9 @@
                                 (cond 
                                   [(eq? function-name 'sum) (apply + val)]
                                   [(eq? function-name 'mean) (mean val)]
-                                  [(eq? function-name 'median) (median (lambda ([val1 : GenericType] [val2 : GenericType]) (< val1 val2)) val)]
+                                  [(eq? function-name 'median) (median (lambda ([val1 : GenericType] [val2 : GenericType]) (if (and (real? val1) (real? val2))
+                                                                                                                               (< val1 val2)
+                                                                                                                               (string-ci<=? (~a val1) (~a val2)))) val)]
                                   [(eq? function-name 'mode) (most-frequent-element val)]
                                   [(eq? function-name 'count) (length val)]
                                   [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) val)]
