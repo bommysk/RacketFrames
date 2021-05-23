@@ -67,11 +67,19 @@
 
 (data-frame-write-delim data-frame-integer)
 
+(printf "~n")
+
 (data-frame-write-delim data-frame-integer #:delim ",")
+
+(printf "~n")
 
 (data-frame-write-csv data-frame-integer "test_out_data_frame_integer.csv")
 
+(printf "~n")
+
 (data-frame-write-delim data-frame-integer #:delim "  ")
+
+(printf "~n")
 
 (define columns-float
   (list 
@@ -87,7 +95,11 @@
 
 (data-frame-write-delim data-frame-float)
 
+(printf "~n")
+
 (data-frame-write-delim data-frame-float #:delim ",")
+
+(printf "~n")
 
 (data-frame-write-csv data-frame-float "test_out_data_frame_float.csv")
 
@@ -104,12 +116,16 @@
 
 (data-frame-write-delim data-frame-mix)
 
+(printf "~n")
 (data-frame-write-delim data-frame-mix #:delim ",")
 
+(printf "~n")
 (data-frame-write-csv data-frame-mix "test_out_data_frame_mix.csv")
 
+(printf "~n")
 (data-frame-write-json data-frame-mix)
 
+(printf "~n")
 (data-frame-write-json-file data-frame-mix "test_out_data_frame_mix.json")
 
 (define columns-mix-larger
@@ -128,6 +144,8 @@
 
 (define data-frame-mix-larger (new-data-frame columns-mix-larger))
 
+(printf "~n")
 (data-frame-write-json data-frame-mix-larger)
 
+(printf "~n")
 (data-frame-write-json-file data-frame-mix-larger "test_out_data_frame_mix_larger.json")

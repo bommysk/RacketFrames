@@ -172,3 +172,4 @@
 ; ISeries Nominals Tests
 ; (new-ISeries-Nominals (make-RFFixnum-vector (list 1 2 98228012 3 4 5 98228012 6 7 8999 98228012 98228012)) #f)
 
+(iseries-print (new-ISeries int-vector #:index (build-index-from-list (range (vector-length int-vector)))))
