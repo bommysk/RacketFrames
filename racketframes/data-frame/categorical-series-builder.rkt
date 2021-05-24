@@ -11,9 +11,7 @@
   (only-in "indexed-series.rkt"
            Label)
   (only-in "categorical-series.rkt"
-           CSeries))
-
-(define DEFAULT_NULL_VALUE : Label 'null)
+           CSeries CSERIES_DEFAULT_NULL_VALUE))
 
 (struct: CSeriesBuilder ([index : Index]
 			 [ord : Index]
@@ -49,7 +47,7 @@
 				 (vector-set! noms i n)))
       noms))
   
-  (CSeries #f compacted-data nominals DEFAULT_NULL_VALUE DEFAULT_NULL_VALUE))
+  (CSeries #f compacted-data nominals CSERIES_DEFAULT_NULL_VALUE CSERIES_DEFAULT_NULL_VALUE))
 
 ;; Extend a builder with next data element
 (: append-CSeriesBuilder (CSeriesBuilder (U Symbol String) -> Void))

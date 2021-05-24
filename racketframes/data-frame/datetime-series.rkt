@@ -30,7 +30,7 @@
 ; ***********************************************************
 ; Provide functions in this file to other files.
 (provide
- (struct-out DatetimeSeries) RFDatetime RFDatetime? DEFAULT_NULL_VALUE GroupHash)
+ (struct-out DatetimeSeries) RFDatetime RFDatetime? (rename-out [DEFAULT_NULL_VALUE DATETIME_SERIES_DEFAULT_NULL_VALUE] [GroupHash datetime-series-grouphash]))
 
 (provide:
  [new-DatetimeSeries ((U (Vectorof Datetime) (Sequenceof Datetime) (Sequenceof RFDatetime))
@@ -68,7 +68,7 @@
  [=/datetime-series (DatetimeSeries DatetimeSeries -> BSeries)]
  [!=/datetime-series (DatetimeSeries DatetimeSeries -> BSeries)]
  
- [datetime-series-print (DatetimeSeries Output-Port -> Void)]
+ [datetime-series-print (DatetimeSeries [#:output-port Output-Port] -> Void)]
 
  [datetime-series-groupby (DatetimeSeries [#:by-value Boolean] -> GroupHash)]
  [set-DatetimeSeries-null-value (DatetimeSeries RFNULL -> DatetimeSeries)]
@@ -141,8 +141,8 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: datetime-series-print (DatetimeSeries Output-Port -> Void))
-(define (datetime-series-print datetime-series port)
+(: datetime-series-print (DatetimeSeries [#:output-port Output-Port] -> Void))
+(define (datetime-series-print datetime-series #:output-port [port (current-output-port)])
   (define date-v (datetime-series-data datetime-series))
   (define v (datetime-series-data datetime-series))
   (let ((len (vector-length v))

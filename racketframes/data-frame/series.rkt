@@ -1,7 +1,9 @@
 #lang typed/racket
 
+(provide SeriesDataVectorType)
+
 (provide:
- [new-series ((Sequenceof Any) (Option (U (Listof IndexDataType) RFIndex)) -> Series)]
+ [new-series ((Sequenceof Any) [#:index (Option (U (Listof IndexDataType) RFIndex))] -> Series)]
  [set-series-index (Series (U (Listof IndexDataType) RFIndex) -> Series)]
  [series-set-null-value (Series GenericType -> Series)]
  [series-groupby (Series [#:by-value Boolean] -> GroupHash)]
@@ -36,27 +38,27 @@
  (only-in "categorical-series.rkt"
           CSeries CSeries? new-CSeries cseries-length cseries-data cseries-index cseries-iref in-cseries set-CSeries-index
           cseries-referencer cseries-loc-boolean cseries-iloc cseries-loc cseries-loc-multi-index cseries-index-ref
-          set-CSeries-null-value cseries-null-value cseries-groupby [GroupHash cseries-grouphash])
+          set-CSeries-null-value cseries-null-value cseries-groupby cseries-grouphash)
  (only-in "numeric-series.rkt"
           NSeries NSeries? new-NSeries nseries-length nseries-data nseries-index nseries-iref nseries-referencer in-nseries
           set-NSeries-index nseries-loc-boolean nseries-loc nseries-loc-multi-index nseries-iloc nseries-index-ref list->flvector flvector->list
-          set-NSeries-null-value nseries-null-value nseries-groupby [GroupHash nseries-grouphash] flvector->vector)
+          set-NSeries-null-value nseries-null-value nseries-groupby nseries-grouphash flvector->vector)
  (only-in "integer-series.rkt"
 	  ISeries ISeries? new-ISeries iseries-length iseries-data iseries-index in-iseries iseries-iref iseries-referencer
           set-ISeries-index iseries-loc-boolean iseries-loc iseries-loc-multi-index iseries-iloc iseries-index-ref RFFixnum RFFixnum?
-          set-ISeries-null-value iseries-null-value iseries-groupby [GroupHash iseries-grouphash])
+          set-ISeries-null-value iseries-null-value iseries-groupby iseries-grouphash)
  (only-in "boolean-series.rkt"
 	  BSeries BSeries? new-BSeries bseries-length bseries-data bseries-index bseries-iref in-bseries bseries-referencer
           set-BSeries-index bseries-loc-boolean bseries-loc bseries-loc-multi-index bseries-iloc bseries-index-ref
-          set-BSeries-null-value bseries-null-value bseries-groupby [GroupHash bseries-grouphash])
+          set-BSeries-null-value bseries-null-value bseries-groupby bseries-grouphash)
  (only-in "datetime-series.rkt"
 	  DatetimeSeries DatetimeSeries? new-DatetimeSeries DatetimeSeries-index DatetimeSeries-data datetime-series-length datetime-series-data datetime-series-index
           datetime-series-iref datetime-series-referencer in-datetime-series
           set-DatetimeSeries-index datetime-series-loc-boolean datetime-series-loc datetime-series-loc-multi-index datetime-series-iloc datetime-series-index-ref datetime-series-groupby
-          set-DatetimeSeries-null-value datetime-series-null-value [GroupHash datetime-series-grouphash] RFDatetime RFDatetime?)
+          set-DatetimeSeries-null-value datetime-series-null-value datetime-series-grouphash RFDatetime RFDatetime?)
  (only-in "date-series.rkt"
 	  DateSeries DateSeries? new-DateSeries DateSeries-index DateSeries-data date-series-length date-series-data date-series-index date-series-iref date-series-referencer
-          in-date-series date-series-groupby [GroupHash date-series-grouphash]
+          in-date-series date-series-groupby date-series-grouphash
           set-DateSeries-index set-DateSeries-null-value date-series-null-value date-series-loc-boolean date-series-loc date-series-loc-multi-index date-series-iloc date-series-index-ref
           RFDate RFDate?)
  
@@ -88,12 +90,12 @@
           Datetime Datetime?))
 
 ; add option to disable sampling and make GenericSeries by default
-(: new-series ((Sequenceof Any) (Option (U (Listof IndexDataType) RFIndex)) -> Series))
-(define (new-series data labels)
+(: new-series ((Sequenceof Any) [#:index (Option (U (Listof IndexDataType) RFIndex))] -> Series))
+(define (new-series data #:index [labels #f])
   (let*: ((series-type : SeriesType (guess-series-type (map ~a (sequence->list data)))))
     (cond                                                      
       [(eq? series-type 'CategoricalSeries)
-       (new-CSeries (list->vector (assert (sequence->list data) ListofLabel?)) #:index labels)]
+       (new-CSeries (assert data ListofLabel?) #:index labels)]
       [(eq? series-type 'NumericSeries)
        (new-NSeries (list->flvector (assert (sequence->list data) ListofFlonum?)) #:index labels)]
       [(eq? series-type 'IntegerSeries)

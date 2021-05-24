@@ -22,12 +22,11 @@
           label-index label->lst-idx
           idx->key is-labeled?)
  (only-in "../data-frame/series.rkt"
-	  series-complete)
+	  series-complete series-iref  
+          series-data get-series-index has-series-index? SeriesDataVectorType)
  (only-in "../data-frame/series-description.rkt"
 	  SeriesType Series Series? SeriesList SeriesList?
-	  SeriesDescription-type
-	  series-iref series-type series-length
-          series-data get-series-index has-series-index?)
+	  SeriesDescription-type series-type series-length)
  (only-in "../data-frame/data-frame.rkt"
 	  DataFrame DataFrame? Column Columns Columns? Column? new-data-frame data-frame-names
 	  data-frame-cseries data-frame-explode column-series
@@ -46,8 +45,9 @@
  (only-in "../data-frame/datetime-series.rkt"
 	  datetime-series-referencer datetime-series-length datetime-series-iref
 	  DatetimeSeries DatetimeSeries? new-DatetimeSeries)
- (only-in "../data-frame/data-frame-print.rkt"
-          data-frame-write-tab)
+ (only-in "../data-frame/date-series.rkt"
+	  date-series-referencer date-series-length date-series-iref
+	  DateSeries DateSeries? new-DateSeries)
  (only-in "../util/datetime/types.rkt"
           Datetime))
 
@@ -69,14 +69,12 @@
  [make-scatter-plot ((U Series (Listof Series) DataFrame Column Columns) [#:x-min Real] [#:x-max Real] [#:y-min Real] [#:y-max Real] -> Any)]
  [make-line-plot ((U Series (Listof Series) DataFrame Column Columns) [#:x-min Real] [#:x-max Real] [#:y-min Real] [#:y-max Real] -> Any)]
  [make-hist-bin-stacked (-> HistBinStacked)]
- [get-discrete-hist-data ((U (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof Fixnum) (Vectorof Symbol) FlVector) -> HistBin)] 
- [get-discrete-hist-data-vec ((U (Vectorof IndexDataType) (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof Fixnum) (Vectorof Symbol) FlVector)
-                               PlottableSeries -> HistBinStacked)]
- [discrete-histogram-stacked-from-vector ((U (Vectorof Any) (Vectorof IndexDataType) (Vectorof Boolean) (Vectorof Datetime) (Vectorof Fixnum) (Vectorof Label) FlVector)
-                                           PlottableSeries -> (Listof renderer2d))]
+ [get-discrete-hist-data (PlotVector -> HistBin)] 
+ [get-discrete-hist-data-vec (PlotVector PlottableSeries -> HistBinStacked)]
+ [discrete-histogram-stacked-from-vector (PlotVector PlottableSeries -> (Listof renderer2d))]
  [make-discrete-histogram ((U Series (Listof Series) DataFrame Column Columns) -> Any)]
  [make-discrete-histogram-stacked ((U Series (Listof Series) DataFrame Column Columns) -> Any)]
- [get-index-vector (Series -> (U (Vectorof IndexDataType) (Vectorof Fixnum)))])
+ [get-index-vector (Series -> PlotVector)])
 
 #|
 #:x-min [x-min -10]
@@ -97,11 +95,13 @@
 
 (: is-plottable-series (Series -> Boolean))
 (define (is-plottable-series series)
-  (or (GenSeries? series) (ISeries? series) (NSeries? series) (DatetimeSeries? series)))
+  (or (GenSeries? series) (ISeries? series) (NSeries? series) (DatetimeSeries? series) (DateSeries? series)))
 
-(define-type PlottableSeries (U GenSeries NSeries ISeries DatetimeSeries))
+(define-type PlottableSeries (U GenSeries NSeries ISeries DatetimeSeries DateSeries))
 
-(define-predicate PlottableSeries? (U GenSeries NSeries ISeries DatetimeSeries))
+(define-predicate PlottableSeries? (U GenSeries NSeries ISeries DatetimeSeries DateSeries))
+
+(define-type PlotVector (U SeriesDataVectorType (Vectorof IndexDataType) (Vectorof Fixnum)))
 
 (define-predicate RealList? (Listof Real))
 
@@ -229,7 +229,7 @@
 ; aligned; see .align() method). If an ndarray is passed, the values are used as-is
 ; determine the groups. A label or list of labels may be passed to group by the columns
 ; in self. Notice that a tuple is interpreted a (single) key.
-(: get-discrete-hist-data ((U (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof Fixnum) (Vectorof Symbol) FlVector) -> HistBin))
+(: get-discrete-hist-data (PlotVector -> HistBin))
 (define (get-discrete-hist-data data-vec)
   (define: hist-bin-index : HistBin (make-hist-bin))
   (define len
@@ -252,8 +252,7 @@
 			      (λ () 0)))
 	      (loop (add1 i))))))
 
-(: get-discrete-hist-data-vec ((U (Vectorof IndexDataType) (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof Fixnum) (Vectorof Symbol) FlVector)
-                               PlottableSeries -> HistBinStacked))
+(: get-discrete-hist-data-vec (PlotVector PlottableSeries -> HistBinStacked))
 (define (get-discrete-hist-data-vec data-vec-one data-series-two)
   (define: hist-bin-index : HistBinStacked (make-hist-bin-stacked))
   (define vec-one-len
@@ -289,13 +288,12 @@
 (define (list-of-vec-from-hist-bin-stacked hist-bin-stacked)
   (hash-map hist-bin-stacked (lambda ([key : Any] [value : (Listof Real)]) : (Vector Any (Listof Real)) (vector key value))))
 
-(: discrete-histogram-from-vector ((U (Vectorof Any) (Vectorof Boolean) (Vectorof Datetime) (Vectorof Fixnum) (Vectorof Label) FlVector) -> renderer2d))
+(: discrete-histogram-from-vector (PlotVector -> renderer2d))
 (define (discrete-histogram-from-vector vec)
   (discrete-histogram (cast (list-of-vec-from-hist-bin (get-discrete-hist-data vec))
                             (Sequenceof (U (List Any (U False Real ivl)) (Vector Any (U False Real ivl)))))))
 
-(: discrete-histogram-stacked-from-vector ((U (Vectorof Any) (Vectorof IndexDataType) (Vectorof Boolean) (Vectorof Datetime) (Vectorof Fixnum) (Vectorof Label) FlVector)
-                                           PlottableSeries -> (Listof renderer2d)))
+(: discrete-histogram-stacked-from-vector (PlotVector PlottableSeries -> (Listof renderer2d)))
 (define (discrete-histogram-stacked-from-vector data-vec-one data-series-two)
   (stacked-histogram (cast (list-of-vec-from-hist-bin-stacked (get-discrete-hist-data-vec data-vec-one (assert data-series-two PlottableSeries?))) 	
                             (Sequenceof (U (Vector Any (Sequenceof Real)) (List Any (Sequenceof Real)))))))
@@ -326,7 +324,7 @@
         (plot
          plot-points))))
 
-(: get-index-vector (Series -> (U (Vectorof IndexDataType) (Vectorof Fixnum))))
+(: get-index-vector (Series -> PlotVector))
 (define (get-index-vector series)
   (: series-len Index)
   (define series-len (series-length series))

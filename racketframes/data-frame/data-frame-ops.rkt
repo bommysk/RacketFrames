@@ -40,7 +40,7 @@
 	  series-type series-length)
  (only-in "data-frame.rkt"
 	  DataFrame Columns new-data-frame data-frame-names column-heading
-	  data-frame-series data-frame-cseries data-frame-nseries data-frame-iseries data-frame-explode
+	  data-frame-series-ref data-frame-cseries data-frame-nseries data-frame-iseries data-frame-explode
 	  DataFrameDescription DataFrameDescription-series data-frame-description column-series)
  (only-in "data-frame-join.rkt"
           dest-mapping-series-builders copy-column-row)
@@ -98,8 +98,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))
                                    ((list 'NumericSeries 'IntegerSeries)     (+/ns/is (data-frame-nseries dfa name)
                                                                                       (data-frame-iseries dfb name)))
@@ -125,8 +125,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))
                                    ((list 'NumericSeries 'IntegerSeries)     (-/ns/is (data-frame-nseries dfa name)
                                                                                       (data-frame-iseries dfb name)))
@@ -152,8 +152,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))
                                    ((list 'NumericSeries 'IntegerSeries)     (*/ns/is (data-frame-nseries dfa name)
                                                                                       (data-frame-iseries dfb name)))
@@ -179,8 +179,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))
                                    ((list 'NumericSeries 'IntegerSeries)     (//ns/is (data-frame-nseries dfa name)
                                                                                       (data-frame-iseries dfb name)))
@@ -206,8 +206,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))                                                                      
                                    ((list 'IntegerSeries 'IntegerSeries)    (%/is (data-frame-iseries dfa name)
                                                                                   (data-frame-iseries dfb name)))                                   
@@ -226,8 +226,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))                                                                      
                                    ((list 'IntegerSeries 'IntegerSeries)    (r/is (data-frame-iseries dfa name)
                                                                                   (data-frame-iseries dfb name)))                                   
@@ -247,8 +247,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))
                                    ((list 'NumericSeries 'IntegerSeries)     (=/ns/is (data-frame-nseries dfa name)
                                                                                       (data-frame-iseries dfb name)))
@@ -274,8 +274,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))
                                    ((list 'NumericSeries 'IntegerSeries)     (!=/ns/is (data-frame-nseries dfa name)
                                                                                       (data-frame-iseries dfb name)))
@@ -301,8 +301,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))
                                    ((list 'NumericSeries 'IntegerSeries)     (</ns/is (data-frame-nseries dfa name)
                                                                                       (data-frame-iseries dfb name)))
@@ -328,8 +328,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))
                                    ((list 'NumericSeries 'IntegerSeries)     (>/ns/is (data-frame-nseries dfa name)
                                                                                       (data-frame-iseries dfb name)))
@@ -355,8 +355,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))
                                    ((list 'NumericSeries 'IntegerSeries)     (<=/ns/is (data-frame-nseries dfa name)
                                                                                       (data-frame-iseries dfb name)))
@@ -382,8 +382,8 @@
   
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name))) 
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name))) 
                                  (match (list (series-type dfa-series) (series-type dfb-series))
                                    ((list 'NumericSeries 'IntegerSeries)     (>=/ns/is (data-frame-nseries dfa name)
                                                                                       (data-frame-iseries dfb name)))
@@ -406,7 +406,7 @@
 (define (data-frame-abs df)
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((df-series (data-frame-series df name))) 
+                               (let ((df-series (data-frame-series-ref df name))) 
                                  (match (series-type df-series)
                                    ('NumericSeries (nseries-abs (data-frame-nseries df name)))
                                    ('IntegerSeries (iseries-abs (data-frame-iseries df name)))

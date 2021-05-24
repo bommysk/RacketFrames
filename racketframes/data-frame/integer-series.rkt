@@ -17,8 +17,7 @@
 ; Provide functions in this file to other files.
 (provide
  (struct-out ISeries)
- ISeries-index RFFixnum RFFixnum? DEFAULT_NULL_VALUE GroupHash)
-
+ ISeries-index RFFixnum RFFixnum? (rename-out [GroupHash iseries-grouphash] [DEFAULT_NULL_VALUE ISERIES_DEFAULT_NULL_VALUE]))
 (provide:
  [new-ISeries ((U FxVector (Vectorof Fixnum) (Sequenceof Fixnum) (Sequenceof RFFixnum)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                                  [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> ISeries)]

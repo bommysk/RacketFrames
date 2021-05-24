@@ -4,18 +4,16 @@
  [iseries-head (ISeries [#:rows Index] -> ISeries)]
  [iseries-unique (ISeries -> ISeries)] 
  [iseries-append (ISeries ISeries -> ISeries)]
- [iseries-abs (ISeries -> ISeries)]
- [iseries-isna (ISeries -> BSeries)]
- [iseries-notna (ISeries -> BSeries)])
+ [iseries-abs (ISeries -> ISeries)])
 
 (require
   (only-in racket/vector
            vector-copy)
-  (only-in "../util/format.rkt"
+  (only-in racket/format
            ~a)
   (only-in "integer-series.rkt"
            ISeries new-ISeries iseries-data iseries-length iseries-referencer iseries-iref
-           iseries-index iseries-null-value)
+           iseries-index iseries-null-value derive-fixnum-value RFFixnum RFFixnum?)
   (only-in "boolean-series.rkt"
            BSeries new-BSeries bseries-data bseries-length bseries-referencer bseries-iref)
   (only-in "integer-series-builder.rkt"
@@ -43,11 +41,11 @@
   (append-iseries isb)
   (complete-ISeriesBuilder builder))
 
-(: remove-duplicates-sequence ((Sequenceof Fixnum) -> (Vectorof Fixnum)))
+(: remove-duplicates-sequence ((Sequenceof RFFixnum) -> (Vectorof RFFixnum)))
 (define (remove-duplicates-sequence fx-seq)  
   (let* ((data (remove-duplicates (sequence->list fx-seq)))
          (len (length data)))
-    (let: ((new-data : (Vectorof Fixnum) ((inst make-vector Fixnum) len 0)))
+    (let: ((new-data : (Vectorof RFFixnum) ((inst make-vector RFFixnum) len 0)))
       (do ([idx 0 (add1 idx)])
         ([>= idx len] new-data)
         (vector-set! new-data idx (list-ref data idx))))))
@@ -61,8 +59,8 @@
 (: iseries-head (ISeries [#:rows Index] -> ISeries))
 (define (iseries-head iseries #:rows [rows 10])
   (if (< (vector-length (iseries-data iseries)) rows)
-      (new-ISeries (for/vector: : (Vectorof Fixnum) ([i (vector-length (iseries-data iseries))]) (car (iseries-iref iseries (list i)))))
-      (new-ISeries (for/vector: : (Vectorof Fixnum) ([i rows]) (car (iseries-iref iseries (list i)))))))
+      (new-ISeries (for/vector: : (Vectorof RFFixnum) ([i (vector-length (iseries-data iseries))]) (car (iseries-iref iseries (list i)))))
+      (new-ISeries (for/vector: : (Vectorof RFFixnum) ([i rows]) (car (iseries-iref iseries (list i)))))))
 
 (define default-iseries-rows 10)
 
@@ -74,8 +72,9 @@
 	((>= i rows) (displayln ""))
       (display (~a (string-append "[" (number->string i) "]") 
 		   #:width 5 #:align 'left))
-      (displayln (~a (number->string (iref (assert i index?))) 
-		     #:align 'left)))))
+      (displayln (~a (iref (assert i index?))
+		     #:align 'left)))
+    ))
 
 (: iseries-abs (ISeries -> ISeries))
 (define (iseries-abs iseries)
@@ -84,7 +83,7 @@
   (define builder (new-ISeriesBuilder rows))
 
   (for ([i rows])
-    (append-ISeriesBuilder builder (assert (abs (iref (assert i index?))) fixnum?)))
+    (append-ISeriesBuilder builder (assert (abs (derive-fixnum-value iseries (iref (assert i index?)))) RFFixnum?)))
 
   (complete-ISeriesBuilder builder))
 
@@ -110,4 +109,4 @@
       (if (eq? (iref (assert i index?)) (iseries-null-value iseries))
           (vector-set! data i #f)
           (vector-set! data i #t)))
-    (new-BSeries data #f)))
+    (new-BSeries data)))

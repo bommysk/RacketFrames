@@ -87,7 +87,7 @@
 (provide
  ;flvector-print
  (struct-out NSeries)
- NSeries-index DEFAULT_NULL_VALUE GroupHash)
+ NSeries-index (rename-out [GroupHash nseries-grouphash] [DEFAULT_NULL_VALUE NSERIES_DEFAULT_NULL_VALUE]))
 
 ; ***********************************************************
 

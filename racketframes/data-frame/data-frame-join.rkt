@@ -62,20 +62,21 @@
 	  CSeries CSeries? new-CSeries)
  (only-in "numeric-series.rkt"
 	  NSeries NSeries? nseries-iref new-NSeries
-          nseries-referencer)
+          nseries-referencer NSERIES_DEFAULT_NULL_VALUE)
  (only-in "integer-series.rkt"
 	  ISeries ISeries? iseries-iref new-ISeries
-	  iseries-referencer RFFixnum)
+	  iseries-referencer RFFixnum ISERIES_DEFAULT_NULL_VALUE)
  (only-in "boolean-series.rkt"
 	  BSeries BSeries? bseries-iref new-BSeries
 	  bseries-referencer)
  (only-in "datetime-series.rkt"
           DatetimeSeries DatetimeSeries? datetime-series-iref
           new-DatetimeSeries datetime-series-referencer RFDatetime
-          [DEFAULT_NULL_VALUE datetime-series-default-null-value])
+          DATETIME_SERIES_DEFAULT_NULL_VALUE)
  (only-in "date-series.rkt"
           DateSeries DateSeries? date-series-iref
-          new-DateSeries date-series-referencer)
+          new-DateSeries date-series-referencer
+          DATE_SERIES_DEFAULT_NULL_VALUE)
  (only-in "../util/datetime/types.rkt"
           Datetime Datetime? Date Time)
  (only-in "series-builder.rkt"

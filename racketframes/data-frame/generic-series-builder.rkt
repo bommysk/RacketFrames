@@ -15,7 +15,7 @@
  (only-in racket/vector
 	  vector-copy)
  (only-in "generic-series.rkt"
-          GenSeries new-GenSeries))
+          GenSeries new-GenSeries GSERIES_DEFAULT_NULL_VALUE))
 
 (struct: GenSeriesBuilder ([index  : Index]
                            [data : (Vectorof Any)]) #:mutable)
@@ -31,7 +31,7 @@
 		       (-> GenSeriesBuilder)
 		       (Index -> GenSeriesBuilder)))
 (define (new-GenSeriesBuilder [len base-len])
-  (GenSeriesBuilder 0 (make-vector len 0)))
+  (GenSeriesBuilder 0 (make-vector len GSERIES_DEFAULT_NULL_VALUE)))
 
 (: append-GenSeriesBuilder (GenSeriesBuilder Any -> Void))
 (define (append-GenSeriesBuilder builder value)
@@ -51,7 +51,7 @@
     (let* ((data (GenSeriesBuilder-data builder))
 	   (curr-len (vector-length data))
 	   (new-len  (assert (inexact->exact (round (* 1.5 curr-len))) exact-integer?)))
-      (let: ((new-data : (Vectorof Any) ((inst make-vector Any) new-len 0)))
+      (let: ((new-data : (Vectorof Any) ((inst make-vector Any) new-len GSERIES_DEFAULT_NULL_VALUE)))
 	    (do ([idx 0 (add1 idx)])
 		([>= idx curr-len] (set-GenSeriesBuilder-data! builder new-data))
 	      (vector-set! new-data idx (vector-ref data idx))))))

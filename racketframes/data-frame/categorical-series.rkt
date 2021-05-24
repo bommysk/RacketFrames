@@ -1,11 +1,11 @@
 #lang typed/racket
 
 (provide
- (struct-out CSeries) DEFAULT_NULL_VALUE GroupHash)
+ (struct-out CSeries) (rename-out [DEFAULT_NULL_VALUE CSERIES_DEFAULT_NULL_VALUE] [GroupHash cseries-grouphash]))
 ;;writer-CSeries)
 
 (provide:
- [new-CSeries ((Vectorof Label) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> CSeries)]
+ [new-CSeries ((Sequenceof Label) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> CSeries)]
  [set-CSeries-index (CSeries (U (Listof IndexDataType) RFIndex) -> CSeries)]
  [set-CSeries-null-value (CSeries RFNULL -> CSeries)]
  [set-CSeries-label-null-value-inplace (CSeries Label -> Void)]
@@ -47,9 +47,12 @@
   #:mutable
   #:transparent)
 
-(: new-CSeries ((Vectorof Label) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> CSeries))
-(define (new-CSeries nominals #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE])
+(: new-CSeries ((Sequenceof Label) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> CSeries))
+(define (new-CSeries nominal-data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE])
 
+  (: nominals (Vectorof Label))
+  (define nominals (list->vector (sequence->list nominal-data)))
+  
   (: nominal-code (HashTable Label Index))
   (define nominal-code (make-hash))
 
@@ -294,6 +297,7 @@
 
 (define-type Key String)
 (define-type GroupHash (HashTable Key (Listof Label)))
+(define-type cseries-grouphash GroupHash)
 
 ; This function is self-explanatory, it consumes no arguments
 ; and creates a hash map which will represent a JoinHash.

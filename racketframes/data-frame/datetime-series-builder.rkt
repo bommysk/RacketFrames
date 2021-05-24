@@ -15,7 +15,7 @@
  (only-in racket/vector
 	  vector-copy)
  (only-in "datetime-series.rkt"
-          DatetimeSeries new-DatetimeSeries RFDatetime RFDatetime? DEFAULT_NULL_VALUE)
+          DatetimeSeries new-DatetimeSeries RFDatetime RFDatetime? DATETIME_SERIES_DEFAULT_NULL_VALUE)
  (only-in "../util/datetime/parse.rkt"
           parse-date parse-datetime is-valid-date? is-valid-datetime?)
  (only-in "../util/datetime/types.rkt"
@@ -30,7 +30,7 @@
 		       (-> DatetimeSeriesBuilder)
 		       (Index -> DatetimeSeriesBuilder)))
 (define (new-DatetimeSeriesBuilder [len base-len])
-  (DatetimeSeriesBuilder 0 (make-vector len DEFAULT_NULL_VALUE)))
+  (DatetimeSeriesBuilder 0 (make-vector len DATETIME_SERIES_DEFAULT_NULL_VALUE)))
 
 (: append-DatetimeSeriesBuilder (DatetimeSeriesBuilder (U RFDatetime String) -> Void))
 (define (append-DatetimeSeriesBuilder builder datetime/str-value)
@@ -50,7 +50,7 @@
     (let* ((data (DatetimeSeriesBuilder-data builder))
 	   (curr-len (vector-length data))
 	   (new-len  (assert (inexact->exact (round (* 1.5 curr-len))) exact-integer?)))
-      (let: ((new-data : (Vectorof RFDatetime) ((inst make-vector RFDatetime) new-len DEFAULT_NULL_VALUE)))
+      (let: ((new-data : (Vectorof RFDatetime) ((inst make-vector RFDatetime) new-len DATETIME_SERIES_DEFAULT_NULL_VALUE)))
 	    (do ([idx 0 (add1 idx)])
 		([>= idx curr-len] (set-DatetimeSeriesBuilder-data! builder new-data))
 	      (vector-set! new-data idx (vector-ref data idx))))))
@@ -62,7 +62,7 @@
                                  [(is-valid-datetime? datetime/str-value) (parse-datetime (string-trim datetime/str-value))]
                                  [(is-valid-date? datetime/str-value) (parse-date (string-trim datetime/str-value))]                                 
                                  [else #f])))                       
-                       (if dt (assert dt Datetime?) DEFAULT_NULL_VALUE))
+                       (if dt (assert dt Datetime?) DATETIME_SERIES_DEFAULT_NULL_VALUE))
 		     datetime/str-value)))
         (vector-set! (DatetimeSeriesBuilder-data builder)
 		     (bump-index)

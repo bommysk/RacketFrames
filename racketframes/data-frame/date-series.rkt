@@ -26,7 +26,7 @@
 ; Provide functions in this file to other files.
 (provide
  (struct-out DateSeries)
- DateSeries? RFDate RFDate? DEFAULT_NULL_VALUE GroupHash)
+ DateSeries? RFDate RFDate? (rename-out [DEFAULT_NULL_VALUE DATE_SERIES_DEFAULT_NULL_VALUE] [GroupHash date-series-grouphash]))
 
 (provide:
  [new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> DateSeries)]

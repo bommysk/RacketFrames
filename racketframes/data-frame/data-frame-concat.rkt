@@ -30,14 +30,13 @@
  (only-in "indexed-series.rkt"
 	  Label Labeling LabelProjection)
  (only-in "series.rkt"
-	  series-complete)
+	  series-complete series-data)
  (only-in "series-description.rkt"
 	  SeriesType Series
 	  SeriesDescription-type
-	  series-type series-length
-          series-data)
+	  series-type series-length)
  (only-in "data-frame.rkt"
-	  DataFrame Columns new-data-frame data-frame-names
+	  DataFrame Columns new-data-frame data-frame-names data-frame-series-ref
 	  data-frame-series data-frame-cseries data-frame-nseries data-frame-iseries data-frame-explode
 	  DataFrameDescription DataFrameDescription-series data-frame-description column-series)
  (only-in "data-frame-join.rkt"
@@ -138,8 +137,8 @@
                                                           (set-intersect cols-a cols-b))))
   (new-data-frame (map (λ: ((name : Label))
                          (cons name
-                               (let ((dfa-series (data-frame-series dfa name))
-                                     (dfb-series (data-frame-series dfb name)))
+                               (let ((dfa-series (data-frame-series-ref dfa name))
+                                     (dfb-series (data-frame-series-ref dfb name)))
                                  (if (not (equal? (series-type dfa-series) (series-type dfb-series)))
                                      (error 'data-frame-concat-vertical
                                             "The series types are different, unable to concat.") 

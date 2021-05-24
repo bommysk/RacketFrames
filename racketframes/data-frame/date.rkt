@@ -31,7 +31,7 @@
   (let* ((clen (cseries-length cseries))
 	 (cref (cseries-referencer cseries))
 	 (ibuilder (new-ISeriesBuilder clen)))
-    (do: : ISeries ([idx : Fixnum #{0 : Fixnum} (fx+ idx #{1 : Fixnum})])
+    (do: : ISeries ([idx : Index #{0 : Index} (assert (add1 idx) index?)])
 	((= idx clen) (complete-ISeriesBuilder ibuilder))
       (let ((date (parse-date (symbol->string (cref idx)))))
 	(if date

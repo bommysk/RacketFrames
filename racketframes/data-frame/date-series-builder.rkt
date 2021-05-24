@@ -17,7 +17,7 @@
  (only-in racket/vector
 	  vector-copy)
  (only-in "date-series.rkt"
-          DateSeries new-DateSeries DEFAULT_NULL_VALUE)
+          DateSeries new-DateSeries DATE_SERIES_DEFAULT_NULL_VALUE)
  (only-in "../util/datetime/parse.rkt"
           parse-racket-date parse-racket-datetime is-valid-date? is-valid-datetime?))
 
@@ -30,7 +30,7 @@
 		       (-> DateSeriesBuilder)
 		       (Index -> DateSeriesBuilder)))
 (define (new-DateSeriesBuilder [len base-len])
-  (DateSeriesBuilder 0 (make-vector len DEFAULT_NULL_VALUE)))
+  (DateSeriesBuilder 0 (make-vector len DATE_SERIES_DEFAULT_NULL_VALUE)))
 
 ;(define-type DateParseFormat (U 'date 'time 'datetime 'moment))
 
@@ -52,7 +52,7 @@
     (let* ((data (DateSeriesBuilder-data builder))
 	   (curr-len (vector-length data))
 	   (new-len  (assert (inexact->exact (round (* 1.5 curr-len))) exact-integer?)))
-      (let: ((new-data : (Vectorof date) ((inst make-vector date) new-len DEFAULT_NULL_VALUE)))
+      (let: ((new-data : (Vectorof date) ((inst make-vector date) new-len DATE_SERIES_DEFAULT_NULL_VALUE)))
 	    (do ([idx 0 (add1 idx)])
 		([>= idx curr-len] (set-DateSeriesBuilder-data! builder new-data))
 	      (vector-set! new-data idx (vector-ref data idx))))))
@@ -64,7 +64,7 @@
                                  [(is-valid-datetime? date/str-value) (parse-racket-datetime (string-trim date/str-value))]
                                  [(is-valid-date? date/str-value) (parse-racket-date (string-trim date/str-value))]                                 
                                  [else #f])))
-                       (if dt (assert dt date?) DEFAULT_NULL_VALUE))
+                       (if dt (assert dt date?) DATE_SERIES_DEFAULT_NULL_VALUE))
 		     date/str-value)))
         (vector-set! (DateSeriesBuilder-data builder)
 		     (bump-index)

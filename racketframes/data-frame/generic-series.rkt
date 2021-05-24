@@ -21,7 +21,8 @@
  GenSeries-index
  GenericType
  GenericType?
- ListofGenericType?)
+ ListofGenericType?
+ (rename-out [DEFAULT_NULL_VALUE GSERIES_DEFAULT_NULL_VALUE]))
 
 (define-type GenericType Any)
 

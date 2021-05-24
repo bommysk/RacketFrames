@@ -7,7 +7,7 @@
 (require
  racket/flonum
  (only-in "numeric-series.rkt"
-          NSeries) 
+          NSeries new-NSeries) 
  (only-in "settings.rkt" 
           Settings-decimals
           Settings-max-output
@@ -24,7 +24,7 @@
              (x start (+ x step)))
           ((>= i span) v)          
           (flvector-set! v i x))
-        (NSeries #f v))))
+        (new-NSeries v))))
 
 (: flvector-print (FlVector -> Void))
 (define (flvector-print flv)  

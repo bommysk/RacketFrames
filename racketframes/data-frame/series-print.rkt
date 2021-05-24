@@ -1,8 +1,8 @@
 #lang typed/racket
 
 (provide:
- [series-print (Series Output-Port -> Void)]
- [column-print (Column Output-Port -> Void)])
+ [series-print (Series [#:output-port Output-Port] -> Void)]
+ [column-print (Column [#:output-port Output-Port] -> Void)])
 
 (require
  (only-in "series-description.rkt"
@@ -19,29 +19,34 @@
 	  BSeries? bseries-print)
  (only-in "datetime-series.rkt"
 	  DatetimeSeries? datetime-series-print)
+ (only-in "date-series.rkt"
+	  DateSeries? date-series-print)
  (only-in "data-frame.rkt"
           Column column-heading column-series))
 
 
-(: series-print (Series Output-Port -> Void))
-(define (series-print series port)
+(: series-print (Series [#:output-port Output-Port] -> Void))
+(define (series-print series #:output-port [port (current-output-port)])
   (cond
     ((GenSeries? series)
-     (gen-series-print series port))
+     (gen-series-print series))
     ((NSeries? series)
-     (nseries-print series port))
+     (nseries-print series))
     ((CSeries? series)
-     (cseries-print series port))
+     (cseries-print series))
     ((ISeries? series)
-     (iseries-print series port))
+     (iseries-print series))
     ((BSeries? series)
-     (bseries-print series port))
+     (bseries-print series))
     ((DatetimeSeries? series)
-     (datetime-series-print series port))))
+     (datetime-series-print series))
+    ((DateSeries? series)
+     (date-series-print series))
+    [else (error "Unknown series type.")]))
 
-(: column-print (Column Output-Port -> Void))
-(define (column-print column port)
+(: column-print (Column [#:output-port Output-Port] -> Void))
+(define (column-print column #:output-port [port (current-output-port)])
   (let ((heading (column-heading column))
         (series (column-series column)))
     (displayln heading)
-    (series-print series port)))
+    (series-print series #:output-port port)))
