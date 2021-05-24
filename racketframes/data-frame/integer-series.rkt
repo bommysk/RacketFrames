@@ -793,8 +793,8 @@
     (do ((i 0 (add1 i)))
         ((>= i len) group-index)
       (let* ((rffixnum-val : (U RFFixnum ISeries) (assert (iseries-iloc iseries (assert i index?)) RFFixnum?))
-                   (rffixnum-list : (Listof RFFixnum) (if (fixnum? rffixnum-val) (list rffixnum-val) (vector->list (iseries-data iseries))))
-                   (key (if (assert by-value)
+             (rffixnum-list : (Listof RFFixnum) (if (fixnum? rffixnum-val) (list rffixnum-val) (vector->list (iseries-data iseries))))
+                   (key (if by-value
                             (assert (iseries-iloc iseries (assert i index?)) fixnum?)
                             (if (iseries-index iseries)
                                 (idx->key (assert (iseries-index iseries)) (assert i index?))

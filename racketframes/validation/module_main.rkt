@@ -284,20 +284,20 @@
 
 (data-frame-head data-frame-from-sql-customers)
 
-;(define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
+(define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
 
-;(data-frame-head data-frame-nba-csv)
+(data-frame-head data-frame-nba-csv)
 
-;(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
+(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
 
-;(Schema-headers nba-csv-schema)
-;(Schema-SeriesTypes nba-csv-schema)
+(Schema-headers nba-csv-schema)
+(Schema-SeriesTypes nba-csv-schema)
 
 ; series constructors
 (define int-series (new-series (list 1 2 3 4 5 6 6 6 6 6 6)))
 (define gen-series (new-series (vector 'a 1 2 'c 'd 5.6)))
 
-;(iseries-groupby (assert int-series ISeries?))
+(iseries-groupby (assert int-series ISeries?))
 ;(iseries-groupby (assert int-series ISeries?) #:by-value #t)
 
 (series-iref int-series 3)
