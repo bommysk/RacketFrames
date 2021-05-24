@@ -30,7 +30,7 @@
 (define-predicate ListofGenericType? (Listof GenericType))
 
 (provide:
- [new-GenSeries ((Vectorof GenericType) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> GenSeries)]
+ [new-GenSeries ((Sequenceof GenericType) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> GenSeries)]
  [set-GenSeries-index (GenSeries (U (Listof IndexDataType) RFIndex) -> GenSeries)]
  [set-GenSeries-null-value (GenSeries RFNULL -> GenSeries)]
  [set-GenSeries-any-null-value-inplace (GenSeries GenericType -> Void)]
@@ -84,10 +84,12 @@
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a GenSeries
 ; struct object.
-(: new-GenSeries ((Vectorof GenericType) [#:index (Option (U (Listof IndexDataType) RFIndex))]
+(: new-GenSeries ((Sequenceof GenericType) [#:index (Option (U (Listof IndexDataType) RFIndex))]
                                          [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> GenSeries))
-(define (new-GenSeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
-
+(define (new-GenSeries data-vector #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
+  (: data (Vectorof GenericType))
+  (define data (list->vector (sequence->list data-vector)))
+  
   (: check-mismatch (RFIndex -> Void))
   (define (check-mismatch index)    
     (let ((index-length (apply + (for/list: : (Listof Index)
@@ -280,7 +282,7 @@
 
   (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "\t") "\t")))
+    (string->symbol (string-append (string-join label "::") "::")))
   
   (if (ListofListofString? label)
       (gen-series-loc gen-series (map get-index-val label))

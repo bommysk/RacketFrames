@@ -13,10 +13,10 @@
 
 ; create categorical series
 (define series-categorical (new-CSeries (vector 'a 'b 'c 'd)
-                                      (build-index-from-list (list 'e 'f 'g 'h))))
+                                      #:index (build-index-from-list (list 'e 'f 'g 'h))))
 
 (define series-categorical-2 (new-CSeries (vector 'billy 'bob 'kristina 'edan 'joe)
-                                      (build-index-from-list (list 5 4 3 2 1))))
+                                      #:index (build-index-from-list (list 5 4 3 2 1))))
 
 ; iseries reference tests
 (check-equal? ((cseries-referencer series-categorical) 0) 'a)

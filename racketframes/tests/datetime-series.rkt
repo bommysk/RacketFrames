@@ -5,6 +5,7 @@
 
 #lang typed/racket
 (require typed/rackunit)
+(require racket/unsafe/ops)
 
 (require
   (only-in racket/flonum
@@ -27,10 +28,10 @@
 
 ; create integer series
 (define series-datetime (new-DatetimeSeries (vector (Datetime (Date 1 1 1) (Time 1 1 1 1 1)))
-                                      (build-index-from-list (list 'a))))
+                                      #:index (build-index-from-list (list 'a))))
 
 (define series-datetime-2 (new-DatetimeSeries (vector (Datetime (Date 1 1 1) (Time 1 1 1 1 1)) (Datetime (Date 2 2 2) (Time 2 2 2 2 2)) (Datetime (Date 3 3 3) (Time 3 3 3 3 3)) (Datetime (Date 4 4 4) (Time 4 4 4 4 4)))
-                                      (build-index-from-list (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
 ; iseries reference tests
 (check-equal? ((datetime-series-referencer series-datetime) 0) (Datetime (Date 1 1 1) (Time 1 1 1 1 1)))
@@ -50,6 +51,7 @@
 (check-equal? (datetime-series-length series-datetime-2) 4)
 
 ; map tests
-(check-equal? (DatetimeSeries-data ( map/datetime-series-data series-datetime (λ: ((x : Datetime)) (unsafe-fx+ x 1))))
-              (vector 2 3 4 5))
+( map/datetime-series-data series-datetime (λ: ((x : Datetime)) (begin (displayln (~a x)) x)))
+;(check-equal? (datetime-series-data ( map/datetime-series-data series-datetime (λ: ((x : Datetime)) (date-to-seconds x))))
+ ;             (vector 2 3 4 5))
 
