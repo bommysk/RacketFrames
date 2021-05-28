@@ -47,5 +47,3 @@
 (sequence-indexes-of-set (vector 1 2 3 4 5 1 1 'v 1 1 2 3 4 4 4 5 6 7 2 'a 'v 'b 'v) 'v)
 
 (most-frequent-element-list (vector 1 1 1 2 2 4 3 4 1 1))
-
-(most-frequent-elements-sorted (most-frequent-element-list (vector 1 1 1 2 2 4 3 4 1 1)))
