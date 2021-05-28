@@ -73,7 +73,7 @@
 (: data (Vectorof Fixnum))
 (define data (make-vector N (random N)))
 
-(define series-integer (new-ISeries data #f))
+(define series-integer (new-ISeries data))
 
 #| def time_getitem_scalar(self, index):
       self.data[800000] |#
@@ -115,13 +115,13 @@
   ; use vector-copy library method
   (new-ISeries
    (vector-copy (iseries-data iseries) start end)
-   (if (not (ISeries-index iseries))
+   #:index (if (not (ISeries-index iseries))
        #f
        (build-index-from-list (map (lambda ([i : Index]) (idx->key (assert (ISeries-index iseries)) i)) (range start end))))))
 
 (define i-iloc-range-80000-before (now))
 ;(define iseries-iloc-range-80000 (iseries-iloc series-integer (range 80000)))
-(iseries-iloc-range series-integer 0 80000)
+(define i-iloc-range-80000-result (iseries-iloc-range series-integer 0 80000))
 (define i-iloc-range-80000-after (- (now) i-list-like-bench-before))
 
 (fprintf (current-output-port)
@@ -134,7 +134,7 @@
                       (string->symbol (string-append "a" (number->string i)))))
 
 (define series-integer-with-label-index (new-ISeries data
-                                                     (build-index-from-list label-index)))
+                                                     #:index (build-index-from-list label-index)))
 
 (define i-ref-label-bench-before (now))
 (define iseries-label-ref-value (iseries-loc series-integer-with-label-index 'a80000))

@@ -75,7 +75,7 @@
 (: data FlVector)
 (define data (make-flvector N (real->double-flonum (random N))))
 
-(define series-float (new-NSeries data #f))
+(define series-float (new-NSeries data))
 
 #| def time_getitem_scalar(self, index):
       self.data[800000] |#
@@ -108,7 +108,7 @@
                       (string->symbol (string-append "a" (number->string i)))))
 
 (define series-float-with-label-index (new-NSeries data
-                                                     (build-index-from-list label-index)))
+                                                     #:index (build-index-from-list label-index)))
 
 (define n-ref-label-bench-before (now))
 (define nseries-label-ref-value (nseries-loc series-float-with-label-index 'a100))

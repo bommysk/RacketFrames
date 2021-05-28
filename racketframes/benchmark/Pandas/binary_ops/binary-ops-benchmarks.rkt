@@ -14,61 +14,61 @@
 
 (define-predicate ListofFixnum? (Listof Fixnum))
 
-(define integer-series-1 (new-ISeries (list->vector (assert (random-number-list 2000000 200) ListofFixnum?)) #f))
+(define integer-series-1 (new-ISeries (list->vector (assert (random-number-list 2000000 200) ListofFixnum?))))
 
-(define integer-series-2 (new-ISeries (list->vector (assert (random-number-list 2000000 200) ListofFixnum?)) #f))
+(define integer-series-2 (new-ISeries (list->vector (assert (random-number-list 2000000 200) ListofFixnum?))))
 
 (define series-comp-<-bench-before (now))
-(</is integer-series-1 integer-series-2)
+(define series-comp-<-result (</is integer-series-1 integer-series-2))
 (define series-comp-<-bench-after (- (now) series-comp-<-bench-before))
 (fprintf (current-output-port)
          "series comp < bench ~v ms.\n"
          series-comp-<-bench-after)
 
 (define series-comp->-bench-before (now))
-(>/is integer-series-1 integer-series-2)
+(define series-comp->-result (>/is integer-series-1 integer-series-2))
 (define series-comp->-bench-after (- (now) series-comp->-bench-before))
 (fprintf (current-output-port)
          "series comp > bench ~v ms.\n"
          series-comp->-bench-after)
 
 (define series-comp-!=-bench-before (now))
-(!=/is integer-series-1 integer-series-2)
+(define series-comp-!=-result (!=/is integer-series-1 integer-series-2))
 (define series-comp-!=-bench-after (- (now) series-comp-!=-bench-before))
 (fprintf (current-output-port)
          "series comp != bench ~v ms.\n"
          series-comp-!=-bench-after)
 
 (define series-comp-=-bench-before (now))
-(=/is integer-series-1 integer-series-2)
+(define series-comp-=-result (=/is integer-series-1 integer-series-2))
 (define series-comp-=-bench-after (- (now) series-comp-=-bench-before))
 (fprintf (current-output-port)
          "series comp = bench ~v ms.\n"
          series-comp-=-bench-after)
 
 (define series-comp-+-bench-before (now))
-(+/is integer-series-1 integer-series-2)
+(define series-comp-+-result (+/is integer-series-1 integer-series-2))
 (define series-comp-+-bench-after (- (now) series-comp-+-bench-before))
 (fprintf (current-output-port)
          "series comp + bench ~v ms.\n"
          series-comp-+-bench-after)
 
 (define series-comp---bench-before (now))
-(-/is integer-series-1 integer-series-2)
+(define series-comp---result (-/is integer-series-1 integer-series-2))
 (define series-comp---bench-after (- (now) series-comp---bench-before))
 (fprintf (current-output-port)
          "series comp - bench ~v ms.\n"
          series-comp---bench-after)
 
 (define series-comp-*-bench-before (now))
-(*/is integer-series-1 integer-series-2)
+(define series-comp-*-result (*/is integer-series-1 integer-series-2))
 (define series-comp-*-bench-after (- (now) series-comp-*-bench-before))
 (fprintf (current-output-port)
          "series comp * bench ~v ms.\n"
          series-comp-*-bench-after)
 
 (define series-comp-/-bench-before (now))
-(//is integer-series-1 integer-series-2)
+(define series-comp-/-result (//is integer-series-1 integer-series-2))
 (define series-comp-/-bench-after (- (now) series-comp-/-bench-before))
 (fprintf (current-output-port)
          "series comp / bench ~v ms.\n"
@@ -78,56 +78,56 @@
 ; SCALAR ;
 
 (define series-comp-<.-bench-before (now))
-(<./is integer-series-1 5)
+(define series-comp-<.-result (<./is integer-series-1 5))
 (define series-comp-<.-bench-after (- (now) series-comp-<.-bench-before))
 (fprintf (current-output-port)
          "series comp <. bench ~v ms.\n"
          series-comp-<.-bench-after)
 
 (define series-comp->.-bench-before (now))
-(>./is integer-series-1 5)
+(define series-comp->.-result (>./is integer-series-1 5))
 (define series-comp->.-bench-after (- (now) series-comp->.-bench-before))
 (fprintf (current-output-port)
          "series comp >. bench ~v ms.\n"
          series-comp->.-bench-after)
 
 (define series-comp-!=.-bench-before (now))
-(!=./is integer-series-1 5)
+(define series-comp-!=.-result (!=./is integer-series-1 5))
 (define series-comp-!=.-bench-after (- (now) series-comp-!=.-bench-before))
 (fprintf (current-output-port)
          "series comp !=. bench ~v ms.\n"
          series-comp-!=.-bench-after)
 
 (define series-comp-=.-bench-before (now))
-(=./is integer-series-1 5)
+(define series-comp-=.-result (=./is integer-series-1 5))
 (define series-comp-=.-bench-after (- (now) series-comp-=.-bench-before))
 (fprintf (current-output-port)
          "series comp =. bench ~v ms.\n"
          series-comp-=.-bench-after)
 
 (define series-comp-+.-bench-before (now))
-(+./is integer-series-1 5)
+(define series-comp-+.-result (+./is integer-series-1 5))
 (define series-comp-+.-bench-after (- (now) series-comp-+.-bench-before))
 (fprintf (current-output-port)
          "series comp +. bench ~v ms.\n"
          series-comp-+.-bench-after)
 
 (define series-comp--.-bench-before (now))
-(-./is integer-series-1 5)
+(define series-comp--.-result (-./is integer-series-1 5))
 (define series-comp--.-bench-after (- (now) series-comp--.-bench-before))
 (fprintf (current-output-port)
          "series comp -. bench ~v ms.\n"
          series-comp--.-bench-after)
 
 (define series-comp-*.-bench-before (now))
-(*./is integer-series-1 5)
+(define series-comp-*.-result (*./is integer-series-1 5))
 (define series-comp-*.-bench-after (- (now) series-comp-*.-bench-before))
 (fprintf (current-output-port)
          "series comp *. bench ~v ms.\n"
          series-comp-*.-bench-after)
 
 (define series-comp-/.-bench-before (now))
-(/./is integer-series-1 5)
+(define series-comp-/.-result (/./is integer-series-1 5))
 (define series-comp-/.-bench-after (- (now) series-comp-/.-bench-before))
 (fprintf (current-output-port)
          "series comp /. bench ~v ms.\n"

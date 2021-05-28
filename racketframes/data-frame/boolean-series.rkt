@@ -357,7 +357,7 @@
 	  (do ((i 0 (add1 i)))
 	      ((>= i len) (void))
 	    (let ((val (vector-ref v i)))
-              (if (BSeries-index bseries)
+              (if (bseries-index bseries)
                   (display (idx->key (assert (BSeries-index bseries)) (assert i index?)) port)
                   (display (assert i index?) port))
               (display " " port)
