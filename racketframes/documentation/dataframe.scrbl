@@ -109,7 +109,7 @@ BSeries - Boolean Series consisting of #t or #f.
 
 DatetimeSeries - Datetime Series consisting of the custom Datetime struct.
 
-DateSeries - Datetime Series consisting of the custom Datetime struct.
+DateSeries - Datetime Series consisting of the native Racket date struct.
 
 @verbatim{================================================================================}
 
@@ -411,6 +411,242 @@ Operations between Series (+, -, /, , *) align values based on their associated 
 @subsection[#:style 'toc]{Integer Series}
 
 @local-table-of-contents[]
+
+@defproc[(new-ISeries (arg0 (U FxVector (Vectorof Fixnum) (Sequenceof Fixnum) (Sequenceof RFFixnum))) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL)) (arg3 (#:sort Boolean)) (arg4 (#:encode Boolean))) ISeries]{
+...
+}
+
+@defproc[(set-ISeries-index (arg0 ISeries) (arg1 (U (Sequenceof IndexDataType) RFIndex))) ISeries]{
+...
+}
+
+@defproc[(set-ISeries-null-value (arg0 ISeries) (arg1 RFNULL)) ISeries]{
+...
+}
+
+@defproc[(set-ISeries-fixnum-null-value-inplace (arg0 ISeries) (arg1 Fixnum)) Void]{
+...
+}
+
+@defproc[(iseries-iref (arg0 ISeries) (arg1 (Listof Index))) (Listof RFFixnum)]{
+...
+}
+
+@defproc[(iseries-loc-boolean (arg0 ISeries) (arg1 (Listof Boolean))) (U RFFixnum ISeries)]{
+...
+}
+
+@defproc[(iseries-loc (arg0 ISeries) (arg1 (U Label (Listof Label) (Listof Boolean)))) (U RFFixnum ISeries)]{
+...
+}
+
+@defproc[(iseries-loc-multi-index (arg0 ISeries) (arg1 (U (Listof String) ListofListofString))) (U RFFixnum ISeries)]{
+...
+}
+
+@defproc[(iseries-iloc (arg0 ISeries) (arg1 (U Index (Listof Index)))) (U RFFixnum ISeries)]{
+...
+}
+
+@defproc[(iseries-iloc-range (arg0 ISeries) (arg1 Index) (arg2 Index)) ISeries]{
+...
+}
+
+@defproc[(iseries-index-ref (arg0 ISeries) (arg1 IndexDataType)) (Listof RFFixnum)]{
+...
+}
+
+@defproc[(iseries-range (arg0 ISeries) (arg1 Index) (arg2 Index)) (Vectorof RFFixnum)]{
+...
+}
+
+@defproc[(iseries-length (arg0 ISeries)) Index]{
+...
+}
+
+@defproc[(iseries-referencer (arg0 ISeries)) (Index -> RFFixnum)]{
+...
+}
+
+@defproc[(iseries-data (arg0 ISeries)) (Vectorof RFFixnum)]{
+...
+}
+
+@defproc[(in-iseries (arg0 RFFixnum) (arg1 ISeries)) Boolean]{
+...
+}
+
+@defproc[(iseries-index (arg0 ISeries)) (U False RFIndex)]{
+...
+}
+
+@defproc[(iseries-null-value (arg0 ISeries)) Fixnum]{
+...
+}
+
+@defproc[(iseries-custom-null-value (arg0 ISeries)) RFNULL]{
+...
+}
+
+@defproc[(iseries-value-is-null? (arg0 ISeries) (arg1 Fixnum)) Boolean]{
+...
+}
+
+@defproc[(iseries-groupby (arg0 ISeries) (arg1 (#:by-value Boolean))) GroupHash]{
+...
+}
+
+@defproc[(apply-agg-iseries (arg0 Symbol) (arg1 GroupHash)) GenSeries]{
+...
+}
+
+@defproc[(map/is (arg0 ISeries) (arg1 (Fixnum -> Fixnum))) ISeries]{
+...
+}
+
+@defproc[(bop/is (arg0 ISeries) (arg1 ISeries) (arg2 (Fixnum Fixnum -> Fixnum))) ISeries]{
+...
+}
+
+@defproc[(comp/is (arg0 ISeries) (arg1 ISeries) (arg2 (Fixnum Fixnum -> Boolean))) BSeries]{
+...
+}
+
+@defproc[(+/is (arg0 ISeries) (arg1 ISeries)) ISeries]{
+...
+}
+
+@defproc[(-/is (arg0 ISeries) (arg1 ISeries)) ISeries]{
+...
+}
+
+@defproc[(*/is (arg0 ISeries) (arg1 ISeries)) ISeries]{
+...
+}
+
+@defproc[(//is (arg0 ISeries) (arg1 ISeries)) ISeries]{
+...
+}
+
+@defproc[(%/is (arg0 ISeries) (arg1 ISeries)) ISeries]{
+...
+}
+
+@defproc[(r/is (arg0 ISeries) (arg1 ISeries)) ISeries]{
+...
+}
+
+@defproc[(+./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
+...
+}
+
+@defproc[(-./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
+...
+}
+
+@defproc[(*./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
+...
+}
+
+@defproc[(/./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
+...
+}
+
+@defproc[(%./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
+...
+}
+
+@defproc[(r./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
+...
+}
+
+@defproc[(>/is (arg0 ISeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(</is (arg0 ISeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(>=/is (arg0 ISeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(<=/is (arg0 ISeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(=/is (arg0 ISeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(!=/is (arg0 ISeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(>./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
+...
+}
+
+@defproc[(<./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
+...
+}
+
+@defproc[(>=./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
+...
+}
+
+@defproc[(<=./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
+...
+}
+
+@defproc[(=./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
+...
+}
+
+@defproc[(!=./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
+...
+}
+
+@defproc[(apply-agg-is (arg0 Symbol) (arg1 ISeries)) GenericType]{
+...
+}
+
+@defproc[(apply-stat-is (arg0 Symbol) (arg1 ISeries)) Real]{
+...
+}
+
+@defproc[(iseries-print (arg0 ISeries) (arg1 (#:output-port Output-Port))) Void]{
+...
+}
+
+@defproc[(iseries-filter (arg0 ISeries) (arg1 (RFFixnum -> Boolean))) ISeries]{
+...
+}
+
+@defproc[(iseries-filter-not (arg0 ISeries) (arg1 (RFFixnum -> Boolean))) ISeries]{
+...
+}
+
+@defproc[(fxvector->list (arg0 FxVector) (arg1 Fixnum)) (Listof Fixnum)]{
+...
+}
+
+@defproc[(list->fxvector (arg0 (Listof Fixnum))) FxVector]{
+...
+}
+
+@defproc[(iseries-notna (arg0 ISeries)) ISeries]{
+...
+}
+
+@defproc[(iseries-isna (arg0 ISeries)) ISeries]{
+...
+}
+
+@defproc[(make-RFFixnum-vector (arg0 (U (Sequenceof Fixnum) (Sequenceof RFFixnum)))) (Vectorof RFFixnum)]{
+...
+}
 
 @subsubsection[#:tag "new-ISeries"]{new-ISeries}
 @defproc[#:link-target? #f
@@ -888,6 +1124,258 @@ Returns the Fixnum value at the specified index in the series.
 @subsection[#:style 'toc]{Numerical Series}
 
 @local-table-of-contents[]
+
+@defproc[(new-NSeries (arg0 (U (Sequenceof Flonum) FlVector)) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL)) (arg3 (#:sort Boolean)) (arg4 (#:encode Boolean))) NSeries]{
+...
+}
+
+@defproc[(set-NSeries-index (arg0 NSeries) (arg1 (U (Listof IndexDataType) RFIndex))) NSeries]{
+...
+}
+
+@defproc[(set-NSeries-null-value (arg0 NSeries) (arg1 RFNULL)) NSeries]{
+...
+}
+
+@defproc[(nseries-custom-null-value (arg0 NSeries)) RFNULL]{
+...
+}
+
+@defproc[(nseries-null-value (arg0 NSeries)) Flonum]{
+...
+}
+
+@defproc[(set-NSeries-flonum-null-value-inplace (arg0 NSeries) (arg1 Flonum)) Void]{
+...
+}
+
+@defproc[(nseries-iref (arg0 NSeries) (arg1 (Listof Index))) (Listof Flonum)]{
+...
+}
+
+@defproc[(nseries-loc-boolean (arg0 NSeries) (arg1 (Listof Boolean))) (U Flonum NSeries)]{
+...
+}
+
+@defproc[(nseries-loc (arg0 NSeries) (arg1 (U Label (Listof Label) (Listof Boolean)))) (U Flonum NSeries)]{
+...
+}
+
+@defproc[(nseries-loc-multi-index (arg0 NSeries) (arg1 (U (Listof String) ListofListofString))) (U Flonum NSeries)]{
+...
+}
+
+@defproc[(nseries-iloc (arg0 NSeries) (arg1 (U Index (Listof Index)))) (U Flonum NSeries)]{
+...
+}
+
+@defproc[(nseries-iloc-range (arg0 NSeries) (arg1 Index) (arg2 Index)) NSeries]{
+...
+}
+
+@defproc[(nseries-index-ref (arg0 NSeries) (arg1 IndexDataType)) (Listof Flonum)]{
+...
+}
+
+@defproc[(nseries-range (arg0 NSeries) (arg1 Index)) FlVector]{
+...
+}
+
+@defproc[(nseries-referencer (arg0 NSeries)) (Index -> Flonum)]{
+...
+}
+
+@defproc[(nseries-length (arg0 NSeries)) Index]{
+...
+}
+
+@defproc[(nseries-data (arg0 NSeries)) FlVector]{
+...
+}
+
+@defproc[(in-nseries (arg0 Flonum) (arg1 NSeries)) Boolean]{
+...
+}
+
+@defproc[(nseries-groupby (arg0 NSeries) (arg1 (#:by-value Boolean))) GroupHash]{
+...
+}
+
+@defproc[(apply-agg-nseries (arg0 Symbol) (arg1 GroupHash)) GenSeries]{
+...
+}
+
+@defproc[(nseries-index (arg0 NSeries)) (U False RFIndex)]{
+...
+}
+
+@defproc[(map/ns (arg0 NSeries) (arg1 (Flonum -> Flonum))) NSeries]{
+...
+}
+
+@defproc[(bop/ns (arg0 NSeries) (arg1 NSeries) (arg2 (Flonum Flonum -> Flonum))) NSeries]{
+...
+}
+
+@defproc[(+/ns (arg0 NSeries) (arg1 NSeries)) NSeries]{
+...
+}
+
+@defproc[(-/ns (arg0 NSeries) (arg1 NSeries)) NSeries]{
+...
+}
+
+@defproc[(*/ns (arg0 NSeries) (arg1 NSeries)) NSeries]{
+...
+}
+
+@defproc[(//ns (arg0 NSeries) (arg1 NSeries)) NSeries]{
+...
+}
+
+@defproc[(>/ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(</ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(>=/ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(<=/ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(=/ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(!=/ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(+./ns (arg0 NSeries) (arg1 Flonum)) NSeries]{
+...
+}
+
+@defproc[(-./ns (arg0 NSeries) (arg1 Flonum)) NSeries]{
+...
+}
+
+@defproc[(*./ns (arg0 NSeries) (arg1 Flonum)) NSeries]{
+...
+}
+
+@defproc[(/./ns (arg0 NSeries) (arg1 Flonum)) NSeries]{
+...
+}
+
+@defproc[(+/ns/is (arg0 NSeries) (arg1 ISeries)) NSeries]{
+...
+}
+
+@defproc[(-/ns/is (arg0 NSeries) (arg1 ISeries)) NSeries]{
+...
+}
+
+@defproc[(*/ns/is (arg0 NSeries) (arg1 ISeries)) NSeries]{
+...
+}
+
+@defproc[(//ns/is (arg0 NSeries) (arg1 ISeries)) NSeries]{
+...
+}
+
+@defproc[(+/is/ns (arg0 ISeries) (arg1 NSeries)) NSeries]{
+...
+}
+
+@defproc[(-/is/ns (arg0 ISeries) (arg1 NSeries)) NSeries]{
+...
+}
+
+@defproc[(*/is/ns (arg0 ISeries) (arg1 NSeries)) NSeries]{
+...
+}
+
+@defproc[(//is/ns (arg0 ISeries) (arg1 NSeries)) NSeries]{
+...
+}
+
+@defproc[(>/ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(</ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(>=/ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(<=/ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(=/ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(!=/ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
+...
+}
+
+@defproc[(>/is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(</is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(>=/is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(<=/is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(=/is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(!=/is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
+...
+}
+
+@defproc[(apply-agg-ns (arg0 Symbol) (arg1 NSeries)) GenericType]{
+...
+}
+
+@defproc[(apply-stat-ns (arg0 Symbol) (arg1 NSeries)) Real]{
+...
+}
+
+@defproc[(flvector->list (arg0 FlVector) (arg1 (#:index Fixnum))) (Listof Flonum)]{
+...
+}
+
+@defproc[(flvector->vector (arg0 FlVector) (arg1 (#:index Fixnum))) (Vectorof Flonum)]{
+...
+}
+
+@defproc[(list->flvector (arg0 (Listof Flonum))) FlVector]{
+...
+}
+
+@defproc[(nseries-print (arg0 NSeries) (arg1 (#:output-port Output-Port))) Void]{
+...
+}
 
 @subsubsection[#:tag "new-NSeries"]{new-NSeries}
 @defproc[#:link-target? #f
