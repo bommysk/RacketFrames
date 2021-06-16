@@ -2666,22 +2666,156 @@ A callable function with one argument (the calling Series, DataFrame or Panel) a
 @; ======================================================================
 @section{DataFrames}
 
-@itemlist[
-
- @item{One-dimensional ndarray with axis labels (including time series).
-
-Labels need not be unique but must be a hashable type. The object supports both integer- and label-based indexing and provides a host of methods for performing operations involving the index. Statistical methods from ndarray have been overridden to automatically exclude missing data (currently represented as NaN).
-
-Operations between Series (+, -, /, , *) align values based on their associated index values– they need not be the same length. The result index will be the sorted union of the two indexes.
-}
-
-]
-
 @subsection[#:style 'toc]{DataFrame}
 
 @local-table-of-contents[]
 
-@subsubsection[#:tag "new-data-frame"]{new-data-frame}
+@subsubsection[#:tag "column"]{column}
+@defproc[(column (arg0 Label) (arg1 Series)) Column]{
+...
+}
+
+@subsubsection[#:tag "column-heading"]{column-heading}
+@defproc[(column-heading (arg0 Column)) Label]{
+...
+}
+
+@subsubsection[#:tag "column-series"]{column-series}
+@defproc[(column-series (arg0 Column)) Series]{
+...
+}
+
+@subsubsection[#:tag "data-frame-series"]{data-frame-series}
+@defproc[(data-frame-series (arg0 DataFrame)) (Vectorof Series)]{
+...
+}
+
+@subsubsection[#:tag "data-frame-index"]{data-frame-index}
+@defproc[(data-frame-index (arg0 DataFrame)) (Option RFIndex)]{
+...
+}
+
+@subsubsection[#:tag "data-frame-series-ref"]{data-frame-series-ref}
+@defproc[(data-frame-series-ref (arg0 DataFrame) (arg1 Label)) Series]{
+...
+}
+
+@subsubsection[#:tag "data-frame-rename"]{data-frame-rename}
+@defproc[(data-frame-rename (arg0 DataFrame) (arg1 Label) (arg2 Label)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-project"]{data-frame-project}
+@defproc[(data-frame-project (arg0 DataFrame) (arg1 LabelProjection)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-drop"]{data-frame-drop}
+@defproc[(data-frame-drop (arg0 DataFrame) (arg1 Label)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-remove"]{data-frame-remove}
+@defproc[(data-frame-remove (arg0 DataFrame) (arg1 LabelProjection)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-explode"]{data-frame-explode}
+@defproc[(data-frame-explode (arg0 DataFrame) (arg1 (#:project LabelProjection))) Columns]{
+...
+}
+
+@subsubsection[#:tag "data-frame-replace"]{data-frame-replace}
+@defproc[(data-frame-replace (arg0 DataFrame) (arg1 Column)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-extend"]{data-frame-extend}
+@defproc[(data-frame-extend (arg0 DataFrame) (arg1 (U Column Columns DataFrame))) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-description"]{data-frame-description}
+@defproc[(data-frame-description (arg0 DataFrame) (arg1 (#:project LabelProjection))) DataFrameDescription]{
+...
+}
+
+@subsubsection[#:tag "show-data-frame-description"]{show-data-frame-description}
+@defproc[(show-data-frame-description (arg0 DataFrameDescription)) Void]{
+...
+}
+
+@subsubsection[#:tag "data-frame-set-index"]{data-frame-set-index}
+@defproc[(data-frame-set-index (arg0 DataFrame) (arg1 (U (Sequenceof IndexDataType) RFIndex Series))) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-loc"]{data-frame-loc}
+@defproc[(data-frame-loc (arg0 DataFrame) (arg1 (U Label (Listof Label) (Listof Boolean))) (arg2 LabelProjection)) (U Series DataFrame)]{
+...
+}
+
+@subsubsection[#:tag "data-frame-iloc"]{data-frame-iloc}
+@defproc[(data-frame-iloc (arg0 DataFrame) (arg1 (U Index (Listof Index))) (arg2 (U Index (Listof Index)))) (U Series DataFrame)]{
+...
+}
+
+@subsubsection[#:tag "data-frame-iloc-label"]{data-frame-iloc-label}
+@defproc[(data-frame-iloc-label (arg0 DataFrame) (arg1 (U Index (Listof Index))) (arg2 LabelProjection)) (U Series DataFrame)]{
+...
+}
+
+@subsubsection[#:tag "data-frame-labels"]{data-frame-labels}
+@defproc[(data-frame-labels (arg0 DataFrame)) (Listof (Pair Symbol (Listof Index)))]{
+...
+}
+
+@subsubsection[#:tag "data-frame-series-names"]{data-frame-series-names}
+@defproc[(data-frame-series-names (arg0 DataFrame)) (Listof Symbol)]{
+...
+}
+
+@subsubsection[#:tag "projection-set"]{projection-set}
+@defproc[(projection-set (arg0 LabelProjection)) (Setof Label)]{
+...
+}
+
+@subsubsection[#:tag "data-frame-all-labels-projection-set"]{data-frame-all-labels-projection-set}
+@defproc[(data-frame-all-labels-projection-set (arg0 DataFrame)) (Setof Label)]{
+...
+}
+
+@subsubsection[#:tag "data-frame-contains?"]{data-frame-contains?}
+@defproc[(data-frame-contains? (arg0 DataFrame) (arg1 (Listof Label))) Boolean]{
+...
+}
+
+@subsubsection[#:tag "data-frame-contains/any?"]{data-frame-contains/any?}
+@defproc[(data-frame-contains/any? (arg0 DataFrame) (arg1 (Listof Label))) Boolean]{
+...
+}
+
+@subsubsection[#:tag "data-frame-get-series"]{data-frame-get-series}
+@defproc[(data-frame-get-series (arg0 DataFrame) (arg1 (U Label (Listof Label)))) (U Series (Listof Series))]{
+...
+}
+
+@subsubsection[#:tag "data-frame-row-count"]{data-frame-row-count}
+@defproc[(data-frame-row-count (arg0 DataFrame)) Index]{
+...
+}
+
+@subsubsection[#:tag "data-frame-column-count"]{data-frame-column-count}
+@defproc[(data-frame-column-count (arg0 DataFrame)) Index]{
+...
+}
+
+@subsubsection[#:tag "in-data-frame"]{in-data-frame}
+@defproc[(in-data-frame (arg0 GenericType) (arg1 DataFrame)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "data-frame-example-usage"]{Example Usage}
 @defproc[#:link-target? #f
  (new-data-frame [columns Columns])
 DataFrame?]{
@@ -2706,7 +2840,6 @@ Returns a new DataFrame.
   (define data-frame-integer (new-data-frame columns-integer))
   }|
 
-@subsubsection[#:tag "data-frame-rename"]{data-frame-rename}
 @defproc[#:link-target? #f
  (data-frame-rename [df DataFrame] [col Label] [new-col Label])
 DataFrame?]{
@@ -2720,7 +2853,6 @@ DataFrame?]{
     (data-frame-rename)
   }|
 
-@subsubsection[#:tag "data-frame-drop"]{data-frame-drop}
 @defproc[#:link-target? #f
  (data-frame-drop [df DataFrame] [col-name Label])
 DataFrame?]{
@@ -2734,7 +2866,6 @@ DataFrame?]{
     (data-frame-drop)
   }|
 
-@subsubsection[#:tag "data-frame-series"]{data-frame-series}
 @defproc[#:link-target? #f
  (data-frame-drop [df DataFrame] [col-name Label])
 Series?]{
@@ -2746,7 +2877,6 @@ Series?]{
     (data-frame-series)
   }|
 
-@subsubsection[#:tag "data-frame-names"]{data-frame-names}
 @defproc[#:link-target? #f
  (data-frame-names [df DataFrame] [col-name Label])
 Series?]{
@@ -2758,7 +2888,6 @@ Series?]{
     (data-frame-names)
   }|
 
-@subsubsection[#:tag "data-frame-dim"]{data-frame-dim}
 @defproc[#:link-target? #f
  (data-frame-dim [df DataFrame])
 Dim?]{
@@ -2772,8 +2901,6 @@ Dim?]{
     (data-frame-dim)
   }|
 
-
-@subsubsection[#:tag "data-frame-description"]{data-frame-description}
 @defproc[#:link-target? #f
  (data-frame-description [df DataFrame] [project LabelProjection])
 DataFrameDescription?]{
@@ -2787,7 +2914,6 @@ DataFrameDescription?]{
     (data-frame-description)
   }|
 
-@subsubsection[#:tag "show-data-frame-description"]{show-data-frame-description}
 @defproc[#:link-target? #f
  (show-data-frame-description [dfd DataFrameDescription])
 Void?]{
@@ -2799,7 +2925,6 @@ Void?]{
     (show-data-frame-description)
   }|
 
-@subsubsection[#:tag "data-frame-explode"]{data-frame-explode}
 @defproc[#:link-target? #f
  (data-frame-explode [df DataFrame] [project LabelProjection])
 Columns?]{
@@ -2815,7 +2940,6 @@ Columns?]{
     (data-frame-explode)
   }|
 
-@subsubsection[#:tag "data-frame-remove"]{data-frame-remove}
 @defproc[#:link-target? #f
  (data-frame-remove [df DataFrame] [project LabelProjection])
 DataFrame?]{
@@ -2832,7 +2956,6 @@ DataFrame?]{
     (data-frame-remove)
   }|
 
-@subsubsection[#:tag "data-frame-project"]{data-frame-project}
 @defproc[#:link-target? #f
  (data-frame-project [df DataFrame] [project LabelProjection])
 DataFrame?]{
@@ -2844,7 +2967,6 @@ DataFrame?]{
     (data-frame-project)
   }|
 
-@subsubsection[#:tag "data-frame-replace"]{data-frame-replace}
 @defproc[#:link-target? #f
  (data-frame-replace [df DataFrame] [col Column])
 DataFrame?]{
@@ -2857,7 +2979,6 @@ DataFrame?]{
     (data-frame-replace)
   }|
 
-@subsubsection[#:tag "data-frame-extend"]{data-frame-extend}
 @defproc[#:link-target? #f
  (data-frame-extend [df DataFrame] [col (U Column Columns DataFrame)])
 DataFrame?]{
