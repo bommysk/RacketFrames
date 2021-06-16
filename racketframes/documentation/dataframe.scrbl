@@ -107,7 +107,7 @@ CSeries - Categorical Series consisting of Symbols.
 
 BSeries - Boolean Series consisting of #t or #f.
 
-DatetimeSeries - Datetime Series consisting of the custom Datetime struct.
+DatetimeSeries - Datetime Series consisting of the custom RacketFrames Datetime struct.
 
 DateSeries - Datetime Series consisting of the native Racket date struct.
 
@@ -167,7 +167,7 @@ Define columns.
 @codeblock|{
 (define columns-mix
   (list
-   (cons 'integer-col (new-ISeries (vector 1 2 3 4)
+   (cons 'integer-col (new-ISeries (fxvector 1 2 3 4)
                             (build-index-from-list (list 'a 'b 'c 'd))))
    (cons 'categorical-col (new-CSeries (vector 'hello 'world 'fizz 'buzz)
                                        (build-index-from-list (list 'a 'b 'c 'd))))))
@@ -178,7 +178,7 @@ Initialize DataFrame.
 (define data-frame-mix (new-data-frame columns-mix))
 
 ; write data-frame-mix to stdout
-(data-frame-write-tab data-frame-mix (current-output-port))
+(data-data-frame-write-delim data-frame-mix)
 }|
 
 @tabular[#:sep @hspace[1] #:row-properties '(bottom-border)
@@ -191,23 +191,23 @@ Initialize DataFrame.
 More pleasant syntax for defining columns.
 @codeblock|{
 ; series constructors
-(define int-series (new-series (list 1 2 3 4 5 6) #f))
-(define gen-series (new-series (vector 'a 1 2 'c 'd 5.6) #f))
+(define int-series (new-series (list 1 2 3 4 5 6)))
+(define gen-series (new-series (vector 'a 1 2 'c 'd 5.6)))
 
 (series-iref int-series 3)
-(series-print int-series (current-output-port))
+(series-print int-series)
 
 (series-iref gen-series 5)
-(series-print gen-series (current-output-port))
+(series-print gen-series)
 
-(define int-series-with-index (new-series (list 1 2 3 4 5 6) (list 'a 'b 'c 'd 'e 'f)))
-(define gen-series-with-index (new-series (vector 'a 1 2 'c 'd 5.6) (list 6 5 4 3 2 1)))
+(define int-series-with-index (new-series (list 1 2 3 4 5 6) #:index (list 'a 'b 'c 'd 'e 'f)))
+(define gen-series-with-index (new-series (vector 'a 1 2 'c 'd 5.6) #:index (list 6 5 4 3 2 1)))
 
 (series-index-ref int-series-with-index 'e)
-(series-print int-series-with-index (current-output-port))
+(series-print int-series-with-index)
 
 (series-index-ref gen-series-with-index 5)
-(series-print gen-series-with-index (current-output-port))
+(series-print gen-series-with-index)
 
 (define columns-from-series
   (list
@@ -224,7 +224,7 @@ Initialize DataFrame.
 (define data-frame-columns-from-series (new-data-frame columns-from-series))
 
 ; write data-frame-mix to stdout
-(data-frame-write-tab data-frame-columns-from-series (current-output-port))
+(data-frame-write-delim data-frame-columns-from-series)
 }|
 
 @tabular[#:sep @hspace[1] #:row-properties '(bottom-border)
@@ -333,7 +333,7 @@ Samuel          Cole            $7677.20
 @bold|{DataFrame Replace}| - Provide a Column to replace the Column with the identical label. In the example below, replace
 the salary column with a new CSeries.
 @codeblock|{
-(data-frame-head (data-frame-replace salary-data-frame-csv-no-schema (cons 'salary (new-CSeries (make-vector 200 '$0.00) #f))))
+(data-frame-head (data-frame-replace salary-data-frame-csv-no-schema (cons 'salary (new-CSeries (make-vector 200 '$0.00)))))
 }|
 
 @verbatim|{
@@ -352,7 +352,7 @@ Samuel          Cole                         37 $7677.20        (760) 406-6331  
 
 Replace non-existent Column. No-operation.
 @codeblock|{
-(data-frame-head (data-frame-replace salary-data-frame-csv-no-schema (cons 'dollar (new-CSeries (make-vector 200 '$0.00) #f))))
+(data-frame-head (data-frame-replace salary-data-frame-csv-no-schema (cons 'dollar (new-CSeries (make-vector 200 '$0.00)))))
 }|
 
 @verbatim|{
@@ -371,7 +371,7 @@ Samuel          Cole                         37 $0.00           (760) 406-6331  
 
 @bold|{DataFrame Extend}| - Extend the DataFrame by adding columns.
 @codeblock|{
-(data-frame-head (data-frame-extend salary-data-frame-csv-no-schema (cons 'state (new-CSeries (make-vector 200 'CA) #f))))
+(data-frame-head (data-frame-extend salary-data-frame-csv-no-schema (cons 'state (new-CSeries (make-vector 200 'CA)))))
 }|
 
 @verbatim|{
@@ -648,7 +648,6 @@ Operations between Series (+, -, /, , *) align values based on their associated 
 ...
 }
 
-@subsubsection[#:tag "new-ISeries"]{new-ISeries}
 @defproc[#:link-target? #f
  (new-ISeries [data (Vectorof Fixnum)] [label (Option (U (Listof Label) SIndex))])
 ISeries?]{
@@ -656,11 +655,10 @@ Returns a new ISeries.
 }
 
 @codeblock|{
-    (define series-integer (new-ISeries (vector 1 2 3 4)
-                (build-index-from-labels (list 'a 'b 'c 'd))))
+    (define series-integer (new-ISeries (fxvector 1 2 3 4)
+                #:index (build-index-from-list (list 'a 'b 'c 'd))))
   }|
 
-@subsubsection[#:tag "iseries-iref"]{iseries-iref}
 @defproc[#:link-target? #f
  (iseries-iref [iseries ISeries] [idx Index])
 Fixnum?]{
@@ -668,15 +666,14 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (iseries-iref series-integer 0) ; 1
 
   (iseries-iref series-integer 1) ; 2
   }|
 
-@subsubsection[#:tag "iseries-label-ref"]{iseries-label-ref}
 @defproc[#:link-target? #f
  (iseries-label-ref [iseries ISeries] [label Label])
 Fixnum?]{
@@ -684,15 +681,14 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (iseries-label-ref series-integer 'd) ; 4
 
   (iseries-label-ref series-integer 'c) ; 3
   }|
 
-@subsubsection[#:tag "iseries-range"]{iseries-range}
 @defproc[#:link-target? #f
  (iseries-range [iseries ISeries] [pos Index])
 (Vectorof Fixnum)]{
@@ -700,13 +696,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  (define series-integer (new-ISeries (list 1 2 3 4)
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (iseries-range series-integer 2) ; (vector 1 2)
   }|
 
-@subsubsection[#:tag "iseries-length"]{iseries-length}
 @defproc[#:link-target? #f
  (iseries-length [iseries ISeries])
 Index]{
@@ -714,14 +709,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (iseries-length series-integer) ; 4
   }|
 
-(ISeries -> (Index -> Fixnum)
-@subsubsection[#:tag "iseries-referencer"]{iseries-referencer}
 @defproc[#:link-target? #f
  (iseries-referencer [iseries ISeries])
 (Index -> Fixnum)]{
@@ -729,16 +722,13 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  (define series-integer (new-ISeries (list 1 2 3 4)
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   ((iseries-referencer series-integer) 0) ; 1
 
   ((iseries-referencer series-integer) 1) ; 2
   }|
-
-
-@subsubsection[#:tag "iseries-data"]{iseries-data}
 
 @defproc[#:link-target? #f
  (iseries-data [iseries ISeries])
@@ -747,16 +737,11 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (iseries-data series-integer) ; (vector 1 2 3 4)
   }|
-
-[map/is (ISeries (Fixnum -> Fixnum) -> ISeries)]
- [bop/is (ISeries ISeries (Fixnum Fixnum -> Fixnum) -> ISeries)]
- [comp/is (ISeries ISeries (Fixnum Fixnum -> Boolean) -> BSeries)]
-@subsubsection[#:tag "map/is"]{map/is}
 
 @defproc[#:link-target? #f
  (map/is [iseries ISeries] [fn (Fixnum -> Fixnum)])
@@ -765,14 +750,13 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  (: fixnum-vector (Vectorof Fixnum))
+  (define fixnum-vector (vector 1 2 3 4))
+  (define series-integer (new-ISeries fixnum-vector
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
-  (ISeries-data (map/is series-integer (λ: ((x : Fixnum)) (unsafe-fx+ x 1)))) ; (vector 2 3 4 5)
+  (iseries-data (map/is series-integer (λ: ((x : Fixnum)) (unsafe-fx+ x 1)))) ; (vector 2 3 4 5)
   }|
-
-@subsubsection[#:tag "bop/is"]{bop/is}
-(ISeries ISeries (Fixnum Fixnum -> Fixnum) -> ISeries)
 
 @defproc[#:link-target? #f
  (bop/is [iseries ISeries] [iseries-2 ISeries] [fn (Fixnum Fixnum -> Fixnum)])
@@ -781,14 +765,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (fxvector 5 6 7 8)))
 
-  (ISeries-data (bop/is series-integer series-integer-2 (λ: ((x : Fixnum) (y : Fixnum)) (unsafe-fx+ x y)))) ; (new-ISeries 6 8 10 12)
+  (iseries-data (bop/is series-integer series-integer-2 (λ: ((x : Fixnum) (y : Fixnum)) (unsafe-fx+ x y)))) ; (ISeries 6 8 10 12)
   }|
-
-@subsubsection[#:tag "comp/is"]{comp/is}
 
 @defproc[#:link-target? #f
  (comp/is [iseries ISeries] [iseries-2 ISeries] [fn (Fixnum Fixnum -> Boolean)])
@@ -797,15 +779,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (fxvector 5 6 7 8)))
 
-  (ISeries-data (comp/is series-integer series-integer-2 (λ: ((x : Fixnum) (y : Fixnum)) (unsafe-fx> x y)))) ; (new-BSeries #f #f #f #f)
+  (iseries-data (comp/is series-integer series-integer-2 (λ: ((x : Fixnum) (y : Fixnum)) (unsafe-fx> x y)))) ; (BSeries #f #f #f #f)
   }|
-
-
-@subsubsection[#:tag "+/is"]{+/is}
 
 @defproc[#:link-target? #f
  (+/is [iseries ISeries] [iseries-2 ISeries])
@@ -814,14 +793,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (list 5 6 7 8)))
 
-  (ISeries-data (+/is series-integer series-integer-2)) ; (vector 6 8 10 12)
+  (iseries-data (+/is series-integer series-integer-2)) ; (vector 6 8 10 12)
   }|
-
-@subsubsection[#:tag "-/is"]{-/is}
 
 @defproc[#:link-target? #f
  (+/is [iseries ISeries] [iseries-2 ISeries])
@@ -830,14 +807,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (list 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (list 5 6 7 8)))
 
-  (ISeries-data (-/is series-integer series-integer-2)) ; (vector -4 -4 -4 -4)
+  (iseries-data (-/is series-integer series-integer-2)) ; (vector -4 -4 -4 -4)
   }|
-
-@subsubsection[#:tag "*/is"]{*/is}
 
 @defproc[#:link-target? #f
  (*/is [iseries ISeries] [iseries-2 ISeries])
@@ -846,14 +821,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (fxvector 5 6 7 8)))
 
-  (ISeries-data (*/is series-integer series-integer-2)) ; (vector 5 12 21 32)
+  (iseries-data (*/is series-integer series-integer-2)) ; (vector 5 12 21 32)
   }|
-
-@subsubsection[#:tag "//is"]{//is}
 
 @defproc[#:link-target? #f
  (//is [iseries ISeries] [iseries-2 ISeries])
@@ -862,14 +835,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (list 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (list 5 6 7 8)))
 
-  (ISeries-data (//is series-integer series-integer-2)) ; (vector 0 0 0 0)
+  (iseries-data (//is series-integer series-integer-2)) ; (vector 0 0 0 0)
   }|
-
-@subsubsection[#:tag "iseries-data"]{%/is}
 
 @defproc[#:link-target? #f
  (%/is [iseries ISeries] [iseries-2 ISeries])
@@ -878,14 +849,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (list 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (list 5 6 7 8)))
 
-  (ISeries-data (%/is series-integer series-integer-2)) ; (vector 1 2 3 4)
+  (iseries-data (%/is series-integer series-integer-2)) ; (vector 1 2 3 4)
   }|
-
-@subsubsection[#:tag "r/is"]{r/is}
 
 @defproc[#:link-target? #f
  (r/is [iseries ISeries] [iseries-2 ISeries])
@@ -894,14 +863,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (list 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (list 5 6 7 8)))
 
-  (ISeries-data (r/is series-integer series-integer-2)) ; (vector 1 2 3 4)
+  (iseries-data (r/is series-integer series-integer-2)) ; (vector 1 2 3 4)
   }|
-
-@subsubsection[#:tag "+./is"]{+./is}
 
 @defproc[#:link-target? #f
  (+./is [iseries ISeries] [num Fixnum])
@@ -910,12 +877,10 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (list 1 2 3 4)))
 
-  (ISeries-data (+./is series-integer 2)) ; (vector 3 4 5 6)
+  (iseries-data (+./is series-integer 2)) ; (vector 3 4 5 6)
   }|
-
-@subsubsection[#:tag "-./is"]{-./is}
 
 @defproc[#:link-target? #f
  (-./is [iseries ISeries] [num Fixnum])
@@ -924,12 +889,10 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (ISeries-data (-./is series-integer 2)) ; (vector -1 0 1 2)
+  (iseries-data (-./is series-integer 2)) ; (vector -1 0 1 2)
   }|
-
-@subsubsection[#:tag "*./is"]{*./is}
 
 @defproc[#:link-target? #f
  (*./is [iseries ISeries] [num Fixnum])
@@ -938,12 +901,10 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (ISeries-data (*./is series-integer 2)) ; (vector 2 3 6 8)
+  (iseries-data (*./is series-integer 2)) ; (vector 2 3 6 8)
   }|
-
-@subsubsection[#:tag "/./is"]{/./is}
 
 @defproc[#:link-target? #f
  (/./is [iseries ISeries] [num Fixnum])
@@ -952,12 +913,10 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (ISeries-data (/./is series-integer 2)) ; (vector 0 1 1 2)
+  (iseries-data (/./is series-integer 2)) ; (vector 0 1 1 2)
   }|
-
-@subsubsection[#:tag "%./is"]{%./is}
 
 @defproc[#:link-target? #f
  (%./is [iseries ISeries] [num Fixnum])
@@ -966,12 +925,10 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (ISeries-data (%./is series-integer 2)) ; (vector 1 0 1 0)
+  (iseries-data (%./is series-integer 2)) ; (vector 1 0 1 0)
   }|
-
-@subsubsection[#:tag "r./is"]{r./is}
 
 @defproc[#:link-target? #f
  (r./is [iseries ISeries] [num Fixnum])
@@ -980,12 +937,10 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (ISeries-data (r./is series-integer 2)) ; (vector 1 0 1 0)
+  (iseries-data (r./is series-integer 2)) ; (vector 1 0 1 0)
   }|
-
-@subsubsection[#:tag ">/is"]{>/is}
 
 @defproc[#:link-target? #f
  (>/is [iseries ISeries] [iseries-2 ISeries])
@@ -994,14 +949,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (fxvector 5 6 7 8)))
 
-  (BSeries-data (>/is series-integer series-integer-2)) ; (vector #f #f #f #f)
+  (bseries-data (>/is series-integer series-integer-2)) ; (vector #f #f #f #f)
   }|
-
-@subsubsection[#:tag "</is"]{</is}
 
 @defproc[#:link-target? #f
  (</is [iseries ISeries] [iseries-2 ISeries])
@@ -1010,14 +963,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (fxvector 5 6 7 8)))
 
-  (BSeries-data (</is series-integer series-integer-2)) ; (vector #f #f #f #f)
+  (bseries-data (</is series-integer series-integer-2)) ; (vector #f #f #f #f)
   }|
-
-@subsubsection[#:tag ">=/is"]{>=/is}
 
 @defproc[#:link-target? #f
  (>=/is [iseries ISeries] [iseries-2 ISeries])
@@ -1026,14 +977,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (list 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (list 5 6 7 8)))
 
-  (BSeries-data (>=/is series-integer series-integer-2)) ; (vector #f #f #f #f)
+  (bseries-data (>=/is series-integer series-integer-2)) ; (vector #f #f #f #f)
   }|
-
-@subsubsection[#:tag "<=/is"]{<=/is}
 
 @defproc[#:link-target? #f
  (<=/is [iseries ISeries] [iseries-2 ISeries])
@@ -1042,14 +991,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (fxvector 5 6 7 8)))
 
-  (BSeries-data (<=/is series-integer series-integer-2)) ; (vector #t #t #t #t)
+  (bseries-data (<=/is series-integer series-integer-2)) ; (vector #t #t #t #t)
   }|
-
-@subsubsection[#:tag "=/is"]{=/is}
 
 @defproc[#:link-target? #f
  (=/is [iseries ISeries] [iseries-2 ISeries])
@@ -1058,14 +1005,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (fxvector 5 6 7 8)))
 
-  (BSeries-data (=/is series-integer series-integer-2)) ; (vector #f #f #f #f)
+  (bseries-data (=/is series-integer series-integer-2)) ; (vector #f #f #f #f)
   }|
-
-@subsubsection[#:tag "!=/is"]{!=/is}
 
 @defproc[#:link-target? #f
  (!=/is [iseries ISeries] [iseries-2 ISeries])
@@ -1074,14 +1019,12 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
-  (define series-integer-2 (new-ISeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-ISeries (fxvector 5 6 7 8)))
 
-  (BSeries-data (!=/is series-integer series-integer-2)) ; (vector #t #t #t #t)
+  (bseries-data (!=/is series-integer series-integer-2)) ; (vector #t #t #t #t)
   }|
-
-@subsubsection[#:tag "{apply-agg-is"]{apply-agg-is}
 
 @defproc[#:link-target? #f
  (apply-agg-is [func Symbol] [iseries ISeries])
@@ -1090,7 +1033,7 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
   (apply-agg-is 'sum series-integer) ; 10
 
@@ -1103,8 +1046,6 @@ Returns the Fixnum value at the specified index in the series.
   (apply-agg-is 'max series-integer) ; 4
   }|
 
-@subsubsection[#:tag "apply-stat-is"]{apply-stat-is}
-
 @defproc[#:link-target? #f
  (apply-stat-is [func Symbol] [iseries ISeries])
 Real]{
@@ -1112,7 +1053,7 @@ Returns the Fixnum value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-ISeries (vector 1 2 3 4) #f))
+  (define series-integer (new-ISeries (fxvector 1 2 3 4)))
 
   (apply-stat-is 'variance series-integer) ; 5/4
 
@@ -1377,7 +1318,7 @@ Returns the Fixnum value at the specified index in the series.
 ...
 }
 
-@subsubsection[#:tag "new-NSeries"]{new-NSeries}
+@subsubsection[#:style 'toc]{Numerical Series Example Usage}
 @defproc[#:link-target? #f
  (new-NSeries [data (Vectorof Float)] [label (Option (U (Lnstof Label) SIndex))])
 NSeries?]{
@@ -1386,10 +1327,9 @@ Returns a new NSeries.
 
 @codeblock|{
     (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
   }|
 
-@subsubsection[#:tag "nseries-iref"]{nseries-iref}
 @defproc[#:link-target? #f
  (nseries-iref [nseries NSeries] [idx Index])
 Float?]{
@@ -1399,14 +1339,13 @@ Returns the Float value at the specified index in the series.
 @codeblock|{
  
 (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
                                       
 (nseries-iref series-float 0) ; 1.5
 
 (nseries-iref series-float 1) ; 2.4
   }|
 
-@subsubsection[#:tag "nseries-label-ref"]{nseries-label-ref}
 @defproc[#:link-target? #f
  (nseries-label-ref [nseries NSeries] [label Label])
 Float?]{
@@ -1415,14 +1354,13 @@ Returns the Float value at the specified index in the series.
 
 @codeblock|{
   (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (nseries-label-ref series-float 'd) ; 4.1
   
   (nseries-label-ref series-float 'c) ; 3.6
   }|
 
-@subsubsection[#:tag "nseries-range"]{nseries-range}
 @defproc[#:link-target? #f
  (nseries-range [nseries NSeries] [pos Index])
 (Vectorof Float)]{
@@ -1431,12 +1369,11 @@ Returns the Float value at the specified index in the series.
 
 @codeblock|{
   (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (nseries-range series-float 2) ; (flvector 1.5 2.4)
   }|
 
-@subsubsection[#:tag "nseries-length"]{nseries-length}
 @defproc[#:link-target? #f
  (nseries-length [nseries NSeries])
 Index]{
@@ -1445,12 +1382,11 @@ Returns the Float value at the specified index in the series.
 
 @codeblock|{
   (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (nseries-length series-float) ; 4
   }|
 
-@subsubsection[#:tag "nseries-referencer"]{nseries-referencer}
 @defproc[#:link-target? #f
  (nseries-referencer [nseries NSeries])
 (Index -> Float)]{
@@ -1459,15 +1395,12 @@ Returns the Float value at the specified index in the series.
 
 @codeblock|{
   (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   ((nseries-referencer series-float) 0) ; 1.5
 
   ((nseries-referencer series-float) 1) ; 2.4
   }|
-
-
-@subsubsection[#:tag "nseries-data"]{nseries-data}
 
 @defproc[#:link-target? #f
  (nseries-data [nseries NSeries])
@@ -1477,12 +1410,10 @@ Returns the Float value at the specified index in the series.
 
 @codeblock|{
   (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (nseries-data series-foat) ; (flvector 1.5 2.4 3.6 4.1)ap
   }|
-
-@subsubsection[#:tag "map/ns"]{map/ns}
 
 @defproc[#:link-target? #f
  (map/ns [nseries NSeries] [fn (Float -> Float)])
@@ -1492,13 +1423,10 @@ Returns the Float value at the specified index in the series.
 
 @codeblock|{
   (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
-  (NSeries-data (map/ns series-float (λ: ((x : Float)) (fl+ x 1.0)))) ; (flvector 2.5 3.4 4.6 5.1)
+  (nseries-data (map/ns series-float (λ: ((x : Float)) (fl+ x 1.0)))) ; (flvector 2.5 3.4 4.6 5.1)
   }|
-
-@subsubsection[#:tag "bop/ns"]{bop/ns}
-(NSeries NSeries (Float Float -> Float) -> NSeries)
 
 @defproc[#:link-target? #f
  (bop/ns [nseries NSeries] [nseries-2 NSeries] [fn (Float Float -> Float)])
@@ -1507,14 +1435,12 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (define series-integer-2 (new-NSeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-NSeries (vector 5 6 7 8)))
 
-  (NSeries-data (bop/ns series-integer series-integer-2 (λ: ((x : Float) (y : Float)) (unsafe-fx+ x y)))) ; (new-NSeries 6 8 10 12)
+  (nseries-data (bop/ns series-integer series-integer-2 (λ: ((x : Float) (y : Float)) (unsafe-fx+ x y)))) ; (new-NSeries 6 8 10 12)
   }|
-
-@subsubsection[#:tag "comp/ns"]{comp/ns}
 
 @defproc[#:link-target? #f
  (comp/ns [nseries NSeries] [nseries-2 NSeries] [fn (Float Float -> Boolean)])
@@ -1523,15 +1449,12 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (define series-integer-2 (new-NSeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-NSeries (vector 5 6 7 8)))
 
-  (NSeries-data (comp/ns series-integer series-integer-2 (λ: ((x : Float) (y : Float)) (unsafe-fx> x y)))) ; (new-BSeries #f #f #f #f)
+  (nseries-data (comp/ns series-integer series-integer-2 (λ: ((x : Float) (y : Float)) (unsafe-fx> x y)))) ; (BSeries #f #f #f #f)
   }|
-
-
-@subsubsection[#:tag "+/ns"]{+/ns}
 
 @defproc[#:link-target? #f
  (+/ns [nseries NSeries] [nseries-2 NSeries])
@@ -1541,15 +1464,13 @@ Returns the Float value at the specified index in the series.
 
 @codeblock|{
   (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (define series-float-2 (new-NSeries (flvector 5.0 6.0 7.0 8.0)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
-  (NSeries-data (+/ns series-float series-float-2)) ; (flvector 6.5 8.4 10.6 12.1))
+  (nseries-data (+/ns series-float series-float-2)) ; (flvector 6.5 8.4 10.6 12.1))
   }|
-
-@subsubsection[#:tag "-/ns"]{-/ns}
 
 @defproc[#:link-target? #f
  (+/ns [nseries NSeries] [nseries-2 NSeries])
@@ -1559,15 +1480,13 @@ Returns the Float value at the specified index in the series.
 
 @codeblock|{
   (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (define series-float-2 (new-NSeries (flvector 5.0 6.0 7.0 8.0)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
-  (NSeries-data (-/ns series-float series-float-2)) ; (flvector -3.5 -3.6 -3.4 -3.9000000000000004)
+  (nseries-data (-/ns series-float series-float-2)) ; (flvector -3.5 -3.6 -3.4 -3.9000000000000004)
   }|
-
-@subsubsection[#:tag "*/ns"]{*/ns}
 
 @defproc[#:link-target? #f
  (*/ns [nseries NSeries] [nseries-2 NSeries])
@@ -1577,15 +1496,13 @@ Returns the Float value at the specified index in the series.
 
 @codeblock|{
   (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (define series-float-2 (new-NSeries (flvector 5.0 6.0 7.0 8.0)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
-  (NSeries-data (*/ns series-float series-float-2)) ; (flvector 7.5 14.399999999999999 25.2 32.8)
+  (nseries-data (*/ns series-float series-float-2)) ; (flvector 7.5 14.399999999999999 25.2 32.8)
   }|
-
-@subsubsection[#:tag "//ns"]{//ns}
 
 @defproc[#:link-target? #f
  (//ns [nseries NSeries] [nseries-2 NSeries])
@@ -1595,15 +1512,13 @@ Returns the Float value at the specified index in the series.
 
 @codeblock|{
   (define series-float (new-NSeries (flvector 1.5 2.4 3.6 4.1)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
   (define series-float-2 (new-NSeries (flvector 5.0 6.0 7.0 8.0)
-                                      (build-index-from-labels (list 'a 'b 'c 'd))))
+                                      #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
-  (NSeries-data (//ns series-float series-float-2)) ; (flvector 0.3 0.39999999999999997 0.5142857142857143 0.5125)
+  (nseries-data (//ns series-float series-float-2)) ; (flvector 0.3 0.39999999999999997 0.5142857142857143 0.5125)
   }|
-
-@subsubsection[#:tag "nseries-data"]{%/ns}
 
 @defproc[#:link-target? #f
  (%/ns [nseries NSeries] [nseries-2 NSeries])
@@ -1612,14 +1527,12 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (define series-integer-2 (new-NSeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-NSeries (vector 5 6 7 8)))
 
-  (NSeries-data (%/ns series-integer series-integer-2)) ; (vector 1 2 3 4)
+  (nseries-data (%/ns series-integer series-integer-2)) ; (vector 1 2 3 4)
   }|
-
-@subsubsection[#:tag "r/ns"]{r/ns}
 
 @defproc[#:link-target? #f
  (r/ns [nseries NSeries] [nseries-2 NSeries])
@@ -1628,14 +1541,12 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (define series-integer-2 (new-NSeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-NSeries (vector 5 6 7 8)))
 
-  (NSeries-data (r/ns series-integer series-integer-2)) ; (vector 1 2 3 4)
+  (nseries-data (r/ns series-integer series-integer-2)) ; (vector 1 2 3 4)
   }|
-
-@subsubsection[#:tag "+./ns"]{+./ns}
 
 @defproc[#:link-target? #f
  (+./ns [nseries NSeries] [num Float])
@@ -1644,12 +1555,10 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (NSeries-data (+./ns series-integer 2)) ; (vector 3 4 5 6)
+  (nseries-data (+./ns series-integer 2)) ; (vector 3 4 5 6)
   }|
-
-@subsubsection[#:tag "-./ns"]{-./ns}
 
 @defproc[#:link-target? #f
  (-./ns [nseries NSeries] [num Float])
@@ -1658,12 +1567,10 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (NSeries-data (-./ns series-integer 2)) ; (vector -1 0 1 2)
+  (nseries-data (-./ns series-integer 2)) ; (vector -1 0 1 2)
   }|
-
-@subsubsection[#:tag "*./ns"]{*./ns}
 
 @defproc[#:link-target? #f
  (*./ns [nseries NSeries] [num Float])
@@ -1672,12 +1579,10 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (NSeries-data (*./ns series-integer 2)) ; (vector 2 3 6 8)
+  (nseries-data (*./ns series-integer 2)) ; (vector 2 3 6 8)
   }|
-
-@subsubsection[#:tag "/./ns"]{/./ns}
 
 @defproc[#:link-target? #f
  (/./ns [nseries NSeries] [num Float])
@@ -1686,12 +1591,10 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (NSeries-data (/./ns series-integer 2)) ; (vector 0 1 1 2)
+  (nseries-data (/./ns series-integer 2)) ; (vector 0 1 1 2)
   }|
-
-@subsubsection[#:tag "%./ns"]{%./ns}
 
 @defproc[#:link-target? #f
  (%./ns [nseries NSeries] [num Float])
@@ -1700,12 +1603,10 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (NSeries-data (%./ns series-integer 2)) ; (vector 1 0 1 0)
+  (nseries-data (%./ns series-integer 2)) ; (vector 1 0 1 0)
   }|
-
-@subsubsection[#:tag "r./ns"]{r./ns}
 
 @defproc[#:link-target? #f
  (r./ns [nseries NSeries] [num Float])
@@ -1714,12 +1615,10 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (NSeries-data (r./ns series-integer 2)) ; (vector 1 0 1 0)
+  (nseries-data (r./ns series-integer 2)) ; (vector 1 0 1 0)
   }|
-
-@subsubsection[#:tag ">/ns"]{>/ns}
 
 @defproc[#:link-target? #f
  (>/ns [nseries NSeries] [nseries-2 NSeries])
@@ -1728,14 +1627,12 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (define series-integer-2 (new-NSeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-NSeries (vector 5 6 7 8)))
 
-  (BSeries-data (>/ns series-integer series-integer-2)) ; (vector #f #f #f #f)
+  (bseries-data (>/ns series-integer series-integer-2)) ; (vector #f #f #f #f)
   }|
-
-@subsubsection[#:tag "</ns"]{</ns}
 
 @defproc[#:link-target? #f
  (</ns [nseries NSeries] [nseries-2 NSeries])
@@ -1744,14 +1641,12 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (define series-integer-2 (new-NSeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-NSeries (vector 5 6 7 8)))
 
-  (BSeries-data (</ns series-integer series-integer-2)) ; (vector #f #f #f #f)
+  (bseries-data (</ns series-integer series-integer-2)) ; (vector #f #f #f #f)
   }|
-
-@subsubsection[#:tag ">=/ns"]{>=/ns}
 
 @defproc[#:link-target? #f
  (>=/ns [nseries NSeries] [nseries-2 NSeries])
@@ -1760,14 +1655,12 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (define series-integer-2 (new-NSeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-NSeries (vector 5 6 7 8)))
 
-  (BSeries-data (>=/ns series-integer series-integer-2)) ; (vector #f #f #f #f)
+  (bseries-data (>=/ns series-integer series-integer-2)) ; (vector #f #f #f #f)
   }|
-
-@subsubsection[#:tag "<=/ns"]{<=/ns}
 
 @defproc[#:link-target? #f
  (<=/ns [nseries NSeries] [nseries-2 NSeries])
@@ -1776,14 +1669,12 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (define series-integer-2 (new-NSeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-NSeries (vector 5 6 7 8)))
 
-  (BSeries-data (<=/ns series-integer series-integer-2)) ; (vector #t #t #t #t)
+  (bseries-data (<=/ns series-integer series-integer-2)) ; (vector #t #t #t #t)
   }|
-
-@subsubsection[#:tag "=/ns"]{=/ns}
 
 @defproc[#:link-target? #f
  (=/ns [nseries NSeries] [nseries-2 NSeries])
@@ -1792,14 +1683,12 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (define series-integer-2 (new-NSeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-NSeries (vector 5 6 7 8)))
 
-  (BSeries-data (=/ns series-integer series-integer-2)) ; (vector #f #f #f #f)
+  (bseries-data (=/ns series-integer series-integer-2)) ; (vector #f #f #f #f)
   }|
-
-@subsubsection[#:tag "!=/ns"]{!=/ns}
 
 @defproc[#:link-target? #f
  (!=/ns [nseries NSeries] [nseries-2 NSeries])
@@ -1808,14 +1697,12 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
-  (define series-integer-2 (new-NSeries (vector 5 6 7 8) #f))
+  (define series-integer-2 (new-NSeries (vector 5 6 7 8)))
 
-  (BSeries-data (!=/ns series-integer series-integer-2)) ; (vector #t #t #t #t)
+  (bseries-data (!=/ns series-integer series-integer-2)) ; (vector #t #t #t #t)
   }|
-
-@subsubsection[#:tag "{apply-agg-ns"]{apply-agg-ns}
 
 @defproc[#:link-target? #f
  (apply-agg-ns [func Symbol] [nseries NSeries])
@@ -1824,7 +1711,7 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
   (apply-agg-ns 'sum series-integer) ; 10
 
@@ -1837,8 +1724,6 @@ Returns the Float value at the specified index in the series.
   (apply-agg-ns 'max series-integer) ; 4
   }|
 
-@subsubsection[#:tag "apply-stat-ns"]{apply-stat-ns}
-
 @defproc[#:link-target? #f
  (apply-stat-ns [func Symbol] [nseries NSeries])
 Real]{
@@ -1846,7 +1731,7 @@ Returns the Float value at the specified index in the series.
 }
 
 @codeblock|{
-  (define series-integer (new-NSeries (vector 1 2 3 4) #f))
+  (define series-integer (new-NSeries (vector 1 2 3 4)))
 
   (apply-stat-ns 'variance series-integer) ; 5/4
 
@@ -1867,21 +1752,143 @@ rendering, because there are no numbered subsections, but it has three
 levels shown in the table-of-contents panel.
 
 @subsection[#:style 'toc]{Boolean Series}
+@"\U2190" Boolean Series is abbreviated to BSeries in RacketFrames.
 
 @local-table-of-contents[]
 
 @subsubsection[#:tag "new-BSeries"]{new-BSeries}
+@defproc[(new-BSeries (arg0 (U (Sequenceof Boolean) (Vectorof Boolean))) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null Boolean))) BSeries]{
+...
+}
 
-@"\U2190" This page has no on-this-page panel in a multi-page
-rendering, because there are no numbered subsections, but it has three
-levels shown in the table-of-contents panel.
+@subsubsection[#:tag "set-BSeries-index"]{set-BSeries-index}
+@defproc[(set-BSeries-index (arg0 BSeries) (arg1 (U (Listof IndexDataType) RFIndex))) BSeries]{
+...
+}
 
+@subsubsection[#:tag "set-BSeries-null-value"]{set-BSeries-null-value}
+@defproc[(set-BSeries-null-value (arg0 BSeries) (arg1 Boolean)) BSeries]{
+...
+}
 
-@subsection[#:style 'toc]{General Series}
+@subsubsection[#:tag "bseries-null-value"]{bseries-null-value}
+@defproc[(bseries-null-value (arg0 BSeries)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "bseries-iref"]{bseries-iref}
+@defproc[(bseries-iref (arg0 BSeries) (arg1 (Listof Index))) (Listof Boolean)]{
+...
+}
+
+@subsubsection[#:tag "bseries-index-ref"]{bseries-index-ref}
+@defproc[(bseries-index-ref (arg0 BSeries) (arg1 IndexDataType)) (Listof Boolean)]{
+...
+}
+
+@subsubsection[#:tag "bseries-range"]{bseries-range}
+@defproc[(bseries-range (arg0 BSeries) (arg1 Index) (arg2 Index)) (Vectorof Boolean)]{
+...
+}
+
+@subsubsection[#:tag "bseries-length"]{bseries-length}
+@defproc[(bseries-length (arg0 BSeries)) Index]{
+...
+}
+
+@subsubsection[#:tag "bseries-referencer"]{bseries-referencer}
+@defproc[(bseries-referencer (arg0 BSeries)) (Index -> Boolean)]{
+...
+}
+
+@subsubsection[#:tag "bseries-data"]{bseries-data}
+@defproc[(bseries-data (arg0 BSeries)) (Vectorof Boolean)]{
+...
+}
+
+@subsubsection[#:tag "bseries-index"]{bseries-index}
+@defproc[(bseries-index (arg0 BSeries)) (U False RFIndex)]{
+...
+}
+
+@subsubsection[#:tag "in-bseries"]{in-bseries}
+@defproc[(in-bseries (arg0 Boolean) (arg1 BSeries)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "bseries-groupby"]{bseries-groupby}
+@defproc[(bseries-groupby (arg0 BSeries) (arg1 (#:by-value Boolean))) GroupHash]{
+...
+}
+
+@subsubsection[#:tag "map/bs"]{map/bs}
+@defproc[(map/bs (arg0 BSeries) (arg1 (Boolean -> Boolean))) BSeries]{
+...
+}
+
+@subsubsection[#:tag "bseries-loc-boolean"]{bseries-loc-boolean}
+@defproc[(bseries-loc-boolean (arg0 BSeries) (arg1 (Listof Boolean))) (U Boolean BSeries)]{
+...
+}
+
+@subsubsection[#:tag "bseries-loc"]{bseries-loc}
+@defproc[(bseries-loc (arg0 BSeries) (arg1 (U Label (Listof Label) (Listof Boolean)))) (U Boolean BSeries)]{
+...
+}
+
+@subsubsection[#:tag "bseries-loc-multi-index"]{bseries-loc-multi-index}
+@defproc[(bseries-loc-multi-index (arg0 BSeries) (arg1 (U (Listof String) ListofListofString))) (U Boolean BSeries)]{
+...
+}
+
+@subsubsection[#:tag "bseries-iloc"]{bseries-iloc}
+@defproc[(bseries-iloc (arg0 BSeries) (arg1 (U Index (Listof Index)))) (U Boolean BSeries)]{
+...
+}
+
+@subsubsection[#:tag "bseries-iloc-range"]{bseries-iloc-range}
+@defproc[(bseries-iloc-range (arg0 BSeries) (arg1 Index) (arg2 Index)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "bseries-not"]{bseries-not}
+@defproc[(bseries-not (arg0 BSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "bseries-print"]{bseries-print}
+@defproc[(bseries-print (arg0 BSeries) (arg1 (#:output-port Output-Port))) Void]{
+...
+}
+
+@subsubsection[#:tag "Boolean Series Builder"]{Boolean Series Builder}
+@codeblock|{
+(struct-out BSeriesBuilder)
+
+(struct: BSeriesBuilder ([index  : Index]
+			 [data : (Vectorof Boolean)]) #:mutable)
+}|
+
+@subsubsection[#:tag "new-BSeriesBuilder"]{new-BSeriesBuilder}
+@defproc[(new-BSeriesBuilder (arg0 (U Void Index))) BSeriesBuilder]{
+...
+}
+
+@subsubsection[#:tag "append-BSeriesBuilder"]{append-BSeriesBuilder}
+@defproc[(append-BSeriesBuilder (arg0 BSeriesBuilder) (arg1 (U Boolean String))) Void]{
+...
+}
+
+@subsubsection[#:tag "complete-BSeriesBuilder"]{complete-BSeriesBuilder}
+@defproc[(complete-BSeriesBuilder (arg0 BSeriesBuilder)) BSeries]{
+...
+}
+
+@subsection[#:style 'toc]{Generic Series}
 
 @local-table-of-contents[]
 
-@subsubsection[#:tag "new-GSeries"]{new-GSeries}
+@subsubsection[#:tag "new-GenSeries"]{new-GenSeries}
 
 @"\U2190" This page has no on-this-page panel in a multi-page
 rendering, because there are no numbered subsections, but it has three
@@ -1971,12 +1978,12 @@ Returns a new DataFrame.
   ; will define parse to automatically build this columns structure
   (define columns-integer
   (list 
-  (cons 'col1 (new-ISeries (vector 1 2 3 4)
-  (build-index-from-labels (list 'a 'b 'c 'd))))
-  (cons 'col2 (new-ISeries (vector 5 6 7 8)
-  (build-index-from-labels (list 'e 'f 'g 'h))))
-  (cons 'col3 (new-ISeries (vector 9 10 11 12)
-  (build-index-from-labels (list 'i 'j 'k 'l))))))
+  (cons 'col1 (new-ISeries (fxvector 1 2 3 4)
+  #:index (build-index-from-list (list 'a 'b 'c 'd))))
+  (cons 'col2 (new-ISeries (fxvector 5 6 7 8)
+  #:index (build-index-from-list (list 'e 'f 'g 'h))))
+  (cons 'col3 (new-ISeries (fxvector 9 10 11 12)
+  #:index (build-index-from-list (list 'i 'j 'k 'l))))))
 
   ; create new data-frame-integer
   (define data-frame-integer (new-data-frame columns-integer))
@@ -2163,17 +2170,17 @@ Returns a new DataFrame.
 @codeblock|{
   (define columns-integer-1
   (list 
-  (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-  (cons 'col2 (new-ISeries (vector 5 6 7 8) #f))
-  (cons 'col3 (new-ISeries (vector 9 10 11 12) #f))
-  (cons 'col4 (new-ISeries (vector 21 22 23 24) #f))))
+  (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+  (cons 'col2 (new-ISeries (fxvector 5 6 7 8)))
+  (cons 'col3 (new-ISeries (fxvector 9 10 11 12)))
+  (cons 'col4 (new-ISeries (fxvector 21 22 23 24)))))
 
   (define columns-integer-2
   (list 
-  (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-  (cons 'col2 (new-ISeries (vector 25 26 27 28) #f))
-  (cons 'col3 (new-ISeries (vector 29 30 31 32) #f))
-  (cons 'col4 (new-ISeries (vector 1 2 3 4) #f))))
+  (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+  (cons 'col2 (new-ISeries (fxvector 25 26 27 28)))
+  (cons 'col3 (new-ISeries (fxvector 29 30 31 32)))
+  (cons 'col4 (new-ISeries (fxvector 1 2 3 4)))))
 
   ; create new data-frame-integer-1
   (define data-frame-integer-1 (new-data-frame columns-integer-1))
@@ -2183,11 +2190,11 @@ Returns a new DataFrame.
 
   (displayln "data-frame+")
 
-  (frame-write-tab data-frame-integer-1 (current-output-port))
+  (data-frame-write-delim data-frame-integer-1)
 
-  (frame-write-tab data-frame-integer-2 (current-output-port))
+  (data-frame-write-delim data-frame-integer-2)
 
-  (frame-write-tab (data-frame+ data-frame-integer-1 data-frame-integer-2) (current-output-port))
+  (data-frame-write-delim (data-frame+ data-frame-integer-1 data-frame-integer-2))
   }|
 
 @subsubsection[#:tag "data-frame-"]{data-frame-}
@@ -2200,17 +2207,17 @@ Returns a new DataFrame.
 @codeblock|{
   (define columns-integer-1
   (list 
-  (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-  (cons 'col2 (new-ISeries (vector 5 6 7 8) #f))
-  (cons 'col3 (new-ISeries (vector 9 10 11 12) #f))
-  (cons 'col4 (new-ISeries (vector 21 22 23 24) #f))))
+  (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+  (cons 'col2 (new-ISeries (fxvector 5 6 7 8)))
+  (cons 'col3 (new-ISeries (fxvector 9 10 11 12)))
+  (cons 'col4 (new-ISeries (fxvector 21 22 23 24)))))
 
   (define columns-integer-2
   (list 
-  (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-  (cons 'col2 (new-ISeries (vector 25 26 27 28) #f))
-  (cons 'col3 (new-ISeries (vector 29 30 31 32) #f))
-  (cons 'col4 (new-ISeries (vector 1 2 3 4) #f))))
+  (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+  (cons 'col2 (new-ISeries (fxvector 25 26 27 28)))
+  (cons 'col3 (new-ISeries (fxvector 29 30 31 32)))
+  (cons 'col4 (new-ISeries (fxvector 1 2 3 4)))))
 
   ; create new data-frame-integer-1
   (define data-frame-integer-1 (new-data-frame columns-integer-1))
@@ -2220,11 +2227,11 @@ Returns a new DataFrame.
 
   (displayln "data-frame-")
 
-  (frame-write-tab data-frame-integer-1 (current-output-port))
+  (data-frame-write-delim data-frame-integer-1)
 
-  (frame-write-tab data-frame-integer-2 (current-output-port))
+  (data-frame-write-delim data-frame-integer-2)
 
-  (frame-write-tab (data-frame- data-frame-integer-1 data-frame-integer-2) (current-output-port))
+  (data-frame-write-delim (data-frame- data-frame-integer-1 data-frame-integer-2))
   }|
 
 @subsubsection[#:tag "data-frame*"]{data-frame*}
@@ -2237,17 +2244,17 @@ Returns a new DataFrame.
 @codeblock|{
   (define columns-integer-1
   (list 
-  (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-  (cons 'col2 (new-ISeries (vector 5 6 7 8) #f))
-  (cons 'col3 (new-ISeries (vector 9 10 11 12) #f))
-  (cons 'col4 (new-ISeries (vector 21 22 23 24) #f))))
+  (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+  (cons 'col2 (new-ISeries (fxvector 5 6 7 8)))
+  (cons 'col3 (new-ISeries (fxvector 9 10 11 12)))
+  (cons 'col4 (new-ISeries (fxvector 21 22 23 24)))))
 
   (define columns-integer-2
   (list 
-  (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-  (cons 'col2 (new-ISeries (vector 25 26 27 28) #f))
-  (cons 'col3 (new-ISeries (vector 29 30 31 32) #f))
-  (cons 'col4 (new-ISeries (vector 1 2 3 4) #f))))
+  (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+  (cons 'col2 (new-ISeries (fxvector 25 26 27 28)))
+  (cons 'col3 (new-ISeries (fxvector 29 30 31 32)))
+  (cons 'col4 (new-ISeries (fxvector 1 2 3 4)))))
 
   ; create new data-frame-integer-1
   (define data-frame-integer-1 (new-data-frame columns-integer-1))
@@ -2257,11 +2264,11 @@ Returns a new DataFrame.
 
   (displayln "data-frame*")
 
-  (frame-write-tab data-frame-integer-1 (current-output-port))
+  (data-frame-write-delim data-frame-integer-1)
 
-  (frame-write-tab data-frame-integer-2 (current-output-port))
+  (data-frame-write-delim data-frame-integer-2)
 
-  (frame-write-tab (data-frame* data-frame-integer-1 data-frame-integer-2) (current-output-port))
+  (data-frame-write-delim (data-frame* data-frame-integer-1 data-frame-integer-2))
   }|
 
 @subsubsection[#:tag "data-frame/"]{data-frame/}
@@ -2274,17 +2281,17 @@ Returns a new DataFrame.
 @codeblock|{
   (define columns-integer-1
   (list 
-  (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-  (cons 'col2 (new-ISeries (vector 5 6 7 8) #f))
-  (cons 'col3 (new-ISeries (vector 9 10 11 12) #f))
-  (cons 'col4 (new-ISeries (vector 21 22 23 24) #f))))
+  (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+  (cons 'col2 (new-ISeries (fxvector 5 6 7 8)))
+  (cons 'col3 (new-ISeries (fxvector 9 10 11 12)))
+  (cons 'col4 (new-ISeries (fxvector 21 22 23 24)))))
 
   (define columns-integer-2
   (list 
-  (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-  (cons 'col2 (new-ISeries (vector 25 26 27 28) #f))
-  (cons 'col3 (new-ISeries (vector 29 30 31 32) #f))
-  (cons 'col4 (new-ISeries (vector 1 2 3 4) #f))))
+  (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+  (cons 'col2 (new-ISeries (fxvector 25 26 27 28)))
+  (cons 'col3 (new-ISeries (fxvector 29 30 31 32)))
+  (cons 'col4 (new-ISeries (fxvector 1 2 3 4)))))
 
   ; create new data-frame-integer-1
   (define data-frame-integer-1 (new-data-frame columns-integer-1))
@@ -2294,11 +2301,11 @@ Returns a new DataFrame.
 
   (displayln "data-frame/")
 
-  (frame-write-tab data-frame-integer-1 (current-output-port))
+  (data-frame-write-delim data-frame-integer-1)
 
-  (frame-write-tab data-frame-integer-2 (current-output-port))
+  (data-frame-write-delim data-frame-integer-2)
 
-  (frame-write-tab (data-frame/ data-frame-integer-1 data-frame-integer-2) (current-output-port))
+  (data-frame-write-delim (data-frame/ data-frame-integer-1 data-frame-integer-2))
   }|
 
 @subsubsection[#:tag "data-frame%"]{data-frame%}
@@ -2368,6 +2375,63 @@ Returns a new DataFrame.
 
 @local-table-of-contents[]
 
+@defproc[(data-frame-join-left (arg0 DataFrame) (arg1 DataFrame) (arg2 (#:on (Listof Symbol)))) DataFrame]{
+...
+}
+
+@defproc[(data-frame-join-right (arg0 DataFrame) (arg1 DataFrame) (arg2 (#:on (Listof Symbol)))) DataFrame]{
+...
+}
+
+@defproc[(data-frame-join-inner (arg0 DataFrame) (arg1 DataFrame) (arg2 (#:on (Listof Symbol)))) DataFrame]{
+...
+}
+
+@defproc[(data-frame-join-outer (arg0 DataFrame) (arg1 DataFrame) (arg2 (#:on (Listof Symbol)))) DataFrame]{
+...
+}
+
+@defproc[(data-frame-groupby (arg0 DataFrame) (arg1 (Listof Label))) GroupHash]{
+...
+}
+
+@defproc[(apply-agg-data-frame (arg0 Symbol) (arg1 GroupHash)) Series]{
+...
+}
+
+@defproc[(copy-column-row-error (arg0 Series) (arg1 Integer)) Void]{
+...
+}
+
+@defproc[(copy-column-row (arg0 (Vectorof Series)) (arg1 (Vectorof SeriesBuilder)) (arg2 Index)) Void]{
+...
+}
+
+@defproc[(dest-mapping-series-builders (arg0 DataFrameDescription) (arg1 Index)) (Listof SeriesBuilder)]{
+...
+}
+
+@defproc[(join-column-name (arg0 Column) (arg1 (Setof Label)) (arg2 String)) Symbol]{
+...
+}
+
+@defproc[(build-multi-index-from-cols (arg0 (U (Listof IndexableSeries) Columns))) SIndex]{
+...
+}
+
+@defproc[(key-cols-sort-lexical (arg0 Columns)) Columns]{
+...
+}
+
+@defproc[(key-cols-series (arg0 Columns)) (Listof IndexableSeries)]{
+...
+}
+
+@defproc[(key-fn (arg0 (Listof IndexableSeries))) (Index -> Key)]{
+...
+}
+
+
 @subsubsection[#:tag "data-frame-join-left"]{data-frame-join-left}
 @defproc[#:link-target? #f
  (data-frame-join-left [dfa DataFrame] [dfb DataFrame] [on (Listof Symbol)])
@@ -2378,17 +2442,17 @@ Returns a new DataFrame.
 @codeblock|{
    (define columns-mixed-7
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
    (cons 'col2 (new-CSeries (vector 'a 'b 'c 'd)))
-   (cons 'col3 (new-GenSeries (vector 'a 1.5 20 10) #f))
-   (cons 'col4 (new-ISeries (vector 21 22 23 24) #f))))
+   (cons 'col3 (new-GenSeries (vector 'a 1.5 20 10)))
+   (cons 'col4 (new-ISeries (fxvector 21 22 23 24)))))
 
 (define columns-mixed-8
   (list 
-   (cons 'col1 (new-ISeries (vector 11 21 31 41) #f))
+   (cons 'col1 (new-ISeries (fxvector 11 21 31 41)))
    (cons 'col2 (new-CSeries (vector 'a 'b 'g 'd)))
-   (cons 'col3 (new-GenSeries (vector 'a 'b 'c 'd) #f))
-   (cons 'col4 (new-ISeries (vector 22 22 23 24) #f))))
+   (cons 'col3 (new-GenSeries (vector 'a 'b 'c 'd)))
+   (cons 'col4 (new-ISeries (fxvector 22 22 23 24)))))
 
 ; create new data-frame-mixed-7
 (define data-frame-mixed-7 (new-data-frame columns-mixed-7))
@@ -2396,12 +2460,12 @@ Returns a new DataFrame.
 ; create new data-frame-mixed-8
 (define data-frame-mixed-8 (new-data-frame columns-mixed-8))
 
-(frame-write-tab data-frame-mixed-7 (current-output-port))
+(data-frame-write-delim data-frame-mixed-7)
 
-(frame-write-tab data-frame-mixed-8 (current-output-port))
+(data-frame-write-delim data-frame-mixed-8)
 
-(frame-write-tab (data-frame-join-left data-frame-mixed-7 data-frame-mixed-8
-  #:on (list 'col3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-left data-frame-mixed-7 data-frame-mixed-8
+  #:on (list 'col3)))
 
 ;; output ;;
 col1	col2	col3	col4
@@ -2435,17 +2499,17 @@ Returns a new DataFrame.
 @codeblock|{
    (define columns-mixed-7
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
    (cons 'col2 (new-CSeries (vector 'a 'b 'c 'd)))
-   (cons 'col3 (new-GenSeries (vector 'a 1.5 20 10) #f))
-   (cons 'col4 (new-ISeries (vector 21 22 23 24) #f))))
+   (cons 'col3 (new-GenSeries (vector 'a 1.5 20 10)))
+   (cons 'col4 (new-ISeries (fxvector 21 22 23 24)))))
 
 (define columns-mixed-8
   (list 
-   (cons 'col1 (new-ISeries (vector 11 21 31 41) #f))
+   (cons 'col1 (new-ISeries (fxvector 11 21 31 41)))
    (cons 'col2 (new-CSeries (vector 'a 'b 'g 'd)))
-   (cons 'col3 (new-GenSeries (vector 'a 'b 'c 'd) #f))
-   (cons 'col4 (new-ISeries (vector 22 22 23 24) #f))))
+   (cons 'col3 (new-GenSeries (vector 'a 'b 'c 'd)))
+   (cons 'col4 (new-ISeries (fxvector 22 22 23 24)))))
 
 ; create new data-frame-mixed-7
 (define data-frame-mixed-7 (new-data-frame columns-mixed-7))
@@ -2453,12 +2517,12 @@ Returns a new DataFrame.
 ; create new data-frame-mixed-8
 (define data-frame-mixed-8 (new-data-frame columns-mixed-8))
 
-(frame-write-tab data-frame-mixed-7 (current-output-port))
+(data-frame-write-delim data-frame-mixed-7)
 
-(frame-write-tab data-frame-mixed-8 (current-output-port))
+(data-frame-write-delim data-frame-mixed-8)
 
-(frame-write-tab (data-frame-join-right data-frame-mixed-7 data-frame-mixed-8
-  #:on (list 'col3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-right data-frame-mixed-7 data-frame-mixed-8
+  #:on (list 'col3)))
 
 ;; output ;;
 col1	col2	col3	col4
@@ -2491,17 +2555,17 @@ Returns a new DataFrame.
 @codeblock|{
    (define columns-mixed-7
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
    (cons 'col2 (new-CSeries (vector 'a 'b 'c 'd)))
-   (cons 'col3 (new-GenSeries (vector 'a 1.5 20 10) #f))
-   (cons 'col4 (new-ISeries (vector 21 22 23 24) #f))))
+   (cons 'col3 (new-GenSeries (vector 'a 1.5 20 10)))
+   (cons 'col4 (new-ISeries (fxvector 21 22 23 24)))))
 
 (define columns-mixed-8
   (list 
-   (cons 'col1 (new-ISeries (vector 11 21 31 41) #f))
+   (cons 'col1 (new-ISeries (fxvector 11 21 31 41)))
    (cons 'col2 (new-CSeries (vector 'a 'b 'g 'd)))
-   (cons 'col3 (new-GenSeries (vector 'a 'b 'c 'd) #f))
-   (cons 'col4 (new-ISeries (vector 22 22 23 24) #f))))
+   (cons 'col3 (new-GenSeries (vector 'a 'b 'c 'd)))
+   (cons 'col4 (new-ISeries (fxvector 22 22 23 24)))))
 
 ; create new data-frame-mixed-7
 (define data-frame-mixed-7 (new-data-frame columns-mixed-7))
@@ -2509,12 +2573,12 @@ Returns a new DataFrame.
 ; create new data-frame-mixed-8
 (define data-frame-mixed-8 (new-data-frame columns-mixed-8))
 
-(frame-write-tab data-frame-mixed-7 (current-output-port))
+(data-frame-write-delim data-frame-mixed-7)
 
-(frame-write-tab data-frame-mixed-8 (current-output-port))
+(data-frame-write-delim data-frame-mixed-8)
 
-(frame-write-tab (data-frame-join-inner data-frame-mixed-7 data-frame-mixed-8
-  #:on (list 'col3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-inner data-frame-mixed-7 data-frame-mixed-8
+  #:on (list 'col3)))
 
 ;; output ;;
 col1	col2	col3	col4
@@ -2544,17 +2608,17 @@ Returns a new DataFrame.
 @codeblock|{
 (define columns-mixed-7
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
    (cons 'col2 (new-CSeries (vector 'a 'b 'c 'd)))
-   (cons 'col3 (new-GenSeries (vector 'a 1.5 20 10) #f))
-   (cons 'col4 (new-ISeries (vector 21 22 23 24) #f))))
+   (cons 'col3 (new-GenSeries (vector 'a 1.5 20 10)))
+   (cons 'col4 (new-ISeries (fxvector 21 22 23 24)))))
 
 (define columns-mixed-8
   (list 
-   (cons 'col1 (new-ISeries (vector 11 21 31 41) #f))
+   (cons 'col1 (new-ISeries (fxvector 11 21 31 41)))
    (cons 'col2 (new-CSeries (vector 'a 'b 'g 'd)))
-   (cons 'col3 (new-GenSeries (vector 'a 'b 'c 'd) #f))
-   (cons 'col4 (new-ISeries (vector 22 22 23 24) #f))))
+   (cons 'col3 (new-GenSeries (vector 'a 'b 'c 'd)))
+   (cons 'col4 (new-ISeries (fxvector 22 22 23 24)))))
 
 ; create new data-frame-mixed-7
 (define data-frame-mixed-7 (new-data-frame columns-mixed-7))
@@ -2562,12 +2626,12 @@ Returns a new DataFrame.
 ; create new data-frame-mixed-8
 (define data-frame-mixed-8 (new-data-frame columns-mixed-8))
 
-(frame-write-tab data-frame-mixed-7 (current-output-port))
+(data-frame-write-delim data-frame-mixed-7)
 
-(frame-write-tab data-frame-mixed-8 (current-output-port))
+(data-frame-write-delim data-frame-mixed-8)
 
-(frame-write-tab (data-frame-join-outer data-frame-mixed-7 data-frame-mixed-8
-  #:on (list 'col3)) (current-output-port))
+(data-frame-write-delim (data-frame-join-outer data-frame-mixed-7 data-frame-mixed-8
+  #:on (list 'col3)))
 
 ;; output ;;
 col1	col2	col3	col4
@@ -2603,17 +2667,17 @@ Returns a new DataFrame.
 @codeblock|{
 (define columns-mixed-1
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-   (cons 'col2 (new-NSeries (flvector 5.2 6.2 7.2 8.2) #f))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+   (cons 'col2 (new-NSeries (flvector 5.2 6.2 7.2 8.2)))
    (cons 'col3 (new-CSeries (vector 'a 'b 'c 'd)))
-   (cons 'col4 (new-ISeries (vector 21 22 23 24) #f))))
+   (cons 'col4 (new-ISeries (fxvector 21 22 23 24)))))
 
 (define columns-mixed-2
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-   (cons 'col2 (new-NSeries (flvector 25.3 26.3 27.3 28.3) #f))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+   (cons 'col2 (new-NSeries (flvector 25.3 26.3 27.3 28.3)))
    (cons 'col3 (new-CSeries (vector 'e 'f 'g 'h)))
-   (cons 'col4 (new-ISeries (vector 1 2 3 4) #f))))
+   (cons 'col4 (new-ISeries (fxvector 1 2 3 4)))))
 
 ; create new data-frame-mixed-1
 (define data-frame-mixed-1 (new-data-frame columns-mixed-1))
@@ -2622,12 +2686,12 @@ Returns a new DataFrame.
 (define data-frame-mixed-2 (new-data-frame columns-mixed-2))
 
 ; display created data frames
-(frame-write-tab data-frame-mixed-1 (current-output-port))
+(data-frame-write-delim data-frame-mixed-1)
 
-(frame-write-tab data-frame-mixed-2 (current-output-port))
+(data-frame-write-delim data-frame-mixed-2)
 
 ; vertical concat
-(frame-write-tab (data-frame-concat-vertical data-frame-mixed-1 data-frame-mixed-2) (current-output-port))
+(data-frame-write-delim (data-frame-concat-vertical data-frame-mixed-1 data-frame-mixed-2))
 
 ;; output ;;
 col1	col2	col3	col4
@@ -2664,17 +2728,17 @@ Returns a new DataFrame.
 @codeblock|{
 (define columns-mixed-1
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-   (cons 'col2 (new-NSeries (flvector 5.2 6.2 7.2 8.2) #f))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+   (cons 'col2 (new-NSeries (flvector 5.2 6.2 7.2 8.2)))
    (cons 'col3 (new-CSeries (vector 'a 'b 'c 'd)))
-   (cons 'col4 (new-ISeries (vector 21 22 23 24) #f))))
+   (cons 'col4 (new-ISeries (fxvector 21 22 23 24)))))
 
 (define columns-mixed-2
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4) #f))
-   (cons 'col2 (new-NSeries (flvector 25.3 26.3 27.3 28.3) #f))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4)))
+   (cons 'col2 (new-NSeries (flvector 25.3 26.3 27.3 28.3)))
    (cons 'col3 (new-CSeries (vector 'e 'f 'g 'h)))
-   (cons 'col4 (new-ISeries (vector 1 2 3 4) #f))))
+   (cons 'col4 (new-ISeries (fxvector 1 2 3 4)))))
 
 ; create new data-frame-mixed-1
 (define data-frame-mixed-1 (new-data-frame columns-mixed-1))
@@ -2683,12 +2747,12 @@ Returns a new DataFrame.
 (define data-frame-mixed-2 (new-data-frame columns-mixed-2))
 
 ; display created data frames
-(frame-write-tab data-frame-mixed-1 (current-output-port))
+(data-frame-write-delim data-frame-mixed-1)
 
-(frame-write-tab data-frame-mixed-2 (current-output-port))
+(data-frame-write-delim data-frame-mixed-2)
 
 ; horizontal concat
-(frame-write-tab (data-frame-concat-horizontal data-frame-mixed-1 data-frame-mixed-2) (current-output-port))
+(data-frame-write-delim (data-frame-concat-horizontal data-frame-mixed-1 data-frame-mixed-2))
 
 ;; output ;;
 col1	col2	col3	col4
@@ -2721,15 +2785,15 @@ Returns a new DataFrame.
 @codeblock|{
 (define columns-integer
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4 2 ) #f))
-   (cons 'col2 (new-ISeries (vector 5 6 7 8 6) #f))
-   (cons 'col3 (new-ISeries (vector 9 10 11 12 17) #f))
-   (cons 'col4 (new-ISeries (vector 13 14 15 16 18) #f))))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4 2 )))
+   (cons 'col2 (new-ISeries (fxvector 5 6 7 8 6)))
+   (cons 'col3 (new-ISeries (fxvector 9 10 11 12 17)))
+   (cons 'col4 (new-ISeries (fxvector 13 14 15 16 18)))))
 
 ; create new data-frame-integer
 (define data-frame-integer (new-data-frame columns-integer))
 
-(frame-write-tab data-frame-integer (current-output-port))
+(data-frame-write-delim data-frame-integer)
 
 (data-frame-groupby data-frame-integer (list 'col1))
 
@@ -2774,15 +2838,15 @@ Returns a new DataFrame.
 @codeblock|{
 (define columns-integer
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4 2 ) #f))
-   (cons 'col2 (new-ISeries (vector 5 6 7 8 6) #f))
-   (cons 'col3 (new-ISeries (vector 9 10 11 12 17) #f))
-   (cons 'col4 (new-ISeries (vector 13 14 15 16 18) #f))))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4 2 )))
+   (cons 'col2 (new-ISeries (fxvector 5 6 7 8 6)))
+   (cons 'col3 (new-ISeries (fxvector 9 10 11 12 17)))
+   (cons 'col4 (new-ISeries (fxvector 13 14 15 16 18)))))
 
 ; create new data-frame-integer
 (define data-frame-integer (new-data-frame columns-integer))
 
-(frame-write-tab data-frame-integer (current-output-port))
+(data-frame-write-delim data-frame-integer)
 
 (displayln "data-frame-groupby aggregate mean")
 (apply-agg-data-frame 'mean (data-frame-groupby data-frame-integer (list 'col1 'col2)))
@@ -2862,21 +2926,21 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 @codeblock|{
 (displayln "plotting integer series")
 
-(make-scatter-plot (new-ISeries (vector 1 2 3 4 5) #f))
+(make-scatter-plot (new-ISeries (fxvector 1 2 3 4 5)))
 
-(make-line-plot (new-ISeries (vector 1 2 3 4 5) #f)) }|
+(make-line-plot (new-ISeries (fxvector 1 2 3 4 5))) }|
 
 @(define-runtime-path integer-scatter-line-plots-png "integer_scatter_line_plots.png")
 @image[integer-scatter-line-plots-png]
 
 @codeblock|{
-(define float-column (cons 'col1 (new-NSeries (flvector 1.5 2.5 3.5 4.5) #f)))
+(define float-column (cons 'col1 (new-NSeries (flvector 1.5 2.5 3.5 4.5))))
 
 (displayln "plotting float columns")
 
 (make-scatter-plot float-column)
 
-(make-line-plot float-column)  }|
+(make-line-plot float-column)}|
 
 @(define-runtime-path float-scatter-line-plots-png "float_scatter_line_plots.png")
 @image[float-scatter-line-plots-png]
@@ -2887,9 +2951,9 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 ;******************
 (define integer-columns
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4 4) #f))
-   (cons 'col2 (new-ISeries (vector 5 6 7 8 24) #f))
-   (cons 'col3 (new-ISeries (vector 9 10 11 12 24) #f))))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4 4)))
+   (cons 'col2 (new-ISeries (fxvector 5 6 7 8 24)))
+   (cons 'col3 (new-ISeries (fxvector 9 10 11 12 24)))))
 
 ; create new data-frame-integer
 (define data-frame-integer (new-data-frame integer-columns))
@@ -2912,9 +2976,9 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 ;******************
 (define float-columns
   (list 
-   (cons 'col1 (new-NSeries (flvector 1.5 2.5 3.5 4.5) #f))
-   (cons 'col2 (new-NSeries (flvector 5.5 6.5 7.5 8.5) #f))
-   (cons 'col3 (new-NSeries (flvector 9.5 10.5 11.5 12.5) #f))))
+   (cons 'col1 (new-NSeries (flvector 1.5 2.5 3.5 4.5)))
+   (cons 'col2 (new-NSeries (flvector 5.5 6.5 7.5 8.5)))
+   (cons 'col3 (new-NSeries (flvector 9.5 10.5 11.5 12.5)))))
 
 ; create new data-frame-float
 (define data-frame-float (new-data-frame float-columns))
@@ -2929,9 +2993,9 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 
 (displayln "discrete histogram")
 
-(make-discrete-histogram (new-ISeries (vector 1 2 2 3 4 5 5 5) #f))
+(make-discrete-histogram (new-ISeries (fxvector 1 2 2 3 4 5 5 5)))
 
-(make-discrete-histogram (new-GenSeries (vector 1 2 2 1.5 3 4 5 5 'a 5) #f))
+(make-discrete-histogram (new-GenSeries (vector 1 2 2 1.5 3 4 5 5 'a 5)))
 
 (make-discrete-histogram float-column)
 
@@ -2939,11 +3003,11 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 
 (make-discrete-histogram data-frame-float)
 
-(get-index-vector (new-ISeries (vector 1 2 3 4 4) #f))
+(get-index-vector (new-ISeries (fxvector 1 2 3 4 4)))
 
 (define series-integer-labeled
-  (new-ISeries (vector 1 2 3 4)
-               (list 'a 'b 'c 'd)))
+  (new-ISeries (fxvector 1 2 3 4)
+               #:index (list 'a 'b 'c 'd)))
 
 (get-index-vector series-integer-labeled)
 
@@ -2956,12 +3020,12 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 ;******************
 (define integer-columns-2
   (list 
-   (cons 'col1 (new-ISeries (vector 1 2 3 4)
-                            (build-index-from-list (list 'a 'b 'c 'd))))
-   (cons 'col2 (new-ISeries (vector 5 6 7 8)
-                            (build-index-from-list (list 'e 'f 'g 'h))))
-   (cons 'col3 (new-ISeries (vector 9 10 11 12)
-                            (build-index-from-list (list 'i 'j 'k 'l))))))
+   (cons 'col1 (new-ISeries (fxvector 1 2 3 4)
+                            #:index (build-index-from-list (list 'a 'b 'c 'd))))
+   (cons 'col2 (new-ISeries (fxvector 5 6 7 8)
+                            #:index (build-index-from-list (list 'e 'f 'g 'h))))
+   (cons 'col3 (new-ISeries (fxvector 9 10 11 12)
+                            #:index (build-index-from-list (list 'i 'j 'k 'l))))))
 
 ; create new data-frame-integer
 (define data-frame-integer-2 (new-data-frame integer-columns-2))
