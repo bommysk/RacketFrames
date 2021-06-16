@@ -1987,6 +1987,26 @@ levels shown in the table-of-contents panel.
 ...
 }
 
+@subsubsection[#:tag "cseries-head"]{cseries-head}
+@defproc[(cseries-head (arg0 CSeries) (arg1 (#:rows Index))) CSeries]{
+...
+}
+
+@subsubsection[#:tag "cseries-head-display"]{cseries-head-display}
+@defproc[(cseries-head-display (arg0 CSeries) (arg1 (#:rows Index))) Void]{
+...
+}
+
+@subsubsection[#:tag "cseries-unique"]{cseries-unique}
+@defproc[(cseries-unique (arg0 CSeries)) CSeries]{
+...
+}
+
+@subsubsection[#:tag "cseries-append"]{cseries-append}
+@defproc[(cseries-append (arg0 CSeries) (arg1 CSeries)) CSeries]{
+...
+}
+
 @subsection[#:style 'toc]{Boolean Series}
 @"\U2190" Boolean Series is abbreviated to BSeries in RacketFrames.
 
@@ -2122,11 +2142,9 @@ levels shown in the table-of-contents panel.
 
 @subsection[#:style 'toc]{Generic Series}
 
-@local-table-of-contents[]
+@"\U2190" Abbreviated GenSeries.
 
-@"\U2190" This page has no on-this-page panel in a multi-page
-rendering, because there are no numbered subsections, but it has three
-levels shown in the table-of-contents panel.
+@local-table-of-contents[]
 
 @subsubsection[#:tag "new-GenSeries"]{new-GenSeries}
 @defproc[(new-GenSeries (arg0 (Sequenceof GenericType)) (arg1 (#:index (Option (U (Listof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) GenSeries]{
@@ -3073,65 +3091,77 @@ Returns a new DataFrame.
 @subsection[#:style 'toc]{DataFrame Join}
 
 @local-table-of-contents[]
-
+@subsubsection[#:tag "data-frame-join-left"]{data-frame-join-left}
 @defproc[(data-frame-join-left (arg0 DataFrame) (arg1 DataFrame) (arg2 (#:on (Listof Symbol)))) DataFrame]{
 ...
 }
 
+@subsubsection[#:tag "data-frame-join-right"]{data-frame-join-right}
 @defproc[(data-frame-join-right (arg0 DataFrame) (arg1 DataFrame) (arg2 (#:on (Listof Symbol)))) DataFrame]{
 ...
 }
 
+@subsubsection[#:tag "data-frame-join-inner"]{data-frame-join-inner}
 @defproc[(data-frame-join-inner (arg0 DataFrame) (arg1 DataFrame) (arg2 (#:on (Listof Symbol)))) DataFrame]{
 ...
 }
 
+@subsubsection[#:tag "data-frame-join-outer"]{data-frame-join-outer}
 @defproc[(data-frame-join-outer (arg0 DataFrame) (arg1 DataFrame) (arg2 (#:on (Listof Symbol)))) DataFrame]{
 ...
 }
 
+@subsubsection[#:tag "data-frame-groupby"]{data-frame-groupby}
 @defproc[(data-frame-groupby (arg0 DataFrame) (arg1 (Listof Label))) GroupHash]{
 ...
 }
 
+@subsubsection[#:tag "apply-agg-data-frame"]{apply-agg-data-frame}
 @defproc[(apply-agg-data-frame (arg0 Symbol) (arg1 GroupHash)) Series]{
 ...
 }
 
+@subsubsection[#:tag "copy-column-row-error"]{copy-column-row-error}
 @defproc[(copy-column-row-error (arg0 Series) (arg1 Integer)) Void]{
 ...
 }
 
+@subsubsection[#:tag "copy-column-row"]{copy-column-row}
 @defproc[(copy-column-row (arg0 (Vectorof Series)) (arg1 (Vectorof SeriesBuilder)) (arg2 Index)) Void]{
 ...
 }
 
+@subsubsection[#:tag "dest-mapping-series-builders"]{dest-mapping-series-builders}
 @defproc[(dest-mapping-series-builders (arg0 DataFrameDescription) (arg1 Index)) (Listof SeriesBuilder)]{
 ...
 }
 
+@subsubsection[#:tag "join-column-name"]{join-column-name}
 @defproc[(join-column-name (arg0 Column) (arg1 (Setof Label)) (arg2 String)) Symbol]{
 ...
 }
 
+@subsubsection[#:tag "build-multi-index-from-cols"]{build-multi-index-from-cols}
 @defproc[(build-multi-index-from-cols (arg0 (U (Listof IndexableSeries) Columns))) SIndex]{
 ...
 }
 
+@subsubsection[#:tag "key-cols-sort-lexical"]{key-cols-sort-lexical}
 @defproc[(key-cols-sort-lexical (arg0 Columns)) Columns]{
 ...
 }
 
+@subsubsection[#:tag "key-cols-series"]{key-cols-series}
 @defproc[(key-cols-series (arg0 Columns)) (Listof IndexableSeries)]{
 ...
 }
 
+@subsubsection[#:tag "key-fn"]{key-fn}
 @defproc[(key-fn (arg0 (Listof IndexableSeries))) (Index -> Key)]{
 ...
 }
 
-
-@subsubsection[#:tag "data-frame-join-left"]{data-frame-join-left}
+@subsubsection[#:tag "Example Usage"]{Example Usage}
 @defproc[#:link-target? #f
  (data-frame-join-left [dfa DataFrame] [dfb DataFrame] [on (Listof Symbol)])
 DataFrame?]{
@@ -3188,7 +3218,6 @@ dfa-col1	dfa-col2	dfa-col3	dfa-col4	dfb-col1	dfb-col2	dfb-col4
 
   }|
 
-@subsubsection[#:tag "data-frame-join-right"]{data-frame-join-right}
 @defproc[#:link-target? #f
  (data-frame-join-right [dfa DataFrame] [dfb DataFrame] [on (Listof Symbol)])
 DataFrame?]{
@@ -3244,7 +3273,6 @@ dfa-col1	dfa-col2	dfa-col4	dfb-col1	dfb-col2	dfb-col3	dfb-col4
 ;; output ;;
   }|
 
-@subsubsection[#:tag "data-frame-join-inner"]{data-frame-join-inner}
 @defproc[#:link-target? #f
  (data-frame-join-inner [dfa DataFrame] [dfb DataFrame] [on (Listof Symbol)])
 DataFrame?]{
@@ -3297,7 +3325,6 @@ dfa-col1	dfa-col2	dfa-col3	dfa-col4	dfb-col1	dfb-col2	dfb-col3	dfb-col4
 ;; output ;;
   }|
 
-@subsubsection[#:tag "data-frame-join-outer"]{data-frame-join-outer}
 @defproc[#:link-target? #f
  (data-frame-join-outer [dfa DataFrame] [dfb DataFrame] [on (Listof Symbol)])
 DataFrame?]{
@@ -3356,7 +3383,30 @@ dfa-col1	dfa-col2	dfa-col3	dfa-col4	dfb-col1	dfb-col2	dfb-col3	dfb-col4
 ;; output ;;
   }|
 
+
+@subsection[#:tag "DataFrame Concatenation"]{DataFrame Concatenation}
+
 @subsubsection[#:tag "data-frame-concat-vertical"]{data-frame-concat-vertical}
+@defproc[(data-frame-concat-vertical (arg0 DataFrame) (arg1 DataFrame) (arg2 (#:col (Listof Symbol)))) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-concat-vertical-list"]{data-frame-concat-vertical-list}
+@defproc[(data-frame-concat-vertical-list (arg0 (Listof DataFrame))) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-concat-horizontal"]{data-frame-concat-horizontal}
+@defproc[(data-frame-concat-horizontal (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-concat-horizontal-list"]{data-frame-concat-horizontal-list}
+@defproc[(data-frame-concat-horizontal-list (arg0 (Listof DataFrame))) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "Example Usage"]{Example Usage}
 @defproc[#:link-target? #f
  (data-frame-concat-vertical [dfa DataFrame] [dfb DataFrame] [col (Listof Symbol)])
 DataFrame?]{
