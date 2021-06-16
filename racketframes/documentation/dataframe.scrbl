@@ -412,242 +412,307 @@ Operations between Series (+, -, /, , *) align values based on their associated 
 
 @local-table-of-contents[]
 
+@subsubsection[#:tag "new-ISeries"]{new-ISeries}
 @defproc[(new-ISeries (arg0 (U FxVector (Vectorof Fixnum) (Sequenceof Fixnum) (Sequenceof RFFixnum))) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL)) (arg3 (#:sort Boolean)) (arg4 (#:encode Boolean))) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "set-ISeries-index"]{set-ISeries-index}
 @defproc[(set-ISeries-index (arg0 ISeries) (arg1 (U (Sequenceof IndexDataType) RFIndex))) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "set-ISeries-null-value"]{set-ISeries-null-value}
 @defproc[(set-ISeries-null-value (arg0 ISeries) (arg1 RFNULL)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "set-ISeries-fixnum-null-value-inplace"]{set-ISeries-fixnum-null-value-inplace}
 @defproc[(set-ISeries-fixnum-null-value-inplace (arg0 ISeries) (arg1 Fixnum)) Void]{
 ...
 }
 
+@subsubsection[#:tag "iseries-iref"]{iseries-iref}
 @defproc[(iseries-iref (arg0 ISeries) (arg1 (Listof Index))) (Listof RFFixnum)]{
 ...
 }
 
+@subsubsection[#:tag "iseries-loc-boolean"]{iseries-loc-boolean}
 @defproc[(iseries-loc-boolean (arg0 ISeries) (arg1 (Listof Boolean))) (U RFFixnum ISeries)]{
 ...
 }
 
+@subsubsection[#:tag "iseries-loc"]{iseries-loc}
 @defproc[(iseries-loc (arg0 ISeries) (arg1 (U Label (Listof Label) (Listof Boolean)))) (U RFFixnum ISeries)]{
 ...
 }
 
+@subsubsection[#:tag "iseries-loc-multi-index"]{iseries-loc-multi-index}
 @defproc[(iseries-loc-multi-index (arg0 ISeries) (arg1 (U (Listof String) ListofListofString))) (U RFFixnum ISeries)]{
 ...
 }
 
+@subsubsection[#:tag "iseries-iloc"]{iseries-iloc}
 @defproc[(iseries-iloc (arg0 ISeries) (arg1 (U Index (Listof Index)))) (U RFFixnum ISeries)]{
 ...
 }
 
+@subsubsection[#:tag "iseries-iloc-range"]{iseries-iloc-range}
 @defproc[(iseries-iloc-range (arg0 ISeries) (arg1 Index) (arg2 Index)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "iseries-index-ref"]{iseries-index-ref}
 @defproc[(iseries-index-ref (arg0 ISeries) (arg1 IndexDataType)) (Listof RFFixnum)]{
 ...
 }
 
+@subsubsection[#:tag "iseries-range"]{iseries-range}
 @defproc[(iseries-range (arg0 ISeries) (arg1 Index) (arg2 Index)) (Vectorof RFFixnum)]{
 ...
 }
 
+@subsubsection[#:tag "iseries-length"]{iseries-length}
 @defproc[(iseries-length (arg0 ISeries)) Index]{
 ...
 }
 
+@subsubsection[#:tag "iseries-referencer"]{iseries-referencer}
 @defproc[(iseries-referencer (arg0 ISeries)) (Index -> RFFixnum)]{
 ...
 }
 
+@subsubsection[#:tag "iseries-data"]{iseries-data}
 @defproc[(iseries-data (arg0 ISeries)) (Vectorof RFFixnum)]{
 ...
 }
 
+@subsubsection[#:tag "in-iseries"]{in-iseries}
 @defproc[(in-iseries (arg0 RFFixnum) (arg1 ISeries)) Boolean]{
 ...
 }
 
+@subsubsection[#:tag "iseries-index"]{iseries-index}
 @defproc[(iseries-index (arg0 ISeries)) (U False RFIndex)]{
 ...
 }
 
+@subsubsection[#:tag "iseries-null-value"]{iseries-null-value}
 @defproc[(iseries-null-value (arg0 ISeries)) Fixnum]{
 ...
 }
 
+@subsubsection[#:tag "iseries-custom-null-value"]{iseries-custom-null-value}
 @defproc[(iseries-custom-null-value (arg0 ISeries)) RFNULL]{
 ...
 }
 
+@subsubsection[#:tag "iseries-value-is-null?"]{iseries-value-is-null?}
 @defproc[(iseries-value-is-null? (arg0 ISeries) (arg1 Fixnum)) Boolean]{
 ...
 }
 
+@subsubsection[#:tag "iseries-groupby"]{iseries-groupby}
 @defproc[(iseries-groupby (arg0 ISeries) (arg1 (#:by-value Boolean))) GroupHash]{
 ...
 }
 
+@subsubsection[#:tag "apply-agg-iseries"]{apply-agg-iseries}
 @defproc[(apply-agg-iseries (arg0 Symbol) (arg1 GroupHash)) GenSeries]{
 ...
 }
 
+@subsubsection[#:tag "map/is"]{map/is}
 @defproc[(map/is (arg0 ISeries) (arg1 (Fixnum -> Fixnum))) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "bop/is"]{bop/is}
 @defproc[(bop/is (arg0 ISeries) (arg1 ISeries) (arg2 (Fixnum Fixnum -> Fixnum))) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "comp/is"]{comp/is}
 @defproc[(comp/is (arg0 ISeries) (arg1 ISeries) (arg2 (Fixnum Fixnum -> Boolean))) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "+/is"]{+/is}
 @defproc[(+/is (arg0 ISeries) (arg1 ISeries)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "-/is"]{-/is}
 @defproc[(-/is (arg0 ISeries) (arg1 ISeries)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "*/is"]{*/is}
 @defproc[(*/is (arg0 ISeries) (arg1 ISeries)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "//is"]{//is}
 @defproc[(//is (arg0 ISeries) (arg1 ISeries)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "%/is"]{%/is}
 @defproc[(%/is (arg0 ISeries) (arg1 ISeries)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "r/is"]{r/is}
 @defproc[(r/is (arg0 ISeries) (arg1 ISeries)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "+./is"]{+./is}
 @defproc[(+./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "-./is"]{-./is}
 @defproc[(-./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "*./is"]{*./is}
 @defproc[(*./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "/./is"]{/./is}
 @defproc[(/./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "%./is"]{%./is}
 @defproc[(%./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "r./is"]{r./is}
 @defproc[(r./is (arg0 ISeries) (arg1 Fixnum)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag ">/is"]{>/is}
 @defproc[(>/is (arg0 ISeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "</is"]{</is}
 @defproc[(</is (arg0 ISeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag ">=/is"]{>=/is}
 @defproc[(>=/is (arg0 ISeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "<=/is"]{<=/is}
 @defproc[(<=/is (arg0 ISeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "=/is"]{=/is}
 @defproc[(=/is (arg0 ISeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "!=/is"]{!=/is}
 @defproc[(!=/is (arg0 ISeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag ">./is"]{>./is}
 @defproc[(>./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "<./is"]{<./is}
 @defproc[(<./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag ">=./is"]{>=./is}
 @defproc[(>=./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "<=./is"]{<=./is}
 @defproc[(<=./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "=./is"]{=./is}
 @defproc[(=./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "!=./is"]{!=./is}
 @defproc[(!=./is (arg0 ISeries) (arg1 Fixnum)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "apply-agg-is"]{apply-agg-is}
 @defproc[(apply-agg-is (arg0 Symbol) (arg1 ISeries)) GenericType]{
 ...
 }
 
+@subsubsection[#:tag "apply-stat-is"]{apply-stat-is}
 @defproc[(apply-stat-is (arg0 Symbol) (arg1 ISeries)) Real]{
 ...
 }
 
+@subsubsection[#:tag "iseries-print"]{iseries-print}
 @defproc[(iseries-print (arg0 ISeries) (arg1 (#:output-port Output-Port))) Void]{
 ...
 }
 
+@subsubsection[#:tag "iseries-filter"]{iseries-filter}
 @defproc[(iseries-filter (arg0 ISeries) (arg1 (RFFixnum -> Boolean))) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "iseries-filter-not"]{iseries-filter-not}
 @defproc[(iseries-filter-not (arg0 ISeries) (arg1 (RFFixnum -> Boolean))) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "fxvector->list"]{fxvector->list}
 @defproc[(fxvector->list (arg0 FxVector) (arg1 Fixnum)) (Listof Fixnum)]{
 ...
 }
 
+@subsubsection[#:tag "list->fxvector"]{list->fxvector}
 @defproc[(list->fxvector (arg0 (Listof Fixnum))) FxVector]{
 ...
 }
 
+@subsubsection[#:tag "iseries-notna"]{iseries-notna}
 @defproc[(iseries-notna (arg0 ISeries)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "iseries-isna"]{iseries-isna}
 @defproc[(iseries-isna (arg0 ISeries)) ISeries]{
 ...
 }
 
+@subsubsection[#:tag "make-RFFixnum-vector"]{make-RFFixnum-vector}
 @defproc[(make-RFFixnum-vector (arg0 (U (Sequenceof Fixnum) (Sequenceof RFFixnum)))) (Vectorof RFFixnum)]{
 ...
 }
 
+@subsubsection[#:tag "derive-fixnum-value"]{derive-fixnum-value}
+@defproc[(derive-fixnum-value (arg0 ISeries) (arg1 RFFixnum)) Fixnum]{
+...
+}
+
+@subsubsection[#:tag "Example Usage"]{Example Usage}
 @defproc[#:link-target? #f
  (new-ISeries [data (Vectorof Fixnum)] [label (Option (U (Listof Label) SIndex))])
 ISeries?]{
@@ -1066,259 +1131,322 @@ Returns the Fixnum value at the specified index in the series.
 
 @local-table-of-contents[]
 
+@subsubsection[#:tag "new-NSeries"]{new-NSeries}
 @defproc[(new-NSeries (arg0 (U (Sequenceof Flonum) FlVector)) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL)) (arg3 (#:sort Boolean)) (arg4 (#:encode Boolean))) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "set-NSeries-index"]{set-NSeries-index}
 @defproc[(set-NSeries-index (arg0 NSeries) (arg1 (U (Listof IndexDataType) RFIndex))) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "set-NSeries-null-value"]{set-NSeries-null-value}
 @defproc[(set-NSeries-null-value (arg0 NSeries) (arg1 RFNULL)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "nseries-custom-null-value"]{nseries-custom-null-value}
 @defproc[(nseries-custom-null-value (arg0 NSeries)) RFNULL]{
 ...
 }
 
+@subsubsection[#:tag "nseries-null-value"]{nseries-null-value}
 @defproc[(nseries-null-value (arg0 NSeries)) Flonum]{
 ...
 }
 
+@subsubsection[#:tag "set-NSeries-flonum-null-value-inplace"]{set-NSeries-flonum-null-value-inplace}
 @defproc[(set-NSeries-flonum-null-value-inplace (arg0 NSeries) (arg1 Flonum)) Void]{
 ...
 }
 
+@subsubsection[#:tag "nseries-iref"]{nseries-iref}
 @defproc[(nseries-iref (arg0 NSeries) (arg1 (Listof Index))) (Listof Flonum)]{
 ...
 }
 
+@subsubsection[#:tag "nseries-loc-boolean"]{nseries-loc-boolean}
 @defproc[(nseries-loc-boolean (arg0 NSeries) (arg1 (Listof Boolean))) (U Flonum NSeries)]{
 ...
 }
 
+@subsubsection[#:tag "nseries-loc"]{nseries-loc}
 @defproc[(nseries-loc (arg0 NSeries) (arg1 (U Label (Listof Label) (Listof Boolean)))) (U Flonum NSeries)]{
 ...
 }
 
+@subsubsection[#:tag "nseries-loc-multi-index"]{nseries-loc-multi-index}
 @defproc[(nseries-loc-multi-index (arg0 NSeries) (arg1 (U (Listof String) ListofListofString))) (U Flonum NSeries)]{
 ...
 }
 
+@subsubsection[#:tag "nseries-iloc"]{nseries-iloc}
 @defproc[(nseries-iloc (arg0 NSeries) (arg1 (U Index (Listof Index)))) (U Flonum NSeries)]{
 ...
 }
 
+@subsubsection[#:tag "nseries-iloc-range"]{nseries-iloc-range}
 @defproc[(nseries-iloc-range (arg0 NSeries) (arg1 Index) (arg2 Index)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "nseries-index-ref"]{nseries-index-ref}
 @defproc[(nseries-index-ref (arg0 NSeries) (arg1 IndexDataType)) (Listof Flonum)]{
 ...
 }
 
+@subsubsection[#:tag "nseries-range"]{nseries-range}
 @defproc[(nseries-range (arg0 NSeries) (arg1 Index)) FlVector]{
 ...
 }
 
+@subsubsection[#:tag "nseries-referencer"]{nseries-referencer}
 @defproc[(nseries-referencer (arg0 NSeries)) (Index -> Flonum)]{
 ...
 }
 
+@subsubsection[#:tag "nseries-length"]{nseries-length}
 @defproc[(nseries-length (arg0 NSeries)) Index]{
 ...
 }
 
+@subsubsection[#:tag "nseries-data"]{nseries-data}
 @defproc[(nseries-data (arg0 NSeries)) FlVector]{
 ...
 }
 
+@subsubsection[#:tag "in-nseries"]{in-nseries}
 @defproc[(in-nseries (arg0 Flonum) (arg1 NSeries)) Boolean]{
 ...
 }
 
+@subsubsection[#:tag "nseries-groupby"]{nseries-groupby}
 @defproc[(nseries-groupby (arg0 NSeries) (arg1 (#:by-value Boolean))) GroupHash]{
 ...
 }
 
+@subsubsection[#:tag "apply-agg-nseries"]{apply-agg-nseries}
 @defproc[(apply-agg-nseries (arg0 Symbol) (arg1 GroupHash)) GenSeries]{
 ...
 }
 
+@subsubsection[#:tag "nseries-index"]{nseries-index}
 @defproc[(nseries-index (arg0 NSeries)) (U False RFIndex)]{
 ...
 }
 
+@subsubsection[#:tag "map/ns"]{map/ns}
 @defproc[(map/ns (arg0 NSeries) (arg1 (Flonum -> Flonum))) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "bop/ns"]{bop/ns}
 @defproc[(bop/ns (arg0 NSeries) (arg1 NSeries) (arg2 (Flonum Flonum -> Flonum))) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "+/ns"]{+/ns}
 @defproc[(+/ns (arg0 NSeries) (arg1 NSeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "-/ns"]{-/ns}
 @defproc[(-/ns (arg0 NSeries) (arg1 NSeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "*/ns"]{*/ns}
 @defproc[(*/ns (arg0 NSeries) (arg1 NSeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "//ns"]{//ns}
 @defproc[(//ns (arg0 NSeries) (arg1 NSeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag ">/ns"]{>/ns}
 @defproc[(>/ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "</ns"]{</ns}
 @defproc[(</ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag ">=/ns"]{>=/ns}
 @defproc[(>=/ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "<=/ns"]{<=/ns}
 @defproc[(<=/ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "=/ns"]{=/ns}
 @defproc[(=/ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "!=/ns"]{!=/ns}
 @defproc[(!=/ns (arg0 NSeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "+./ns"]{+./ns}
 @defproc[(+./ns (arg0 NSeries) (arg1 Flonum)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "-./ns"]{-./ns}
 @defproc[(-./ns (arg0 NSeries) (arg1 Flonum)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "*./ns"]{*./ns}
 @defproc[(*./ns (arg0 NSeries) (arg1 Flonum)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "/./ns"]{/./ns}
 @defproc[(/./ns (arg0 NSeries) (arg1 Flonum)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "+/ns/is"]{+/ns/is}
 @defproc[(+/ns/is (arg0 NSeries) (arg1 ISeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "-/ns/is"]{-/ns/is}
 @defproc[(-/ns/is (arg0 NSeries) (arg1 ISeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "*/ns/is"]{*/ns/is}
 @defproc[(*/ns/is (arg0 NSeries) (arg1 ISeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "//ns/is"]{//ns/is}
 @defproc[(//ns/is (arg0 NSeries) (arg1 ISeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "+/is/ns"]{+/is/ns}
 @defproc[(+/is/ns (arg0 ISeries) (arg1 NSeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "-/is/ns"]{-/is/ns}
 @defproc[(-/is/ns (arg0 ISeries) (arg1 NSeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "*/is/ns"]{*/is/ns}
 @defproc[(*/is/ns (arg0 ISeries) (arg1 NSeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag "//is/ns"]{//is/ns}
 @defproc[(//is/ns (arg0 ISeries) (arg1 NSeries)) NSeries]{
 ...
 }
 
+@subsubsection[#:tag ">/ns/is"]{>/ns/is}
 @defproc[(>/ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "</ns/is"]{</ns/is}
 @defproc[(</ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag ">=/ns/is"]{>=/ns/is}
 @defproc[(>=/ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "<=/ns/is"]{<=/ns/is}
 @defproc[(<=/ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "=/ns/is"]{=/ns/is}
 @defproc[(=/ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "!=/ns/is"]{!=/ns/is}
 @defproc[(!=/ns/is (arg0 NSeries) (arg1 ISeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag ">/is/ns"]{>/is/ns}
 @defproc[(>/is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "</is/ns"]{</is/ns}
 @defproc[(</is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag ">=/is/ns"]{>=/is/ns}
 @defproc[(>=/is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "<=/is/ns"]{<=/is/ns}
 @defproc[(<=/is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "=/is/ns"]{=/is/ns}
 @defproc[(=/is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "!=/is/ns"]{!=/is/ns}
 @defproc[(!=/is/ns (arg0 ISeries) (arg1 NSeries)) BSeries]{
 ...
 }
 
+@subsubsection[#:tag "apply-agg-ns"]{apply-agg-ns}
 @defproc[(apply-agg-ns (arg0 Symbol) (arg1 NSeries)) GenericType]{
 ...
 }
 
+@subsubsection[#:tag "apply-stat-ns"]{apply-stat-ns}
 @defproc[(apply-stat-ns (arg0 Symbol) (arg1 NSeries)) Real]{
 ...
 }
 
+@subsubsection[#:tag "flvector->list"]{flvector->list}
 @defproc[(flvector->list (arg0 FlVector) (arg1 (#:index Fixnum))) (Listof Flonum)]{
 ...
 }
 
+@subsubsection[#:tag "flvector->vector"]{flvector->vector}
 @defproc[(flvector->vector (arg0 FlVector) (arg1 (#:index Fixnum))) (Vectorof Flonum)]{
 ...
 }
 
+@subsubsection[#:tag "list->flvector"]{list->flvector}
 @defproc[(list->flvector (arg0 (Listof Flonum))) FlVector]{
 ...
 }
 
+@subsubsection[#:tag "nseries-print"]{nseries-print}
 @defproc[(nseries-print (arg0 NSeries) (arg1 (#:output-port Output-Port))) Void]{
 ...
 }
 
-@subsubsection[#:style 'toc]{Numerical Series Example Usage}
+@subsubsection[#:style 'toc #:tag "Example Usage"]{Example Usage}
 @defproc[#:link-target? #f
  (new-NSeries [data (Vectorof Float)] [label (Option (U (Lnstof Label) SIndex))])
 NSeries?]{
@@ -1745,11 +1873,119 @@ Returns the Float value at the specified index in the series.
 
 @local-table-of-contents[]
 
-@subsubsection[#:tag "new-CSeries"]{new-CSeries}
-
 @"\U2190" This page has no on-this-page panel in a multi-page
 rendering, because there are no numbered subsections, but it has three
 levels shown in the table-of-contents panel.
+
+@subsubsection[#:tag "new-CSeries"]{new-CSeries}
+@defproc[(new-CSeries (arg0 (Sequenceof Label)) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) CSeries]{
+...
+}
+
+@subsubsection[#:tag "set-CSeries-index"]{set-CSeries-index}
+@defproc[(set-CSeries-index (arg0 CSeries) (arg1 (U (Listof IndexDataType) RFIndex))) CSeries]{
+...
+}
+
+@subsubsection[#:tag "set-CSeries-null-value"]{set-CSeries-null-value}
+@defproc[(set-CSeries-null-value (arg0 CSeries) (arg1 RFNULL)) CSeries]{
+...
+}
+
+@subsubsection[#:tag "set-CSeries-label-null-value-inplace"]{set-CSeries-label-null-value-inplace}
+@defproc[(set-CSeries-label-null-value-inplace (arg0 CSeries) (arg1 Label)) Void]{
+...
+}
+
+@subsubsection[#:tag "cseries-length"]{cseries-length}
+@defproc[(cseries-length (arg0 CSeries)) Index]{
+...
+}
+
+@subsubsection[#:tag "cseries-iref"]{cseries-iref}
+@defproc[(cseries-iref (arg0 CSeries) (arg1 (Listof Index))) (Listof Label)]{
+...
+}
+
+@subsubsection[#:tag "cseries-range"]{cseries-range}
+@defproc[(cseries-range (arg0 CSeries) (arg1 Index)) (Vectorof Label)]{
+...
+}
+
+@subsubsection[#:tag "cseries-data"]{cseries-data}
+@defproc[(cseries-data (arg0 CSeries)) (Vectorof Label)]{
+...
+}
+
+@subsubsection[#:tag "cseries-nominal-data"]{cseries-nominal-data}
+@defproc[(cseries-nominal-data (arg0 CSeries)) (Vectorof Label)]{
+...
+}
+
+@subsubsection[#:tag "cseries-index"]{cseries-index}
+@defproc[(cseries-index (arg0 CSeries)) (U False RFIndex)]{
+...
+}
+
+@subsubsection[#:tag "cseries-null-value"]{cseries-null-value}
+@defproc[(cseries-null-value (arg0 CSeries)) Label]{
+...
+}
+
+@subsubsection[#:tag "cseries-custom-null-value"]{cseries-custom-null-value}
+@defproc[(cseries-custom-null-value (arg0 CSeries)) RFNULL]{
+...
+}
+
+@subsubsection[#:tag "in-cseries"]{in-cseries}
+@defproc[(in-cseries (arg0 Label) (arg1 CSeries)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "cseries-value-is-null?"]{cseries-value-is-null?}
+@defproc[(cseries-value-is-null? (arg0 CSeries) (arg1 Label)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "cseries-referencer"]{cseries-referencer}
+@defproc[(cseries-referencer (arg0 CSeries)) (Index -> Label)]{
+...
+}
+
+@subsubsection[#:tag "cseries-iloc"]{cseries-iloc}
+@defproc[(cseries-iloc (arg0 CSeries) (arg1 (U Index (Listof Index)))) (U Label CSeries)]{
+...
+}
+
+@subsubsection[#:tag "cseries-groupby"]{cseries-groupby}
+@defproc[(cseries-groupby (arg0 CSeries) (arg1 (#:by-value Boolean))) GroupHash]{
+...
+}
+
+@subsubsection[#:tag "cseries-index-ref"]{cseries-index-ref}
+@defproc[(cseries-index-ref (arg0 CSeries) (arg1 IndexDataType)) (Listof Label)]{
+...
+}
+
+@subsubsection[#:tag "cseries-print"]{cseries-print}
+@defproc[(cseries-print (arg0 CSeries) (arg1 (#:output-port Output-Port))) Void]{
+...
+}
+
+@subsubsection[#:tag "cseries-loc-boolean"]{cseries-loc-boolean}
+@defproc[(cseries-loc-boolean (arg0 CSeries) (arg1 (Listof Boolean))) (U Label CSeries)]{
+...
+}
+
+@subsubsection[#:tag "cseries-loc"]{cseries-loc}
+@defproc[(cseries-loc (arg0 CSeries) (arg1 (U Label (Listof Label) (Listof Boolean)))) (U Label CSeries)]{
+...
+}
+
+@subsubsection[#:tag "cseries-loc-multi-index"]{cseries-loc-multi-index}
+@defproc[(cseries-loc-multi-index (arg0 CSeries) (arg1 (U (Listof String) ListofListofString))) (U Label CSeries)]{
+...
+}
 
 @subsection[#:style 'toc]{Boolean Series}
 @"\U2190" Boolean Series is abbreviated to BSeries in RacketFrames.
@@ -1888,12 +2124,475 @@ levels shown in the table-of-contents panel.
 
 @local-table-of-contents[]
 
+@"\U2190" This page has no on-this-page panel in a multi-page
+rendering, because there are no numbered subsections, but it has three
+levels shown in the table-of-contents panel.
+
 @subsubsection[#:tag "new-GenSeries"]{new-GenSeries}
+@defproc[(new-GenSeries (arg0 (Sequenceof GenericType)) (arg1 (#:index (Option (U (Listof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) GenSeries]{
+...
+}
+
+@subsubsection[#:tag "set-GenSeries-index"]{set-GenSeries-index}
+@defproc[(set-GenSeries-index (arg0 GenSeries) (arg1 (U (Listof IndexDataType) RFIndex))) GenSeries]{
+...
+}
+
+@subsubsection[#:tag "set-GenSeries-null-value"]{set-GenSeries-null-value}
+@defproc[(set-GenSeries-null-value (arg0 GenSeries) (arg1 RFNULL)) GenSeries]{
+...
+}
+
+@subsubsection[#:tag "set-GenSeries-any-null-value-inplace"]{set-GenSeries-any-null-value-inplace}
+@defproc[(set-GenSeries-any-null-value-inplace (arg0 GenSeries) (arg1 GenericType)) Void]{
+...
+}
+
+@subsubsection[#:tag "gen-series-iref"]{gen-series-iref}
+@defproc[(gen-series-iref (arg0 GenSeries) (arg1 (Listof Index))) GenericType]{
+...
+}
+
+@subsubsection[#:tag "gen-series-index-ref"]{gen-series-index-ref}
+@defproc[(gen-series-index-ref (arg0 GenSeries) (arg1 IndexDataType)) (Listof GenericType)]{
+...
+}
+
+@subsubsection[#:tag "gen-series-label-ref"]{gen-series-label-ref}
+@defproc[(gen-series-label-ref (arg0 GenSeries) (arg1 Label)) GenericType]{
+...
+}
+
+@subsubsection[#:tag "gen-series-range"]{gen-series-range}
+@defproc[(gen-series-range (arg0 GenSeries) (arg1 Index) (arg2 Index)) (Vectorof GenericType)]{
+...
+}
+
+@subsubsection[#:tag "gen-series-length"]{gen-series-length}
+@defproc[(gen-series-length (arg0 GenSeries)) Index]{
+...
+}
+
+@subsubsection[#:tag "gen-series-referencer"]{gen-series-referencer}
+@defproc[(gen-series-referencer (arg0 GenSeries)) (Index -> GenericType)]{
+...
+}
+
+@subsubsection[#:tag "gen-series-data"]{gen-series-data}
+@defproc[(gen-series-data (arg0 GenSeries)) (Vectorof GenericType)]{
+...
+}
+
+@subsubsection[#:tag "gen-series-index"]{gen-series-index}
+@defproc[(gen-series-index (arg0 GenSeries)) (U False RFIndex)]{
+...
+}
+
+@subsubsection[#:tag "in-gen-series"]{in-gen-series}
+@defproc[(in-gen-series (arg0 GenericType) (arg1 GenSeries)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "gen-series-null-value"]{gen-series-null-value}
+@defproc[(gen-series-null-value (arg0 GenSeries)) GenericType]{
+...
+}
+
+@subsubsection[#:tag "gen-series-loc-boolean"]{gen-series-loc-boolean}
+@defproc[(gen-series-loc-boolean (arg0 GenSeries) (arg1 (Listof Boolean))) (U GenericType GenSeries)]{
+...
+}
+
+@subsubsection[#:tag "gen-series-loc"]{gen-series-loc}
+@defproc[(gen-series-loc (arg0 GenSeries) (arg1 (U Label (Listof Label) (Listof Boolean)))) (U GenericType GenSeries)]{
+...
+}
+
+@subsubsection[#:tag "gen-series-loc-multi-index"]{gen-series-loc-multi-index}
+@defproc[(gen-series-loc-multi-index (arg0 GenSeries) (arg1 (U (Listof String) ListofListofString))) (U GenericType GenSeries)]{
+...
+}
+
+@subsubsection[#:tag "gen-series-iloc"]{gen-series-iloc}
+@defproc[(gen-series-iloc (arg0 GenSeries) (arg1 (U Index (Listof Index)))) (U GenericType GenSeries)]{
+...
+}
+
+@subsubsection[#:tag "gen-series-iloc-range"]{gen-series-iloc-range}
+@defproc[(gen-series-iloc-range (arg0 GenSeries) (arg1 Index) (arg2 Index)) GenSeries]{
+...
+}
+
+@subsubsection[#:tag "map/gen-s"]{map/gen-s}
+@defproc[(map/gen-s (arg0 GenSeries) (arg1 (GenericType -> GenericType))) GenSeries]{
+...
+}
+
+@subsubsection[#:tag "gen-series-print"]{gen-series-print}
+@defproc[(gen-series-print (arg0 GenSeries) (arg1 (#:output-port Output-Port))) Void]{
+...
+}
+
+@subsection[#:style 'toc]{Datetime Series}
 
 @"\U2190" This page has no on-this-page panel in a multi-page
 rendering, because there are no numbered subsections, but it has three
 levels shown in the table-of-contents panel.
 
+@local-table-of-contents[]
+
+@subsubsection[#:tag "new-DatetimeSeries"]{new-DatetimeSeries}
+@defproc[(new-DatetimeSeries (arg0 (U (Vectorof Datetime) (Sequenceof Datetime) (Sequenceof RFDatetime))) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) DatetimeSeries]{
+...
+}
+
+@subsubsection[#:tag "set-DatetimeSeries-index"]{set-DatetimeSeries-index}
+@defproc[(set-DatetimeSeries-index (arg0 DatetimeSeries) (arg1 (U (Listof IndexDataType) RFIndex))) DatetimeSeries]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-iref"]{datetime-series-iref}
+@defproc[(datetime-series-iref (arg0 DatetimeSeries) (arg1 (Listof Index))) (Listof RFDatetime)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-index-ref"]{datetime-series-index-ref}
+@defproc[(datetime-series-index-ref (arg0 DatetimeSeries) (arg1 IndexDataType)) (Listof RFDatetime)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-loc-multi-index"]{datetime-series-loc-multi-index}
+@defproc[(datetime-series-loc-multi-index (arg0 DatetimeSeries) (arg1 (U (Listof String) ListofListofString))) (U RFDatetime DatetimeSeries)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-loc-boolean"]{datetime-series-loc-boolean}
+@defproc[(datetime-series-loc-boolean (arg0 DatetimeSeries) (arg1 (Listof Boolean))) (U RFDatetime DatetimeSeries)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-loc"]{datetime-series-loc}
+@defproc[(datetime-series-loc (arg0 DatetimeSeries) (arg1 (U Label (Listof Label) (Listof Boolean)))) (U RFDatetime DatetimeSeries)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-iloc"]{datetime-series-iloc}
+@defproc[(datetime-series-iloc (arg0 DatetimeSeries) (arg1 (U Index (Listof Index)))) (U RFDatetime DatetimeSeries)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-iloc-range"]{datetime-series-iloc-range}
+@defproc[(datetime-series-iloc-range (arg0 DatetimeSeries) (arg1 Index) (arg2 Index)) DatetimeSeries]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-label-ref"]{datetime-series-label-ref}
+@defproc[(datetime-series-label-ref (arg0 DatetimeSeries) (arg1 Label)) (Listof RFDatetime)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-range"]{datetime-series-range}
+@defproc[(datetime-series-range (arg0 DatetimeSeries) (arg1 Index) (arg2 Index)) (Vectorof RFDatetime)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-length"]{datetime-series-length}
+@defproc[(datetime-series-length (arg0 DatetimeSeries)) Index]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-referencer"]{datetime-series-referencer}
+@defproc[(datetime-series-referencer (arg0 DatetimeSeries)) (Index -> RFDatetime)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-data"]{datetime-series-data}
+@defproc[(datetime-series-data (arg0 DatetimeSeries)) (Vectorof RFDatetime)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-index"]{datetime-series-index}
+@defproc[(datetime-series-index (arg0 DatetimeSeries)) (U False RFIndex)]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-null-value"]{datetime-series-null-value}
+@defproc[(datetime-series-null-value (arg0 DatetimeSeries)) RFNULL]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-datetime-null-value"]{datetime-series-datetime-null-value}
+@defproc[(datetime-series-datetime-null-value (arg0 DatetimeSeries)) Datetime]{
+...
+}
+
+@subsubsection[#:tag "in-datetime-series"]{in-datetime-series}
+@defproc[(in-datetime-series (arg0 Datetime) (arg1 DatetimeSeries)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "map/datetime-series-data"]{map/datetime-series-data}
+@defproc[(map/datetime-series-data (arg0 DatetimeSeries) (arg1 (Datetime -> Datetime))) DatetimeSeries]{
+...
+}
+
+@subsubsection[#:tag "datetime-range"]{datetime-range}
+@defproc[(datetime-range (arg0 Datetime) (arg1 (Option Symbol)) (arg2 (Option Index)) (arg3 (Option Datetime))) (Listof RFDatetime)]{
+...
+}
+
+@subsubsection[#:tag "bop/datetime-series"]{bop/datetime-series}
+@defproc[(bop/datetime-series (arg0 DatetimeSeries) (arg1 DatetimeSeries) (arg2 (Datetime Datetime -> Datetime))) DatetimeSeries]{
+...
+}
+
+@subsubsection[#:tag "comp/datetime-series"]{comp/datetime-series}
+@defproc[(comp/datetime-series (arg0 DatetimeSeries) (arg1 DatetimeSeries) (arg2 (Datetime Datetime -> Boolean))) BSeries]{
+...
+}
+
+@subsubsection[#:tag "+/datetime-series"]{+/datetime-series}
+@defproc[(+/datetime-series (arg0 DatetimeSeries) (arg1 DatetimeSeries)) DatetimeSeries]{
+...
+}
+
+@subsubsection[#:tag "-/datetime-series"]{-/datetime-series}
+@defproc[(-/datetime-series (arg0 DatetimeSeries) (arg1 DatetimeSeries)) DatetimeSeries]{
+...
+}
+
+@subsubsection[#:tag ">/datetime-series"]{>/datetime-series}
+@defproc[(>/datetime-series (arg0 DatetimeSeries) (arg1 DatetimeSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "</datetime-series"]{</datetime-series}
+@defproc[(</datetime-series (arg0 DatetimeSeries) (arg1 DatetimeSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag ">=/datetime-series"]{>=/datetime-series}
+@defproc[(>=/datetime-series (arg0 DatetimeSeries) (arg1 DatetimeSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "<=/datetime-series"]{<=/datetime-series}
+@defproc[(<=/datetime-series (arg0 DatetimeSeries) (arg1 DatetimeSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "=/datetime-series"]{=/datetime-series}
+@defproc[(=/datetime-series (arg0 DatetimeSeries) (arg1 DatetimeSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "!=/datetime-series"]{!=/datetime-series}
+@defproc[(!=/datetime-series (arg0 DatetimeSeries) (arg1 DatetimeSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-print"]{datetime-series-print}
+@defproc[(datetime-series-print (arg0 DatetimeSeries) (arg1 (#:output-port Output-Port))) Void]{
+...
+}
+
+@subsubsection[#:tag "datetime-series-groupby"]{datetime-series-groupby}
+@defproc[(datetime-series-groupby (arg0 DatetimeSeries) (arg1 (#:by-value Boolean))) GroupHash]{
+...
+}
+
+@subsubsection[#:tag "set-DatetimeSeries-null-value"]{set-DatetimeSeries-null-value}
+@defproc[(set-DatetimeSeries-null-value (arg0 DatetimeSeries) (arg1 RFNULL)) DatetimeSeries]{
+...
+}
+
+@subsubsection[#:tag "set-DatetimeSeries-datetime-null-value-inplace"]{set-DatetimeSeries-datetime-null-value-inplace}
+@defproc[(set-DatetimeSeries-datetime-null-value-inplace (arg0 DatetimeSeries) (arg1 Datetime)) Void]{
+...
+}
+
+@subsection[#:style 'toc]{Date Series}
+
+@"\U2190" This page has no on-this-page panel in a multi-page
+rendering, because there are no numbered subsections, but it has three
+levels shown in the table-of-contents panel.
+
+@local-table-of-contents[]
+
+@subsubsection[#:tag "new-DateSeries"]{new-DateSeries}
+@defproc[(new-DateSeries (arg0 (U (Vectorof date) (Sequenceof date) (Sequenceof RFDate))) (arg1 (#:index (Option (U (Listof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) DateSeries]{
+...
+}
+
+@subsubsection[#:tag "set-DateSeries-index"]{set-DateSeries-index}
+@defproc[(set-DateSeries-index (arg0 DateSeries) (arg1 (U (Listof IndexDataType) RFIndex))) DateSeries]{
+...
+}
+
+@subsubsection[#:tag "date-series-iref"]{date-series-iref}
+@defproc[(date-series-iref (arg0 DateSeries) (arg1 (Listof Index))) (Listof RFDate)]{
+...
+}
+
+@subsubsection[#:tag "date-series-index-ref"]{date-series-index-ref}
+@defproc[(date-series-index-ref (arg0 DateSeries) (arg1 IndexDataType)) (Listof RFDate)]{
+...
+}
+
+@subsubsection[#:tag "date-series-loc-multi-index"]{date-series-loc-multi-index}
+@defproc[(date-series-loc-multi-index (arg0 DateSeries) (arg1 (U (Listof String) ListofListofString))) (U RFDate DateSeries)]{
+...
+}
+
+@subsubsection[#:tag "date-series-loc-boolean"]{date-series-loc-boolean}
+@defproc[(date-series-loc-boolean (arg0 DateSeries) (arg1 (Listof Boolean))) (U RFDate DateSeries)]{
+...
+}
+
+@subsubsection[#:tag "date-series-loc"]{date-series-loc}
+@defproc[(date-series-loc (arg0 DateSeries) (arg1 (U Label (Listof Label) (Listof Boolean)))) (U RFDate DateSeries)]{
+...
+}
+
+@subsubsection[#:tag "date-series-iloc"]{date-series-iloc}
+@defproc[(date-series-iloc (arg0 DateSeries) (arg1 (U Index (Listof Index)))) (U RFDate DateSeries)]{
+...
+}
+
+@subsubsection[#:tag "date-series-iloc-range"]{date-series-iloc-range}
+@defproc[(date-series-iloc-range (arg0 DateSeries) (arg1 Index) (arg2 Index)) DateSeries]{
+...
+}
+
+@subsubsection[#:tag "date-series-label-ref"]{date-series-label-ref}
+@defproc[(date-series-label-ref (arg0 DateSeries) (arg1 Label)) (Listof RFDate)]{
+...
+}
+
+@subsubsection[#:tag "date-series-range"]{date-series-range}
+@defproc[(date-series-range (arg0 DateSeries) (arg1 Index) (arg2 Index)) (Vectorof RFDate)]{
+...
+}
+
+@subsubsection[#:tag "date-series-length"]{date-series-length}
+@defproc[(date-series-length (arg0 DateSeries)) Index]{
+...
+}
+
+@subsubsection[#:tag "date-series-referencer"]{date-series-referencer}
+@defproc[(date-series-referencer (arg0 DateSeries)) (Index -> RFDate)]{
+...
+}
+
+@subsubsection[#:tag "date-series-data"]{date-series-data}
+@defproc[(date-series-data (arg0 DateSeries)) (Vectorof RFDate)]{
+...
+}
+
+@subsubsection[#:tag "date-series-index"]{date-series-index}
+@defproc[(date-series-index (arg0 DateSeries)) (U False RFIndex)]{
+...
+}
+
+@subsubsection[#:tag "in-date-series"]{in-date-series}
+@defproc[(in-date-series (arg0 date) (arg1 DateSeries)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "date-series-null-value"]{date-series-null-value}
+@defproc[(date-series-null-value (arg0 DateSeries)) RFNULL]{
+...
+}
+
+@subsubsection[#:tag "date-series-date-null-value"]{date-series-date-null-value}
+@defproc[(date-series-date-null-value (arg0 DateSeries)) date]{
+...
+}
+
+@subsubsection[#:tag "map/date-series-data"]{map/date-series-data}
+@defproc[(map/date-series-data (arg0 DateSeries) (arg1 (date -> date))) DateSeries]{
+...
+}
+
+@subsubsection[#:tag "date-range"]{date-range}
+@defproc[(date-range (arg0 date) (arg1 (Option Symbol)) (arg2 (Option Index)) (arg3 (Option date))) (Listof RFDate)]{
+...
+}
+
+@subsubsection[#:tag "bop/date-series"]{bop/date-series}
+@defproc[(bop/date-series (arg0 DateSeries) (arg1 DateSeries) (arg2 (date date -> date))) DateSeries]{
+...
+}
+
+@subsubsection[#:tag "comp/date-series"]{comp/date-series}
+@defproc[(comp/date-series (arg0 DateSeries) (arg1 DateSeries) (arg2 (date date -> Boolean))) BSeries]{
+...
+}
+
+@subsubsection[#:tag "+/date-series"]{+/date-series}
+@defproc[(+/date-series (arg0 DateSeries) (arg1 DateSeries)) DateSeries]{
+...
+}
+
+@subsubsection[#:tag "-/date-series"]{-/date-series}
+@defproc[(-/date-series (arg0 DateSeries) (arg1 DateSeries)) DateSeries]{
+...
+}
+
+@subsubsection[#:tag ">/date-series"]{>/date-series}
+@defproc[(>/date-series (arg0 DateSeries) (arg1 DateSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "</date-series"]{</date-series}
+@defproc[(</date-series (arg0 DateSeries) (arg1 DateSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag ">=/date-series"]{>=/date-series}
+@defproc[(>=/date-series (arg0 DateSeries) (arg1 DateSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "<=/date-series"]{<=/date-series}
+@defproc[(<=/date-series (arg0 DateSeries) (arg1 DateSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "=/date-series"]{=/date-series}
+@defproc[(=/date-series (arg0 DateSeries) (arg1 DateSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "!=/date-series"]{!=/date-series}
+@defproc[(!=/date-series (arg0 DateSeries) (arg1 DateSeries)) BSeries]{
+...
+}
+
+@subsubsection[#:tag "date-series-print"]{date-series-print}
+@defproc[(date-series-print (arg0 DateSeries) (arg1 (#:output-port Output-Port))) Void]{
+...
+}
+
+@subsubsection[#:tag "date-series-groupby"]{date-series-groupby}
+@defproc[(date-series-groupby (arg0 DateSeries) (arg1 (#:by-value Boolean))) GroupHash]{
+...
+}
+
+@subsubsection[#:tag "set-DateSeries-null-value"]{set-DateSeries-null-value}
+@defproc[(set-DateSeries-null-value (arg0 DateSeries) (arg1 RFNULL)) DateSeries]{
+...
+}
+
+@subsubsection[#:tag "set-DateSeries-date-null-value-inplace"]{set-DateSeries-date-null-value-inplace}
+@defproc[(set-DateSeries-date-null-value-inplace (arg0 DateSeries) (arg1 date)) Void]{
+...
+}
+
+@subsubsection[#:tag "derive-date-value"]{derive-date-value}
+@defproc[(derive-date-value (arg0 DateSeries) (arg1 RFDate)) date]{
+...
+}
 
 @; ======================================================================
 

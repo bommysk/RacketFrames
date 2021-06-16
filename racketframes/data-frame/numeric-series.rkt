@@ -18,6 +18,11 @@
 ; ***********************************************************
 ; Provide functions in this file to other files.
 
+(provide
+ ;flvector-print
+ (struct-out NSeries)
+ NSeries-index (rename-out [GroupHash nseries-grouphash] [DEFAULT_NULL_VALUE NSERIES_DEFAULT_NULL_VALUE]))
+
 (provide:
  [new-NSeries ((U (Sequenceof Flonum) FlVector) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                          [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean]  -> NSeries)]
@@ -83,11 +88,6 @@
  [flvector->vector (FlVector [#:index Fixnum] -> (Vectorof Flonum))]
  [list->flvector ((Listof Flonum) -> FlVector)]
  [nseries-print (NSeries [#:output-port Output-Port] -> Void)])
-
-(provide
- ;flvector-print
- (struct-out NSeries)
- NSeries-index (rename-out [GroupHash nseries-grouphash] [DEFAULT_NULL_VALUE NSERIES_DEFAULT_NULL_VALUE]))
 
 ; ***********************************************************
 
