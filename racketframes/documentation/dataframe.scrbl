@@ -2002,6 +2002,19 @@ Returns the Float value at the specified index in the series.
 
 @local-table-of-contents[]
 
+@codeblock|{
+(define DEFAULT_NULL_VALUE : Label '||)
+(struct: CSeries ([index : (Option RFIndex)]
+                  [data : (Vectorof Index)]
+                  [nominals : (Vectorof Label)]
+                  ; when the null-value is not a symbol?, the label-null-value is set to 'null
+                  [null-value : RFNULL]
+                  ; needed for type checking purposes and to do proper symbol operations
+                  [label-null-value : Label])
+  #:mutable
+  #:transparent)
+  }|
+
 @subsubsection[#:tag "new-CSeries"]{new-CSeries}
 @defproc[(new-CSeries (arg0 (Sequenceof Label)) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) CSeries]{
 ...
@@ -2579,13 +2592,48 @@ levels shown in the table-of-contents panel.
 
 @subsection[#:style 'toc]{Date Series}
 
-@"\U2190" This page has no on-this-page panel in a multi-page
-rendering, because there are no numbered subsections, but it has three
-levels shown in the table-of-contents panel.
-
 @local-table-of-contents[]
 
+@codeblock|{
+#|
+(struct	 date	 
+(second
+ 	minute
+ 	hour
+ 	day
+ 	month
+ 	year
+ 	week-day
+ 	year-day
+ 	dst?
+ 	time-zone-offset)
+  #:extra-constructor-name make-date
+  #:transparent)
+  second : (integer-in 0 60)
+  minute : (integer-in 0 59)
+  hour : (integer-in 0 23)
+  day : (integer-in 1 31)
+  month : (integer-in 1 12)
+  year : exact-integer?
+  week-day : (integer-in 0 6)
+  year-day : (integer-in 0 365)
+  dst? : boolean?
+  time-zone-offset : exact-integer?
+|#
 
+(define-type RFDate (U date RFNoData))
+(define-predicate RFDate? RFDate)
+(define DEFAULT_NULL_VALUE : date (current-date))
+(struct DateSeries
+  ([index : (Option RFIndex)]
+   [data : (Vectorof RFDate)]
+   ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
+   [null-value : RFNULL]
+   ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+   [date-null-value : date])
+  #:mutable
+  #:transparent)
+}|
 
 @subsubsection[#:tag "new-DateSeries"]{new-DateSeries}
 @defproc[(new-DateSeries (arg0 (U (Vectorof date) (Sequenceof date) (Sequenceof RFDate))) (arg1 (#:index (Option (U (Listof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) DateSeries]{
