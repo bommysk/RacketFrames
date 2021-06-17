@@ -39,11 +39,11 @@
  (only-in "types.rkt"
 	  Dim Dim-rows)
  (only-in "indexed-series.rkt"
-	  Label)
+	  Label idx->key)
  (only-in "series-description.rkt"
 	  Series series-type)
  (only-in "data-frame.rkt"
-	  DataFrame new-data-frame data-frame-names
+	  DataFrame new-data-frame data-frame-names data-frame-index
 	  Column Columns column-heading column-series
 	  data-frame-cseries data-frame-explode data-frame-dim
 	  DataFrameDescription DataFrameDescription-series
@@ -244,46 +244,54 @@
   (: write-frame-row (Index -> Void))
   (define (write-frame-row row)
     (for ([col (in-range col-num)])
-	 (unless (zero? col)
-		 (display delim outp))
-	 (let ((a-series (vector-ref series col)))
-	   (cond
-             ((GenSeries? a-series)
-              (display (car (assert (gen-series-iref a-series (list row)) list?)) outp))
-             ((NSeries? a-series)
-              (let ((n (car (assert (nseries-iref a-series (list row)) list?))))
-                (display n outp)))
-             ((CSeries? a-series)
-              (display (car (assert (cseries-iref a-series (list row)) list?)) outp))
-             ((ISeries? a-series)
-              (display (car (assert (iseries-iref a-series (list row)) list?)) outp))
-             ((BSeries? a-series)
-              (display (car (assert (bseries-iref a-series (list row)) list?)) outp))
-             ((DatetimeSeries? a-series)
-              (display (car (assert (datetime-series-iref a-series (list row)) list?)) outp))
-             ((DateSeries? a-series)
-              (display (car (assert (date-series-iref a-series (list row)) list?)) outp))
-             (else
-              (error 'frame-head "Unknown series types ~s"
-                     (series-type a-series)))))))
-
+      
+      (unless (zero? col)
+           (display delim outp))
+      (let ((a-series (vector-ref series col)))
+        (if (data-frame-index data-frame)
+            (display (idx->key (assert (data-frame-index data-frame)) (assert row index?)) outp)
+            (display (assert row index?) outp))
+        (display delim outp)
+        (cond
+          ((GenSeries? a-series)
+           (display (car (assert (gen-series-iref a-series (list row)) list?)) outp))
+          ((NSeries? a-series)
+           (let ((n (car (assert (nseries-iref a-series (list row)) list?))))
+             (display n outp)))
+          ((CSeries? a-series)
+           (display (car (assert (cseries-iref a-series (list row)) list?)) outp))
+          ((ISeries? a-series)
+           (display (car (assert (iseries-iref a-series (list row)) list?)) outp))
+          ((BSeries? a-series)
+           (display (car (assert (bseries-iref a-series (list row)) list?)) outp))
+          ((DatetimeSeries? a-series)
+           (display (car (assert (datetime-series-iref a-series (list row)) list?)) outp))
+          ((DateSeries? a-series)
+           (display (car (assert (date-series-iref a-series (list row)) list?)) outp))
+          (else
+           (error 'frame-head "Unknown series types ~s"
+                  (series-type a-series)))))))
+  
   (: write-heading (Columns -> Void))
   (define (write-heading cols)
-    (match cols
-	   ((list-rest col1 cols)
-	    (display (car col1) outp)
-	    (for ([col cols])
-		 (display delim outp)
-		 (display (car col) outp))
-	    (newline outp))
-	   (else (void))))
+    (begin       
+      (display "Index" outp)
+      (display delim outp)
+      (match cols
+        ((list-rest col1 cols)
+         (display (car col1) outp)
+         (for ([col cols])
+           (display delim outp)
+           (display (car col) outp))
+         (newline outp))
+        (else (void)))))
 
   (when heading
-	(write-heading cols))
+    (write-heading cols))
 
   (for ([row (in-range row-num)])
-       (write-frame-row (assert row index?))
-       (newline outp)))
+    (write-frame-row (assert row index?))
+    (newline outp)))
 
 ;; Write in CSV format the data frame DF to the output port OUTP.  If SERIES,
 ;; if non-null, denote the series to be written.  If null, all the series are

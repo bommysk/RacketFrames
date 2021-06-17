@@ -42,7 +42,7 @@
   (define nominals
     (let* ((nom-map (CSeriesBuilder-nominals builder)) 
            (len (hash-count nom-map))
-           (noms (make-vector len 'NA)))
+           (noms (make-vector len CSERIES_DEFAULT_NULL_VALUE)))
       (hash-for-each nom-map (λ: ((n : Symbol) (i : Index))
 				 (vector-set! noms i n)))
       noms))

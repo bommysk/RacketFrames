@@ -18,8 +18,7 @@
 ; ***********************************************************
 ; Provide functions in this file to other files.
 
-(provide
- ;flvector-print
+(provide 
  (struct-out NSeries)
  NSeries-index (rename-out [GroupHash nseries-grouphash] [DEFAULT_NULL_VALUE NSERIES_DEFAULT_NULL_VALUE]))
 

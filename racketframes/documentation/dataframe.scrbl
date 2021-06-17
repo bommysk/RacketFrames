@@ -410,7 +410,32 @@ Operations between Series (+, -, /, , *) align values based on their associated 
 
 @subsection[#:style 'toc]{Integer Series}
 
+@"\U2190" Integer Series is abbreviated to ISeries in RacketFrames.
+
 @local-table-of-contents[]
+
+@codeblock|{
+(provide
+ (struct-out ISeries)
+ ISeries-index RFFixnum RFFixnum? (rename-out [GroupHash iseries-grouphash] [DEFAULT_NULL_VALUE ISERIES_DEFAULT_NULL_VALUE]))
+
+(define-type RFFixnum (U Fixnum RFNoData))
+(define-predicate RFFixnum? RFFixnum)
+(define DEFAULT_NULL_VALUE : Fixnum 0)
+;; Integer series optimized with use of Fixnum.
+(struct ISeries ([index : (Option RFIndex)]
+                 [data : (Vectorof RFFixnum)]
+                 ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
+                 [null-value : RFNULL]
+                 ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+                 [fixnum-null-value : Fixnum]
+                 ; encode data by element count to optimze memory storage and read/write operations
+                 ; when data vector lacks variety
+                 [encoded : Boolean]
+                 [data-count-encoded : (Option (Listof (Pairof Any Real)))])
+  #:mutable
+  #:transparent)
+}|
 
 @subsubsection[#:tag "new-ISeries"]{new-ISeries}
 @defproc[(new-ISeries (arg0 (U FxVector (Vectorof Fixnum) (Sequenceof Fixnum) (Sequenceof RFFixnum))) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL)) (arg3 (#:sort Boolean)) (arg4 (#:encode Boolean))) ISeries]{
@@ -1150,9 +1175,55 @@ Returns the Fixnum value at the specified index in the series.
   (apply-stat-is 'skewness series-integer) ; 0.0
   }|
 
-@subsection[#:style 'toc]{Numerical Series}
+@subsection[#:style 'toc]{Numeric Series}
+
+@"\U2190" Numeric Series is abbreviated to NSeries in RacketFrames.
 
 @local-table-of-contents[]
+
+@codeblock|{
+(provide 
+ (struct-out NSeries)
+ NSeries-index (rename-out [GroupHash nseries-grouphash] [DEFAULT_NULL_VALUE NSERIES_DEFAULT_NULL_VALUE]))
+
+(struct: Summary ([mean : Flonum]
+                  [variance : Flonum]
+                  [min : Flonum]
+                  [max : Flonum]
+                  [count : Natural]
+                  [nans : Natural]))
+
+(define DEFAULT_NULL_VALUE : Flonum +nan.0)
+
+;; An NSeries is an optimized Series for computation over vectors of Flonum
+;; i.e., NSeries should be faster then (Series Flonum)
+(struct: NSeries ([index : (Option RFIndex)]
+                  [data : FlVector]
+                  ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
+                  [null-value : RFNULL]
+                  ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+                  [flonum-null-value : Flonum]
+                  ; encode data by element count to optimze memory storage and read/write operations
+                  ; when data vector lacks variety
+                  [encoded : Boolean]
+                  [data-count-encoded : (Option (Listof (Pairof Any Real)))])
+  #:mutable
+  #:transparent)
+
+; When working with very large values that occur frequently,
+; it can be more performant to use the ISeries-Nominals form
+; which will only keep one copy of the Fixnum and maintain a
+; a light weight vector of index to reference to the nominals.
+; categorical series are constructed in nominal form by default,
+; but with other series types it is not
+(struct: NSeries-Nominals
+  ([index : (Option RFIndex)]
+   [data : (Vectorof Index)]
+   [nominals : FlVector]
+   [null-value : RFNULL])
+  #:mutable
+  #:transparent) 
+}|
 
 @subsubsection[#:tag "new-NSeries"]{new-NSeries}
 @defproc[(new-NSeries (arg0 (U (Sequenceof Flonum) FlVector)) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL)) (arg3 (#:sort Boolean)) (arg4 (#:encode Boolean))) NSeries]{
@@ -1466,6 +1537,16 @@ Returns the Fixnum value at the specified index in the series.
 
 @subsubsection[#:tag "nseries-print"]{nseries-print}
 @defproc[(nseries-print (arg0 NSeries) (arg1 (#:output-port Output-Port))) Void]{
+...
+}
+
+@subsubsection[#:tag "flvector-print"]{flvector-print}
+@defproc[(flvector-print (arg0 FlVector)) Void]{
+...
+}
+
+@subsubsection[#:tag "generate-NSeries"]{generate-NSeries}
+@defproc[(generate-NSeries (arg0 Float) (arg1 Float) (arg2 (#:by Float))) NSeries]{
 ...
 }
 
@@ -1917,11 +1998,9 @@ Returns the Float value at the specified index in the series.
 
 @subsection[#:style 'toc]{Categorical Series}
 
-@local-table-of-contents[]
+@"\U2190" Categorical Series is abbreviated to CSeries in RacketFrames.
 
-@"\U2190" This page has no on-this-page panel in a multi-page
-rendering, because there are no numbered subsections, but it has three
-levels shown in the table-of-contents panel.
+@local-table-of-contents[]
 
 @subsubsection[#:tag "new-CSeries"]{new-CSeries}
 @defproc[(new-CSeries (arg0 (Sequenceof Label)) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) CSeries]{
@@ -2050,6 +2129,29 @@ levels shown in the table-of-contents panel.
 
 @subsubsection[#:tag "cseries-append"]{cseries-append}
 @defproc[(cseries-append (arg0 CSeries) (arg1 CSeries)) CSeries]{
+...
+}
+
+@subsubsection[#:tag "Categorical Series Builder"]{Categorical Series Builder}
+@codeblock|{
+(struct-out CSeriesBuilder)
+
+(struct: CSeriesBuilder ([index  : Index]
+			 [data : (Vectorof Symbol)]) #:mutable)
+}|
+
+@subsubsection[#:tag "new-CSeriesBuilder"]{new-CSeriesBuilder}
+@defproc[(new-CSeriesBuilder (arg0 (U Void Index))) CSeriesBuilder]{
+...
+}
+
+@subsubsection[#:tag "append-CSeriesBuilder"]{append-CSeriesBuilder}
+@defproc[(append-CSeriesBuilder (arg0 CSeriesBuilder) (arg1 (U Symbol String))) Void]{
+...
+}
+
+@subsubsection[#:tag "complete-CSeriesBuilder"]{complete-CSeriesBuilder}
+@defproc[(complete-CSeriesBuilder (arg0 CSeriesBuilder)) CSeries]{
 ...
 }
 
@@ -2714,9 +2816,30 @@ A callable function with one argument (the calling Series, DataFrame or Panel) a
 @; ======================================================================
 @section{DataFrames}
 
+@local-table-of-contents[]
+
 @subsection[#:style 'toc]{DataFrame}
 
 @local-table-of-contents[]
+
+@codeblock|{
+;; Data Structure Definitions
+
+(define-type Column (Pair Label Series))
+(define-type Columns (Listof Column))
+
+(define-predicate Column? Column)
+
+(define-predicate Columns? Columns)
+
+;; A DataFrame is map of series.
+(struct: DataFrame LabelIndex
+  ([series : (Vectorof Series)]                    
+   [index : (Option RFIndex)]))
+
+(struct: DataFrameDescription ([dimensions : Dim]
+                               [series : (Listof SeriesDescription)]))
+}|
 
 @subsubsection[#:tag "column"]{column}
 @defproc[(column (arg0 Label) (arg1 Series)) Column]{
@@ -3841,6 +3964,99 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 
 @section[#:style 'toc]{Plotting}
 
+@local-table-of-contents[]
+
+@subsection[#:tag "is-plottable-series"]{is-plottable-series}
+@defproc[(is-plottable-series (arg0 Series)) Boolean]{
+...
+}
+
+@subsection[#:tag "get-series-point-sequence"]{get-series-point-sequence}
+@defproc[(get-series-point-sequence (arg0 Series)) (Listof (Listof Real))]{
+...
+}
+
+@subsection[#:tag "get-column-point-sequence"]{get-column-point-sequence}
+@defproc[(get-column-point-sequence (arg0 Column)) (Listof (Listof Real))]{
+...
+}
+
+@subsection[#:tag "get-series-to-series-point-sequence"]{get-series-to-series-point-sequence}
+@defproc[(get-series-to-series-point-sequence (arg0 Series) (arg1 Series)) (Listof (Listof Real))]{
+...
+}
+
+@subsection[#:tag "get-data-frame-point-sequence"]{get-data-frame-point-sequence}
+@defproc[(get-data-frame-point-sequence (arg0 DataFrame)) (Listof (Listof (Listof Real)))]{
+...
+}
+
+@subsection[#:tag "get-series-list-point-sequence"]{get-series-list-point-sequence}
+@defproc[(get-series-list-point-sequence (arg0 SeriesList)) (Listof (Listof (Listof Real)))]{
+...
+}
+
+@subsection[#:tag "get-columns-point-sequence"]{get-columns-point-sequence}
+@defproc[(get-columns-point-sequence (arg0 Columns)) (Listof (Listof (Listof Real)))]{
+...
+}
+
+@subsection[#:tag "make-points"]{make-points}
+@defproc[(make-points (arg0 (Listof (Listof Real)))) renderer2d]{
+...
+}
+
+@subsection[#:tag "make-lines"]{make-lines}
+@defproc[(make-lines (arg0 (Listof (Listof Real)))) renderer2d]{
+...
+}
+
+@subsection[#:tag "make-scatter-plot"]{make-scatter-plot}
+@defproc[(make-scatter-plot (arg0 (U Series (Listof Series) DataFrame Column Columns)) (arg1 (#:x-min Real)) (arg2 (#:x-max Real)) (arg3 (#:y-min Real)) (arg4 (#:y-max Real))) Any]{
+...
+}
+
+@subsection[#:tag "make-line-plot"]{make-line-plot}
+@defproc[(make-line-plot (arg0 (U Series (Listof Series) DataFrame Column Columns)) (arg1 (#:x-min Real)) (arg2 (#:x-max Real)) (arg3 (#:y-min Real)) (arg4 (#:y-max Real))) Any]{
+...
+}
+
+@subsection[#:tag "make-hist-bin-stacked"]{make-hist-bin-stacked}
+@defproc[(make-hist-bin-stacked) HistBinStacked]{
+...
+}
+
+@subsection[#:tag "get-discrete-hist-data"]{get-discrete-hist-data}
+@defproc[(get-discrete-hist-data (arg0 PlotVector)) HistBin]{
+...
+}
+
+@subsection[#:tag "get-discrete-hist-data-vec"]{get-discrete-hist-data-vec}
+@defproc[(get-discrete-hist-data-vec (arg0 PlotVector) (arg1 PlottableSeries)) HistBinStacked]{
+...
+}
+
+@subsection[#:tag "discrete-histogram-stacked-from-vector"]{discrete-histogram-stacked-from-vector}
+@defproc[(discrete-histogram-stacked-from-vector (arg0 PlotVector) (arg1 PlottableSeries)) (Listof renderer2d)]{
+...
+}
+
+@subsection[#:tag "make-discrete-histogram"]{make-discrete-histogram}
+@defproc[(make-discrete-histogram (arg0 (U Series (Listof Series) DataFrame Column Columns))) Any]{
+...
+}
+
+@subsection[#:tag "make-discrete-histogram-stacked"]{make-discrete-histogram-stacked}
+@defproc[(make-discrete-histogram-stacked (arg0 (U Series (Listof Series) DataFrame Column Columns))) Any]{
+...
+}
+
+@subsection[#:tag "get-index-vector"]{get-index-vector}
+@defproc[(get-index-vector (arg0 Series)) PlotVector]{
+...
+}
+
+@subsection[#:style 'toc]{Example Usage}
 @codeblock|{
 (displayln "plotting integer series")
 
