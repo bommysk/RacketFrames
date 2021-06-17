@@ -1,1 +1,0 @@
-| grep -Po '"Host": "insights-dev.csg.apple.com"'

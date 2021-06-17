@@ -1,1 +1,0 @@
-event --index playground1 --input 'test/input_data/small_input.json' --hec_host 'https://scv-splunk-segue-fwd01.csg.apple.com:8088' --hec_token 'default'

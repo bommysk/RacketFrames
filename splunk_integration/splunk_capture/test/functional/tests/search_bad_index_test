@@ -1,1 +1,0 @@
-event --search 'search index=bad_index | head 1'

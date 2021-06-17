@@ -1,1 +1,0 @@
-kvstore --collection pd_test23 --app mxd3 --select '{"City": "New Delhi"}'

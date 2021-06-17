@@ -1,1 +1,0 @@
-event --search_input test/input_data/search_input2.json --output_mode monitor

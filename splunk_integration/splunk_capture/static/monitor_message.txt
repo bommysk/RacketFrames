@@ -1,7 +1,0 @@
-Dear ${TO}, 
-	
-Please create a new monitor directory for index: ${INDEX_NAME}.
-Requested by user: ${NOTIFY}
-
-Thank You,
-${FROM}

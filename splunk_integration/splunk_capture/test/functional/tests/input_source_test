@@ -1,1 +1,0 @@
-event --index playground1 --input 'test/input_data/small_input.json' --source splunk_capture_test --sourcetype json

@@ -1,1 +1,0 @@
-event --index playground1 --select Apple --rc '.badsplunkrc'

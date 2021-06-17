@@ -1,1 +1,0 @@
-kvstore --app mxd3 --collection pd_test23 --select '{"City": "Sunnyvale"}'

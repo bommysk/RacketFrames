@@ -1,1 +1,0 @@
-kvstore --collection pd_test23 --app mxd3 --update --input '[{"_key": "apple_test_data", "Name": "Apple", "City": "Sunnyvale", "Founded": "1976"}]'

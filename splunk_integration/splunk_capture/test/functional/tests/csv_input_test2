@@ -1,2 +1,0 @@
-lookup --app megacell --input 'test/input_data/small_input.csv' --schema 'test/input_data/targets_schema.json'
-

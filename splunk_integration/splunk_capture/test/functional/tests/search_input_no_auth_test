@@ -1,1 +1,0 @@
-event --search 'search index=playground1 City=Cupertino | head 1 | table City Name' --output_mode monitor

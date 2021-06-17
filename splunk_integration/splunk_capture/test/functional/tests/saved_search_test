@@ -1,1 +1,0 @@
-event --search '| savedsearch projects' --app mxd3 --rc '.splunkrc'
