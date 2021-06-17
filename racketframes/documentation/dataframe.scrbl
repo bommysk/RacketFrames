@@ -168,9 +168,9 @@ Define columns.
 (define columns-mix
   (list
    (cons 'integer-col (new-ISeries (fxvector 1 2 3 4)
-                            (build-index-from-list (list 'a 'b 'c 'd))))
+                            #:index (build-index-from-list (list 'a 'b 'c 'd))))
    (cons 'categorical-col (new-CSeries (vector 'hello 'world 'fizz 'buzz)
-                                       (build-index-from-list (list 'a 'b 'c 'd))))))
+                                       #:index (build-index-from-list (list 'a 'b 'c 'd))))))
 }|
 Initialize DataFrame.
 @codeblock|{
@@ -709,6 +709,29 @@ Operations between Series (+, -, /, , *) align values based on their associated 
 
 @subsubsection[#:tag "derive-fixnum-value"]{derive-fixnum-value}
 @defproc[(derive-fixnum-value (arg0 ISeries) (arg1 RFFixnum)) Fixnum]{
+...
+}
+
+@subsubsection[#:tag "Fixnum Series Builder"]{Fixnum Series Builder}
+@codeblock|{
+(struct-out ISeriesBuilder)
+
+(struct: ISeriesBuilder ([index  : Index]
+			 [data : (Vectorof Fixnum)]) #:mutable)
+}|
+
+@subsubsection[#:tag "new-ISeriesBuilder"]{new-ISeriesBuilder}
+@defproc[(new-ISeriesBuilder (arg0 (U Void Index))) ISeriesBuilder]{
+...
+}
+
+@subsubsection[#:tag "append-ISeriesBuilder"]{append-ISeriesBuilder}
+@defproc[(append-ISeriesBuilder (arg0 ISeriesBuilder) (arg1 (U RFFixnum String))) Void]{
+...
+}
+
+@subsubsection[#:tag "complete-ISeriesBuilder"]{complete-ISeriesBuilder}
+@defproc[(complete-ISeriesBuilder (arg0 ISeriesBuilder)) ISeries]{
 ...
 }
 
@@ -1443,6 +1466,29 @@ Returns the Fixnum value at the specified index in the series.
 
 @subsubsection[#:tag "nseries-print"]{nseries-print}
 @defproc[(nseries-print (arg0 NSeries) (arg1 (#:output-port Output-Port))) Void]{
+...
+}
+
+@subsubsection[#:tag "Numeric Series Builder"]{Numeric Series Builder}
+@codeblock|{
+(struct-out NSeriesBuilder)
+
+(struct: NSeriesBuilder ([index  : Index]
+			 [data : (Vectorof Flonum)]) #:mutable)
+}|
+
+@subsubsection[#:tag "new-NSeriesBuilder"]{new-NSeriesBuilder}
+@defproc[(new-NSeriesBuilder (arg0 (U Void Index))) NSeriesBuilder]{
+...
+}
+
+@subsubsection[#:tag "append-NSeriesBuilder"]{append-NSeriesBuilder}
+@defproc[(append-NSeriesBuilder (arg0 NSeriesBuilder) (arg1 (U Flonum String))) Void]{
+...
+}
+
+@subsubsection[#:tag "complete-NSeriesBuilder"]{complete-NSeriesBuilder}
+@defproc[(complete-NSeriesBuilder (arg0 NSeriesBuilder)) NSeries]{
 ...
 }
 
@@ -2436,6 +2482,8 @@ rendering, because there are no numbered subsections, but it has three
 levels shown in the table-of-contents panel.
 
 @local-table-of-contents[]
+
+
 
 @subsubsection[#:tag "new-DateSeries"]{new-DateSeries}
 @defproc[(new-DateSeries (arg0 (U (Vectorof date) (Sequenceof date) (Sequenceof RFDate))) (arg1 (#:index (Option (U (Listof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) DateSeries]{
@@ -4269,5 +4317,711 @@ list of corresponding axis values of the group name.
 (show-data-frame-description (data-frame-description data-frame-from-hash-vector))
 
 (data-frame-head data-frame-from-hash) }|
+
+@section[#:style 'toc]{Example Module Output}
+@verbatim|{
+integer-col	categorical-col
+1	hello
+2	world
+3	fizz
+4	buzz
+     first           last             age           dollar           phone         join_date    
+'(Evan) '(Lloyd) '(19) '($3839.78) '(|(771) 255-1133|) '(2018-05-19) 
+'(Etta) '(Griffith) '(50) '($8158.60) '(|(523) 731-6388|) '(2018-05-19) 
+'(William) '(Conner) '(50) '($9966.70) '(|(759) 504-6619|) '(2018-05-19) 
+'(Rhoda) '(Guerrero) '(20) '($6480.10) '(|(467) 431-4273|) '(2018-05-19) 
+'(Kyle) '(Klein) '(59) '($6106.13) '(|(760) 829-2093|) '(2018-05-19) 
+'(Benjamin) '(Patton) '(59) '($3925.51) '(|(488) 673-5745|) '(2018-05-19) 
+'(Georgie) '(Hansen) '(51) '($8809.92) '(|(579) 706-4402|) '(2018-05-19) 
+'(Gregory) '(Bowen) '(36) '($5176.21) '(|(533) 506-3845|) '(2018-05-19) 
+'(Cornelia) '(Peterson) '(46) '($3626.31) '(|(861) 316-5672|) '(2018-05-19) 
+'(Samuel) '(Cole) '(37) '($7677.20) '(|(760) 406-6331|) '(2018-05-19) 
+(DataFrame '#hash((age . (2)) (dollar . (3)) (first . (0)) (join_date . (5)) (last . (1)) (phone . (4))) ...)DataFrame List of Column Names
+'(first last age dollar phone join_date)
+DataFrame Dimensions
+(Dim 200 6)
+DataFrame Description
+DataFrame::(Cols: 6, Rows: 200)
+  - first: GenericSeries
+  - last: GenericSeries
+  - age: GenericSeries
+  - dollar: GenericSeries
+  - phone: GenericSeries
+  - join_date: GenericSeries
+DataFrame Remove
+     last           dollar           phone         join_date    
+'(Lloyd) '($3839.78) '(|(771) 255-1133|) '(2018-05-19) 
+'(Griffith) '($8158.60) '(|(523) 731-6388|) '(2018-05-19) 
+'(Conner) '($9966.70) '(|(759) 504-6619|) '(2018-05-19) 
+'(Guerrero) '($6480.10) '(|(467) 431-4273|) '(2018-05-19) 
+'(Klein) '($6106.13) '(|(760) 829-2093|) '(2018-05-19) 
+'(Patton) '($3925.51) '(|(488) 673-5745|) '(2018-05-19) 
+'(Hansen) '($8809.92) '(|(579) 706-4402|) '(2018-05-19) 
+'(Bowen) '($5176.21) '(|(533) 506-3845|) '(2018-05-19) 
+'(Peterson) '($3626.31) '(|(861) 316-5672|) '(2018-05-19) 
+'(Cole) '($7677.20) '(|(760) 406-6331|) '(2018-05-19) 
+DataFrame Project
+     first           last           dollar      
+'(Evan) '(Lloyd) '($3839.78) 
+'(Etta) '(Griffith) '($8158.60) 
+'(William) '(Conner) '($9966.70) 
+'(Rhoda) '(Guerrero) '($6480.10) 
+'(Kyle) '(Klein) '($6106.13) 
+'(Benjamin) '(Patton) '($3925.51) 
+'(Georgie) '(Hansen) '($8809.92) 
+'(Gregory) '(Bowen) '($5176.21) 
+'(Cornelia) '(Peterson) '($3626.31) 
+'(Samuel) '(Cole) '($7677.20) 
+DataFrame Replace
+     first           last             age           dollar           phone         join_date    
+'(Evan) '(Lloyd) '(19) '($3839.78) '(|(771) 255-1133|) '(2018-05-19) 
+'(Etta) '(Griffith) '(50) '($8158.60) '(|(523) 731-6388|) '(2018-05-19) 
+'(William) '(Conner) '(50) '($9966.70) '(|(759) 504-6619|) '(2018-05-19) 
+'(Rhoda) '(Guerrero) '(20) '($6480.10) '(|(467) 431-4273|) '(2018-05-19) 
+'(Kyle) '(Klein) '(59) '($6106.13) '(|(760) 829-2093|) '(2018-05-19) 
+'(Benjamin) '(Patton) '(59) '($3925.51) '(|(488) 673-5745|) '(2018-05-19) 
+'(Georgie) '(Hansen) '(51) '($8809.92) '(|(579) 706-4402|) '(2018-05-19) 
+'(Gregory) '(Bowen) '(36) '($5176.21) '(|(533) 506-3845|) '(2018-05-19) 
+'(Cornelia) '(Peterson) '(46) '($3626.31) '(|(861) 316-5672|) '(2018-05-19) 
+'(Samuel) '(Cole) '(37) '($7677.20) '(|(760) 406-6331|) '(2018-05-19) 
+DataFrame Replace Non Existent Column
+     first           last             age           dollar           phone         join_date    
+'(Evan) '(Lloyd) '(19) $0.00           '(|(771) 255-1133|) '(2018-05-19) 
+'(Etta) '(Griffith) '(50) $0.00           '(|(523) 731-6388|) '(2018-05-19) 
+'(William) '(Conner) '(50) $0.00           '(|(759) 504-6619|) '(2018-05-19) 
+'(Rhoda) '(Guerrero) '(20) $0.00           '(|(467) 431-4273|) '(2018-05-19) 
+'(Kyle) '(Klein) '(59) $0.00           '(|(760) 829-2093|) '(2018-05-19) 
+'(Benjamin) '(Patton) '(59) $0.00           '(|(488) 673-5745|) '(2018-05-19) 
+'(Georgie) '(Hansen) '(51) $0.00           '(|(579) 706-4402|) '(2018-05-19) 
+'(Gregory) '(Bowen) '(36) $0.00           '(|(533) 506-3845|) '(2018-05-19) 
+'(Cornelia) '(Peterson) '(46) $0.00           '(|(861) 316-5672|) '(2018-05-19) 
+'(Samuel) '(Cole) '(37) $0.00           '(|(760) 406-6331|) '(2018-05-19) 
+DataFrame Extend
+     first           last             age           dollar           phone         join_date         state      
+'(Evan) '(Lloyd) '(19) '($3839.78) '(|(771) 255-1133|) '(2018-05-19) CA              
+'(Etta) '(Griffith) '(50) '($8158.60) '(|(523) 731-6388|) '(2018-05-19) CA              
+'(William) '(Conner) '(50) '($9966.70) '(|(759) 504-6619|) '(2018-05-19) CA              
+'(Rhoda) '(Guerrero) '(20) '($6480.10) '(|(467) 431-4273|) '(2018-05-19) CA              
+'(Kyle) '(Klein) '(59) '($6106.13) '(|(760) 829-2093|) '(2018-05-19) CA              
+'(Benjamin) '(Patton) '(59) '($3925.51) '(|(488) 673-5745|) '(2018-05-19) CA              
+'(Georgie) '(Hansen) '(51) '($8809.92) '(|(579) 706-4402|) '(2018-05-19) CA              
+'(Gregory) '(Bowen) '(36) '($5176.21) '(|(533) 506-3845|) '(2018-05-19) CA              
+'(Cornelia) '(Peterson) '(46) '($3626.31) '(|(861) 316-5672|) '(2018-05-19) CA              
+'(Samuel) '(Cole) '(37) '($7677.20) '(|(760) 406-6331|) '(2018-05-19) CA              
+DataFrame Operations
+Sample DataFrames
+col1	col2	col3	col4
+1	5	9	21
+2	6	10	22
+3	7	11	23
+4	8	12	24
+col1	col2	col3	col4
+1	25	29	1
+2	26	30	2
+3	27	31	3
+4	28	32	4
+
+data-frame+
+col1	col2	col3	col4
+2	30	38	22
+4	32	40	24
+6	34	42	26
+8	36	44	28
+
+data-frame-
+col1	col2	col3	col4
+0	-20	-20	20
+0	-20	-20	20
+0	-20	-20	20
+0	-20	-20	20
+
+data-frame*
+col1	col2	col3	col4
+1	125	261	21
+4	156	300	44
+9	189	341	69
+16	224	384	96
+
+data-frame/
+col1	col2	col3	col4
+1	0	0	21
+1	0	0	11
+1	0	0	7
+1	0	0	6
+
+data-frame%
+col1	col2	col3	col4
+0	5	9	0
+0	6	10	0
+0	7	11	2
+0	8	12	0
+
+data-frame-r
+col1	col2	col3	col4
+0	5	9	0
+0	6	10	0
+0	7	11	2
+0	8	12	0
+
+DataFrame Join Operations
+DataFrame Left Join
+dfa-col1	dfa-col2	dfa-col3	dfb-col1	dfb-col2	dfb-col3
+1	5	9	null	null	null
+2	6	10	null	null	null
+3	7	11	null	null	null
+4	8	12	null	null	null
+
+DataFrame Right Join
+dfa-col2	dfa-col3	dfa-col4	dfb-col1	dfb-col2	dfb-col3	dfb-col4
+5	9	21	1	25	29	1
+6	10	22	2	26	30	2
+7	11	23	3	27	31	3
+8	12	24	4	28	32	4
+
+DataFrame Right Join
+dfa-col1	dfa-col3	dfa-col4	dfb-col1	dfb-col2	dfb-col3	dfb-col4
+0	0	0	1	25	29	1
+0	0	0	2	26	30	2
+0	0	0	3	27	31	3
+0	0	0	4	28	32	4
+
+'(displayln "DataFrame Mixed")
+col1	col2	col3
+1	a	21
+2	b	22
+3	c	23
+4	d	24
+DataFrame Mixed
+col1	col2	col3
+11	a	22
+21	b	22
+31	g	23
+41	d	24
+DataFrame Inner Join
+dfa-col1	dfa-col2	dfa-col3	dfb-col1	dfb-col2	dfb-col3
+1	a	21	11	a	22
+2	b	22	21	b	22
+4	d	24	41	d	24
+
+DataFrame Outer Join
+dfa-col1	dfa-col2	dfa-col3	dfb-col1	dfb-col2	dfb-col3
+1	a	21	11	a	22
+2	b	22	21	b	22
+3	c	23	0	null	0
+4	d	24	41	d	24
+0	null	0	31	g	23
+DataFrame iloc
+col1	col2	col3
+1	5	9
+2	6	10
+3	7	11
+4	8	12
+data-frame-loc
+col3
+9
+11
+data-frame-loc-2
+col2	col3
+6	10
+7	11
+8	12
+col2	col3
+6	10
+7	11
+8	12
+col1	col2
+2	6
+3	7
+4	8
+"Hash list"
+'((col2 1) (col1 0) (col3 2))
+'#(6 7 8)
+'#(8)
+col1	col2
+2	6
+3	7
+4	8
+'#(2 6)
+     first           last             age           dollar           phone         join_date    
+'(Evan) '(Lloyd) '(19) '($3839.78) '(|(771) 255-1133|) '(2018-05-19) 
+'(Etta) '(Griffith) '(50) '($8158.60) '(|(523) 731-6388|) '(2018-05-19) 
+'(William) '(Conner) '(50) '($9966.70) '(|(759) 504-6619|) '(2018-05-19) 
+'(Rhoda) '(Guerrero) '(20) '($6480.10) '(|(467) 431-4273|) '(2018-05-19) 
+'(Kyle) '(Klein) '(59) '($6106.13) '(|(760) 829-2093|) '(2018-05-19) 
+'(Benjamin) '(Patton) '(59) '($3925.51) '(|(488) 673-5745|) '(2018-05-19) 
+'(Georgie) '(Hansen) '(51) '($8809.92) '(|(579) 706-4402|) '(2018-05-19) 
+'(Gregory) '(Bowen) '(36) '($5176.21) '(|(533) 506-3845|) '(2018-05-19) 
+'(Cornelia) '(Peterson) '(46) '($3626.31) '(|(861) 316-5672|) '(2018-05-19) 
+'(Samuel) '(Cole) '(37) '($7677.20) '(|(760) 406-6331|) '(2018-05-19) 
+     first           last             age           dollar           phone      
+'(Evan) '(Lloyd) '(19) '($3839.78) '(|(771) 255-1133|) 
+'(Etta) '(Griffith) '(50) '($8158.60) '(|(523) 731-6388|) 
+'(William) '(Conner) '(50) '($9966.70) '(|(759) 504-6619|) 
+'(Rhoda) '(Guerrero) '(20) '($6480.10) '(|(467) 431-4273|) 
+'(Kyle) '(Klein) '(59) '($6106.13) '(|(760) 829-2093|) 
+'(Benjamin) '(Patton) '(59) '($3925.51) '(|(488) 673-5745|) 
+'(Georgie) '(Hansen) '(51) '($8809.92) '(|(579) 706-4402|) 
+'(Gregory) '(Bowen) '(36) '($5176.21) '(|(533) 506-3845|) 
+'(Cornelia) '(Peterson) '(46) '($3626.31) '(|(861) 316-5672|) 
+'(Samuel) '(Cole) '(37) '($7677.20) '(|(760) 406-6331|) 
+     first           last             age           dollar           phone       join_datetime  
+'(Evan) '(Lloyd) '(19) '($3839.78) '(|(771) 255-1133|) '(2099-12-31T23:59:59.123) 
+'(Etta) '(Griffith) '(50) '($8158.60) '(|(523) 731-6388|) '(2099-12-31T23:59:59.123) 
+'(William) '(Conner) '(50) '($9966.70) '(|(759) 504-6619|) '(2099-12-31T23:59:59.123) 
+'(Rhoda) '(Guerrero) '(20) '($6480.10) '(|(467) 431-4273|) '(2099-12-31T23:59:59.123) 
+'(Kyle) '(Klein) '(59) '($6106.13) '(|(760) 829-2093|) '(2099-12-31T23:59:59.123) 
+'(Benjamin) '(Patton) '(59) '($3925.51) '(|(488) 673-5745|) '(2099-12-31T23:59:59.123) 
+'(Georgie) '(Hansen) '(51) '($8809.92) '(|(579) 706-4402|) '(2099-12-31T23:59:59.123) 
+'(Gregory) '(Bowen) '(36) '($5176.21) '(|(533) 506-3845|) '(2099-12-31T23:59:59.123) 
+'(Cornelia) '(Peterson) '(46) '($3626.31) '(|(861) 316-5672|) '(2099-12-31T23:59:59.123) 
+'(Samuel) '(Cole) '(37) '($7677.20) '(|(760) 406-6331|) '(2099-12-31T23:59:59.123) 
+     first           last             age           dollar           phone       join_datetime  
+'(Evan) '(Lloyd) '(19) '($3839.78) '(|(771) 255-1133|) '(2099-12-31T23:59:59.123) 
+'(Rebecca) '(Logan) '(28) '($7665.45) '(|(630) 728-2457|) '(2018-05-19) 
+'(Etta) '(Griffith) '(50) '($8158.60) '(|(523) 731-6388|) '(2099-12-31T23:59:59.123) 
+'(William) '(Conner) '(50) '($9966.70) '(|(759) 504-6619|) '(2099-12-31T23:59:59.123) 
+'(Jeffery) '(Cooper) '(64) '($925.54) '(|(515) 612-3212|) '(2018-05-19) 
+'(Ellen) '(Clayton) '(47) '($3870.14) '(|(402) 887-8694|) '(2018-05-19) 
+'(Rhoda) '(Guerrero) '(20) '($6480.10) '(|(467) 431-4273|) '(2099-12-31T23:59:59.123) 
+'(Kyle) '(Klein) '(59) '($6106.13) '(|(760) 829-2093|) '(2099-12-31T23:59:59.123) 
+'(Timothy) '(Francis) '(36) '($4771.53) '(|(703) 219-6407|) '(2018-05-19) 
+'(Benjamin) '(Patton) '(59) '($3925.51) '(|(488) 673-5745|) '(2099-12-31T23:59:59.123) 
+     first           last           gender            yn             char            float      
+Louis           Lawson          Male            Y               '(z) -320102186614.78 
+Arthur          Williams        Male            N               '(m) 533549655313.61 
+Lou             Clayton         Male            N               '(i) -212304637041.05 
+Nora            Dean            Female          Y               '(9) -881170010708.38 
+Cecelia         Guzman          Female          Y               '(q) -360380776631.50 
+Matthew         Maxwell         Male            N               '(q) -850854199217.36 
+Sophie          Murray          Male            N               '(x) 616161740220.01 
+Johnny          Barnes          Female          Y               '(D) 374206918085.84 
+Lena            Bradley         Male            N               '(S) -107760003422.62 
+Jerome          May             Female          N               '(n) 819900671904.97 
+'#(z
+   m
+   i
+   9
+   q
+   q
+   x
+   D
+   S
+   n
+   z
+   c
+   p
+   m
+   4
+   !
+   0
+   f
+   6
+   $
+   |]|
+   O
+   I
+   X
+   !
+   Y
+   r
+   3
+   w
+   5
+   e
+   w
+   7
+   c
+   w
+   t
+   a
+   j
+   0
+   p
+   1
+   N
+   d
+   U
+   P
+   O
+   4
+   @
+   V
+   m
+   o
+   7
+   a
+   q
+   1
+   j
+   e
+   c
+   f
+   @
+   7
+   E
+   !
+   $
+   C
+   9
+   |[|
+   W
+   K
+   0
+   8
+   T
+   L
+   R
+   y
+   3
+   Y
+   x
+   y
+   c
+   F
+   e
+   l
+   2
+   2
+   2
+   |)|
+   b
+   S
+   b
+   D
+   %
+   C
+   |]|
+   C
+   t
+   !
+   |(|
+   u
+   @
+   &
+   A
+   f
+   9
+   3
+   |]|
+   j
+   e
+   w
+   X
+   f
+   i
+   z
+   8
+   Z
+   &
+   8
+   M
+   l
+   J
+   H
+   %
+   f
+   6
+   E
+   7
+   h
+   M
+   Y
+   1
+   R
+   W
+   r
+   P
+   x
+   |#|
+   2
+   n
+   G
+   Q
+   u
+   M
+   3
+   D
+   8
+   e
+   T
+   t
+   Z
+   G
+   g
+   n
+   a
+   &
+   b
+   Y
+   F
+   W
+   w
+   3
+   Y
+   h
+   o
+   O
+   9
+   o
+   Z
+   W
+   P
+   K
+   B
+   g
+   C
+   g
+   j
+   O
+   |[|
+   9
+   |]|
+   3
+   e
+   Z
+   l
+   v
+   B
+   M
+   U
+   o
+   C
+   y
+   9
+   C
+   |#|
+   4
+   l
+   R
+   W
+   I
+   t
+   l
+   6
+   z
+   j
+   t
+   |(|
+   H
+   l
+   T
+   g
+   r
+   g
+   F
+   $
+   E
+   T
+   H
+   &
+   7
+   c
+   |)|
+   |#|
+   S
+   B
+   9
+   A
+   D
+   O
+   |(|
+   g
+   2
+   |(|
+   E
+   B
+   4
+   |)|
+   o
+   8
+   H
+   y
+   0
+   u
+   g
+   Q
+   k
+   n
+   9
+   g
+   y
+   |[|
+   z
+   9
+   d
+   8
+   F
+   m
+   T
+   4
+   J
+   8
+   w
+   K
+   |(|
+   4
+   &
+   q
+   A
+   a
+   m
+   5
+   F
+   1
+   |(|
+   K
+   |(|
+   L
+   S
+   l
+   I
+   q
+   |[|
+   N
+   I
+   N
+   |(|
+   v
+   m
+   x
+   b
+   @
+   N
+   t
+   S
+   5
+   p
+   9
+   Y
+   t
+   c
+   L
+   C)
+     first           last           gender            yn             char            float      
+Louis           Lawson          Male            Y               '(z) -320102186614.78 
+Arthur          Williams        Male            N               '(m) 533549655313.61 
+Lou             Clayton         Male            N               '(i) -212304637041.05 
+Nora            Dean            Female          Y               '(9) -881170010708.38 
+Cecelia         Guzman          Female          Y               '(q) -360380776631.50 
+Matthew         Maxwell         Male            N               '(q) -850854199217.36 
+Sophie          Murray          Male            N               '(x) 616161740220.01 
+Johnny          Barnes          Female          Y               '(D) 374206918085.84 
+Lena            Bradley         Male            N               '(S) -107760003422.62 
+Jerome          May             Female          N               '(n) 819900671904.97 
+    GenreId          Name       
+              1 Rock            
+              2 Jazz            
+              3 Metal           
+              4 Alternative & P 
+              5 Rock And Roll   
+              6 Blues           
+              7 Latin           
+              8 Reggae          
+              9 Pop             
+             10 Soundtrack      
+  CustomerId       FirstName       LastName         Company         Address          City            State          Country       PostalCode         Phone            Fax            Email       SupportRepId   
+              1 Luís            Gonçalves       '(|Embraer - Empresa Brasileira de Aeronáutica S.A.|) Av. Brigadeiro  São José dos Ca '(SP) Brazil          '(12227-000) '(|+55 (12) 3923-5555|) '(|+55 (12) 3923-5566|) luisg@embraer.c               3 
+              2 Leonie          Köhler          '(#<sql-null>) Theodor-Heuss-S Stuttgart       '(#<sql-null>) Germany         '(70174) '(|+49 0711 2842222|) '(#<sql-null>) leonekohler@sur               5 
+              3 François        Tremblay        '(#<sql-null>) 1498 rue Bélang Montréal        '(QC) Canada          '(|H2G 1A7|) '(|+1 (514) 721-4711|) '(#<sql-null>) ftremblay@gmail               3 
+              4 Bjørn           Hansen          '(#<sql-null>) Ullevålsveien 1 Oslo            '(#<sql-null>) Norway          '(171) '(|+47 22 44 22 22|) '(#<sql-null>) bjorn.hansen@ya               4 
+              5 František       Wichterlová     '(|JetBrains s.r.o.|) Klanova 9/506   Prague          '(#<sql-null>) Czech Republic  '(14700) '(|+420 2 4172 5555|) '(|+420 2 4172 5555|) frantisekw@jetb               4 
+              6 Helena          Holý            '(#<sql-null>) Rilská 3174/6   Prague          '(#<sql-null>) Czech Republic  '(14300) '(|+420 2 4177 0449|) '(#<sql-null>) hholy@gmail.com               5 
+              7 Astrid          Gruber          '(#<sql-null>) Rotenturmstraße Vienne          '(#<sql-null>) Austria         '(1010) '(|+43 01 5134505|) '(#<sql-null>) astrid.gruber@a               5 
+              8 Daan            Peeters         '(#<sql-null>) Grétrystraat 63 Brussels        '(#<sql-null>) Belgium         '(1000) '(|+32 02 219 03 03|) '(#<sql-null>) daan_peeters@ap               4 
+              9 Kara            Nielsen         '(#<sql-null>) Sønder Boulevar Copenhagen      '(#<sql-null>) Denmark         '(1720) '(|+453 3331 9991|) '(#<sql-null>) kara.nielsen@ju               4 
+             10 Eduardo         Martins         '(|Woodstock Discos|) Rua Dr. Falcão  São Paulo       '(SP) Brazil          '(01007-010) '(|+55 (11) 3033-5446|) '(|+55 (11) 3033-4564|) eduardo@woodsto               4 
+   gameorder        game_id          lg_id          _iscopy         year_id       seasongame      is_playoffs       team_id         fran_id           pts            elo_i           elo_n         win_equiv        opp_id         opp_fran         opp_pts        opp_elo_i       opp_elo_n     game_location    game_result      forecast     
+'(1) '(194611010TRH) '(NBA) '(0) '(1947) '(1) '(0) '(TRH) '(Huskies) '(66) '(1300) '(1293.2767) '(40.29483) '(NYK) '(Knicks) '(68) '(1300) '(1306.7233) '(H) '(L) '(0.64006501) 
+'(1) '(194611010TRH) '(NBA) '(1) '(1947) '(1) '(0) '(NYK) '(Knicks) '(68) '(1300) '(1306.7233) '(41.70517) '(TRH) '(Huskies) '(66) '(1300) '(1293.2767) '(A) '(W) '(0.35993499) 
+'(2) '(194611020CHS) '(NBA) '(0) '(1947) '(1) '(0) '(CHS) '(Stags) '(63) '(1300) '(1309.6521) '(42.012257) '(NYK) '(Knicks) '(47) '(1306.7233) '(1297.0712) '(H) '(W) '(0.63110125) 
+'(2) '(194611020CHS) '(NBA) '(1) '(1947) '(2) '(0) '(NYK) '(Knicks) '(47) '(1306.7233) '(1297.0712) '(40.692783) '(CHS) '(Stags) '(63) '(1300) '(1309.6521) '(A) '(L) '(0.36889875) 
+'(3) '(194611020DTF) '(NBA) '(0) '(1947) '(1) '(0) '(DTF) '(Falcons) '(33) '(1300) '(1279.6189) '(38.864048) '(WSC) '(Capitols) '(50) '(1300) '(1320.3811) '(H) '(L) '(0.64006501) 
+'(3) '(194611020DTF) '(NBA) '(1) '(1947) '(1) '(0) '(WSC) '(Capitols) '(50) '(1300) '(1320.3811) '(43.135952) '(DTF) '(Falcons) '(33) '(1300) '(1279.6189) '(A) '(W) '(0.35993499) 
+'(4) '(194611020PRO) '(NBA) '(1) '(1947) '(1) '(0) '(BOS) '(Celtics) '(53) '(1300) '(1294.8458) '(40.459381) '(PRO) '(Steamrollers) '(59) '(1300) '(1305.1542) '(A) '(L) '(0.35993499) 
+'(4) '(194611020PRO) '(NBA) '(0) '(1947) '(1) '(0) '(PRO) '(Steamrollers) '(59) '(1300) '(1305.1542) '(41.540619) '(BOS) '(Celtics) '(53) '(1300) '(1294.8458) '(H) '(W) '(0.64006501) 
+'(5) '(194611020STB) '(NBA) '(1) '(1947) '(1) '(0) '(PIT) '(Ironmen) '(51) '(1300) '(1295.3092) '(40.50798) '(STB) '(Bombers) '(56) '(1300) '(1304.6908) '(A) '(L) '(0.35993499) 
+'(5) '(194611020STB) '(NBA) '(0) '(1947) '(1) '(0) '(STB) '(Bombers) '(56) '(1300) '(1304.6908) '(41.49202) '(PIT) '(Ironmen) '(51) '(1300) '(1295.3092) '(H) '(W) '(0.64006501) 
+'(gameorder game_id lg_id _iscopy year_id seasongame is_playoffs team_id fran_id pts elo_i elo_n win_equiv opp_id opp_fran opp_pts opp_elo_i opp_elo_n game_location game_result forecast)
+'(IntegerSeries
+  CategoricalSeries
+  CategoricalSeries
+  IntegerSeries
+  IntegerSeries
+  IntegerSeries
+  IntegerSeries
+  CategoricalSeries
+  CategoricalSeries
+  IntegerSeries
+  NumericSeries
+  NumericSeries
+  NumericSeries
+  CategoricalSeries
+  CategoricalSeries
+  IntegerSeries
+  NumericSeries
+  NumericSeries
+  CategoricalSeries
+  CategoricalSeries
+  NumericSeries)
+'#hash(("0" . (1)) ("1" . (2)) ("10" . (6)) ("2" . (3)) ("3" . (4)) ("4" . (5)) ("5" . (6)) ("6" . (6)) ("7" . (6)) ("8" . (6)) ("9" . (6)))
+'(4)
+*********
+$ISeries
+*********
+0 1
+1 2
+2 3
+3 4
+4 5
+5 6
+6 6
+7 6
+8 6
+9 6
+10 6
+'(5.6)
+*********
+$GenSeries
+*********
+0 a
+1 1
+2 2
+3 c
+4 d
+5 5.6
+'(5)
+*********
+$ISeries
+*********
+a 1
+b 2
+c 3
+d 4
+e 5
+f 6
+'(1)
+*********
+$GenSeries
+*********
+6 a
+5 1
+4 2
+3 c
+2 d
+1 5.6
+DataFrame::(Cols: 4, Rows: 3)
+  - b: IntegerSeries
+  - d: CategoricalSeries
+  - a: IntegerSeries
+  - c: NumericSeries
+DataFrame::(Cols: 3, Rows: 3)
+  - b: IntegerSeries
+  - a: IntegerSeries
+  - c: NumericSeries
+  b               d               a               c        
+  3 fizz                          1            3.40 
+  5 buzz                          2            5.50 
+  6 baz                           3            6.70 
+            }|
 
 @index-section[]
