@@ -168,7 +168,7 @@
     [(and (FixnumIndex? index) (exact-integer? item)) (fixnum-index (FixnumIndex-index index) item)]
     [(and (FlonumIndex? index) (flonum? item)) (flonum-index (FlonumIndex-index index) item)]
     [(and (DatetimeIndex? index) (Datetime? item)) (datetime-index (DatetimeIndex-index index) item)]
-    [(and (DatetimeIndex? index) (Datetime? item)) (date-index (DateIndex-index index) item)]
+    [(and (DateIndex? index) (date? item)) (date-index (DateIndex-index index) item)]
     [else (error "Unsupported index datatype.")]))
 
 (: extract-index (RFIndex -> IndexType))
@@ -178,6 +178,7 @@
     [(FixnumIndex? index) (FixnumIndex-index index)]
     [(FlonumIndex? index) (FlonumIndex-index index)]
     [(DatetimeIndex? index) (DatetimeIndex-index index)]
+    [(DateIndex? index) (DateIndex-index index)]
     [else (error "Unsupported index datatype.")]))
 
 ; This function consumes LabelIndex and Label and returns the
@@ -190,6 +191,7 @@
     [(FixnumIndex? index) (has-fixnum-index? index)]
     [(FlonumIndex? index) (has-flonum-index? index)]
     [(DatetimeIndex? index) (has-datetime-index? index)]
+    [(DateIndex? index) (has-date-index? index)]
     [else (error "Unsupported index datatype.")]))
 
 (: key->lst-idx (RFIndex IndexDataType -> (Listof Index)))
@@ -199,6 +201,7 @@
     [(FixnumIndex? index) (fixnum->lst-idx index (assert item exact-integer?))]
     [(FlonumIndex? index) (flonum->lst-idx index (assert item flonum?))]
     [(DatetimeIndex? index) (datetime->lst-idx index (assert item Datetime?))]
+    [(DateIndex? index) (date->lst-idx index (assert item Date?))]
     [else (error "Unsupported index datatype.")]))
 
 ; This function consumes LabelIndex and Label and returns the
@@ -211,6 +214,7 @@
     [(FixnumIndex? index) (idx->fixnum index idx)]
     [(FlonumIndex? index) (idx->flonum index idx)]
     [(DatetimeIndex? index) (idx->datetime index idx)]
+    [(DateIndex? index) (idx->date index idx)]
     [else (error "Unsupported index datatype.")]))
 
 ; perhaps put in utils
@@ -556,14 +560,15 @@ N nanoseconds
 
 ; ***********************************************************
 ; This function consumes a series and returns a boolean
-; indicating whether series is a SIndex or not.
+; indicating whether series is a DatetimeIndex or not.
 (: has-datetime-index? (DatetimeIndex -> Boolean))
 (define (has-datetime-index? index)
   (if (extract-index index) #t #f))
 
-; This function consumes LabelIndex and Label and returns the
-; numerical Index of the Label in the LabelIndex. The index
-; must be a SIndex else an exception is raised.
+(: has-date-index? (DateIndex -> Boolean))
+(define (has-date-index? index)
+  (if (extract-index index) #t #f))
+
 (: datetime->lst-idx (DatetimeIndex Datetime -> (Listof Index)))
 (define (datetime->lst-idx index datetime)
   (let ((index : DTIndex (DatetimeIndex-index index)))
@@ -572,9 +577,6 @@ N nanoseconds
         (let ((k (current-continuation-marks)))
           (raise (make-exn:fail:contract "Cannot obtain the index of a label for a series which is unlabeled" k))))))
 
-; This function consumes LabelIndex and Label and returns the
-; numerical Index of the Label in the LabelIndex. The index
-; must be a SIndex else an exception is raised.
 (: idx->datetime (DatetimeIndex Index -> Datetime))
 (define (idx->datetime index idx)
   (let ((index : DTIndex (DatetimeIndex-index index)))
@@ -582,6 +584,23 @@ N nanoseconds
         (car (car (filter (lambda ([pair : (Pair Datetime (Listof Index))]) (member idx (cdr pair))) (hash->list index))))
         (let ((k (current-continuation-marks)))
           (raise (make-exn:fail:contract "Cannot obtain the index of a label for a series which is unlabeled" k))))))
+
+(: date->lst-idx (DateIndex date -> (Listof Index)))
+(define (date->lst-idx index d)
+  (let ((index : DIndex (DateIndex-index index)))
+    (if index
+        (hash-ref index d)
+        (let ((k (current-continuation-marks)))
+          (raise (make-exn:fail:contract "Cannot obtain the index of a label for a series which is unlabeled" k))))))
+
+(: idx->date (DateIndex Index -> date))
+(define (idx->date index idx)
+  (let ((index : DIndex (DateIndex-index index)))
+    (if index
+        (car (car (filter (lambda ([pair : (Pair date (Listof Index))]) (member idx (cdr pair))) (hash->list index))))
+        (let ((k (current-continuation-marks)))
+          (raise (make-exn:fail:contract "Cannot obtain the index of a label for a series which is unlabeled" k))))))
+
 ; ***********************************************************
 
 #|

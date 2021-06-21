@@ -48,12 +48,17 @@ the operations. Although Indexes have a generation cost, they are needed for fas
 DataFrames index both columns and rows. All Series of a DataFrame must have an identical Index with missing Index values replaced with null
 resulting in a uniform C X R table.
 
-RacketFrames supports five index types implemented with the same structure but differing data-types.
-SIndex (Label Index) is a suitable choice for most cases, even when the index data type is not known.
-IIndex IntegerIndex - IIndex
-FloatIndex - FIndex
-DatetimeIndex - DTIndex for time series indexing.
-DateIndex - DIndex for time series indexing using the native typed Racket Date package.
+@"\U2192" RacketFrames supports five index types implemented with the same structure but differing data-types.
+
+Label Index - SIndex. (Label Index) is a suitable choice for most cases, even when the index data type is not known.
+
+Integer Index - IIndex.
+
+Float Index - FIndex.
+
+Datetime Index - DTIndex for time series indexing using RacketFrame datetime operations.
+
+Date Index - DIndex for time series indexing using the native typed Racket Date package.
 
 A HashTable was used for fast read and write and to minimize repeated data.
 Indexes can contain non-unique keys which are hashed to a list of non-negative integers
@@ -79,6 +84,11 @@ Wrapped in struct.
 (struct DateIndex ([index : DIndex]) #:mutable)
 
 (define-type RFIndex (U LabelIndex FixnumIndex FlonumIndex DatetimeIndex DateIndex))
+
+(define-predicate RFIndex? RFIndex)
+
+; Null value place holder.
+(struct RFNoData () #:transparent)
 }|
 
 The four index types supported by RacketFrames is referenced by the RFIndex type.
@@ -91,7 +101,7 @@ of the same length.
 
 @verbatim{================================================================================}
 
-A @bold{Series} is a struct consisting of a data vector of type identical to Series type and an Index for fast data access.
+@"\U2192" A @bold{Series} is a struct consisting of a data vector of type identical to Series type and an Index for fast data access.
 To save the user trouble with type checking and library details, convenience methods are provided to initialize and
 interact with Series. With a labeled sequence of Series akin to columns of a table, we can construct a DataFrame.
 
@@ -139,7 +149,7 @@ We can explicity define the Columns structure to initialize from
 or we can use the friendlier hashtable representation mapping the
 column name to a data sequence:
 
-@codeblock|{ (Sequenceof Label (Sequenceof Any)) }|
+@codeblock|{(Sequenceof Label (Sequenceof Any))}|
 
 @codeblock|{
 (define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3) 'b (list 3 5 6)  'c (list 3.4 5.5 6.7) 'd (list 'fizz 'buzz 'baz))))
@@ -167,10 +177,10 @@ Define columns.
 @codeblock|{
 (define columns-mix
   (list
-   (cons 'integer-col (new-ISeries (fxvector 1 2 3 4)
-                            #:index (build-index-from-list (list 'a 'b 'c 'd))))
-   (cons 'categorical-col (new-CSeries (vector 'hello 'world 'fizz 'buzz)
-                                       #:index (build-index-from-list (list 'a 'b 'c 'd))))))
+     (cons 'integer-col (new-ISeries (fxvector 1 2 3 4)
+         #:index (build-index-from-list (list 'a 'b 'c 'd))))
+     (cons 'categorical-col (new-CSeries (vector 'hello 'world 'fizz 'buzz)
+         #:index (build-index-from-list (list 'a 'b 'c 'd))))))
 }|
 Initialize DataFrame.
 @codeblock|{
@@ -412,8 +422,6 @@ Operations between Series (+, -, /, , *) align values based on their associated 
 
 @"\U2190" Integer Series is abbreviated to ISeries in RacketFrames.
 
-@local-table-of-contents[]
-
 @codeblock|{
 (provide
  (struct-out ISeries)
@@ -436,6 +444,8 @@ Operations between Series (+, -, /, , *) align values based on their associated 
   #:mutable
   #:transparent)
 }|
+
+@local-table-of-contents[]
 
 @subsubsection[#:tag "new-ISeries"]{new-ISeries}
 @defproc[(new-ISeries (arg0 (U FxVector (Vectorof Fixnum) (Sequenceof Fixnum) (Sequenceof RFFixnum))) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL)) (arg3 (#:sort Boolean)) (arg4 (#:encode Boolean))) ISeries]{
@@ -1179,8 +1189,6 @@ Returns the Fixnum value at the specified index in the series.
 
 @"\U2190" Numeric Series is abbreviated to NSeries in RacketFrames.
 
-@local-table-of-contents[]
-
 @codeblock|{
 (provide 
  (struct-out NSeries)
@@ -1224,6 +1232,8 @@ Returns the Fixnum value at the specified index in the series.
   #:mutable
   #:transparent) 
 }|
+
+@local-table-of-contents[]
 
 @subsubsection[#:tag "new-NSeries"]{new-NSeries}
 @defproc[(new-NSeries (arg0 (U (Sequenceof Flonum) FlVector)) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL)) (arg3 (#:sort Boolean)) (arg4 (#:encode Boolean))) NSeries]{
@@ -2000,8 +2010,6 @@ Returns the Float value at the specified index in the series.
 
 @"\U2190" Categorical Series is abbreviated to CSeries in RacketFrames.
 
-@local-table-of-contents[]
-
 @codeblock|{
 (define DEFAULT_NULL_VALUE : Label '||)
 (struct: CSeries ([index : (Option RFIndex)]
@@ -2014,6 +2022,8 @@ Returns the Float value at the specified index in the series.
   #:mutable
   #:transparent)
   }|
+
+@local-table-of-contents[]
 
 @subsubsection[#:tag "new-CSeries"]{new-CSeries}
 @defproc[(new-CSeries (arg0 (Sequenceof Label)) (arg1 (#:index (Option (U (Sequenceof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) CSeries]{
@@ -2171,6 +2181,17 @@ Returns the Float value at the specified index in the series.
 @subsection[#:style 'toc]{Boolean Series}
 @"\U2190" Boolean Series is abbreviated to BSeries in RacketFrames.
 
+@codeblock|{
+(struct-out BSeries)
+
+;; Boolean series.
+(struct BSeries ([index : (Option RFIndex)]
+                 [data : (Vectorof Boolean)]
+                 [null-value : Boolean])  
+  #:mutable
+  #:transparent)
+}|
+
 @local-table-of-contents[]
 
 @subsubsection[#:tag "new-BSeries"]{new-BSeries}
@@ -2303,7 +2324,37 @@ Returns the Float value at the specified index in the series.
 
 @subsection[#:style 'toc]{Generic Series}
 
-@"\U2190" Abbreviated GenSeries.
+@"\U2190" Generic Series is abbreviated to GenSeries in RacketFrames.
+
+@codeblock|{
+(define DEFAULT_NULL_VALUE : GenericType null)
+(struct GenSeries
+  ([index : (Option RFIndex)]
+   [data : (Vectorof GenericType)]
+   [null-value : RFNULL]
+   ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+   [any-null-value : GenericType]
+   ; encode data by element count to optimze memory storage and read/write operations
+   ; when data vector lacks variety
+   [encoded : Boolean]
+   [data-count-encoded : (Option (Listof (Pairof Any Real)))])
+  #:mutable
+  #:transparent)
+
+; When working with very large values that occur frequently,
+; it can be more performant to use the ISeries-Nominals form
+; which will only keep one copy of the Fixnum and maintain a
+; a light weight vector of index to reference to the nominals.
+; categorical series are constructed in nominal form by default,
+; but with other series types it is not
+(struct: GenSeries-Nominals
+  ([index : (Option RFIndex)]
+   [data : (Vectorof Index)]
+   [nominals : (Vectorof GenericType)]   
+   [null-value : RFNULL])
+  #:mutable
+  #:transparent)
+  }|
 
 @local-table-of-contents[]
 
@@ -2414,9 +2465,22 @@ Returns the Float value at the specified index in the series.
 
 @subsection[#:style 'toc]{Datetime Series}
 
-@"\U2190" This page has no on-this-page panel in a multi-page
-rendering, because there are no numbered subsections, but it has three
-levels shown in the table-of-contents panel.
+@"\U2190" Series consisting of a custom RacketFrames Datetime data type.
+
+@codeblock|{
+(define-type RFDatetime (U Datetime RFNoData))
+(define-predicate RFDatetime? RFDatetime)
+(define DEFAULT_NULL_VALUE : Datetime (Datetime (Date 0 0 0) (Time 0 0 0 0 0)))
+(struct DatetimeSeries
+  ([index : (Option RFIndex)]
+   [data : (Vectorof RFDatetime)]
+   ; when the null-value is not a fixnum?, the fixnum-null-value is set to 0
+   [null-value : RFNULL]
+   ; needed for type checking purposes and to do proper arithmetic operations in numeric series
+   [datetime-null-value : Datetime])
+  #:mutable
+  #:transparent)
+}|
 
 @local-table-of-contents[]
 
@@ -2615,7 +2679,9 @@ levels shown in the table-of-contents panel.
 
 @subsection[#:style 'toc]{Date Series}
 
-@local-table-of-contents[]
+@"\U2190" Series consisting of the native Racket date struct.
+
+@(link "https://docs.racket-lang.org/reference/time.html#%28def._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._date%29%29")
 
 @codeblock|{
 #|
@@ -2657,6 +2723,8 @@ levels shown in the table-of-contents panel.
   #:mutable
   #:transparent)
 }|
+
+@local-table-of-contents[]
 
 @subsubsection[#:tag "new-DateSeries"]{new-DateSeries}
 @defproc[(new-DateSeries (arg0 (U (Vectorof date) (Sequenceof date) (Sequenceof RFDate))) (arg1 (#:index (Option (U (Listof IndexDataType) RFIndex)))) (arg2 (#:fill-null RFNULL))) DateSeries]{
@@ -2856,22 +2924,232 @@ levels shown in the table-of-contents panel.
 ...
 }
 
+@subsection[#:tag "Series Convenience Methods"]{Series Convenience Methods}
+@subsubsection[#:tag "new-series"]{new-series}
+@defproc[(new-series (arg0 (Sequenceof Any)) (arg1 (#:index (Option (U (Listof IndexDataType) RFIndex))))) Series]{
+...
+}
+
+@subsubsection[#:tag "set-series-index"]{set-series-index}
+@defproc[(set-series-index (arg0 Series) (arg1 (U (Listof IndexDataType) RFIndex))) Series]{
+...
+}
+
+@subsubsection[#:tag "series-set-null-value"]{series-set-null-value}
+@defproc[(series-set-null-value (arg0 Series) (arg1 GenericType)) Series]{
+...
+}
+
+@subsubsection[#:tag "series-groupby"]{series-groupby}
+@defproc[(series-groupby (arg0 Series) (arg1 (#:by-value Boolean))) GroupHash]{
+...
+}
+
+@subsubsection[#:tag "series-complete"]{series-complete}
+@defproc[(series-complete (arg0 SeriesBuilder)) Series]{
+...
+}
+
+@subsubsection[#:tag "series-data"]{series-data}
+@defproc[(series-data (arg0 Series)) (U (Vectorof GenericType) FlVector (Vectorof Symbol) (Vectorof RFFixnum) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFDate))]{
+...
+}
+
+@subsubsection[#:tag "series-iref"]{series-iref}
+@defproc[(series-iref (arg0 Series) (arg1 Index)) Any]{
+...
+}
+
+@subsubsection[#:tag "series-index-ref"]{series-index-ref}
+@defproc[(series-index-ref (arg0 Series) (arg1 IndexDataType)) Any]{
+...
+}
+
+@subsubsection[#:tag "series-referencer"]{series-referencer}
+@defproc[(series-referencer (arg0 Series)) (-> Index Any)]{
+...
+}
+
+@subsubsection[#:tag "series-loc-boolean"]{series-loc-boolean}
+@defproc[(series-loc-boolean (arg0 Series) (arg1 (Listof Boolean))) (U Any Series)]{
+...
+}
+
+@subsubsection[#:tag "series-loc"]{series-loc}
+@defproc[(series-loc (arg0 Series) (arg1 (U Label (Listof Label) (Listof Boolean)))) (U Any Series)]{
+...
+}
+
+@subsubsection[#:tag "series-iloc"]{series-iloc}
+@defproc[(series-iloc (arg0 Series) (arg1 (U Index (Listof Index)))) (U Any Series)]{
+...
+}
+
+@subsubsection[#:tag "get-series-index"]{get-series-index}
+@defproc[(get-series-index (arg0 Series)) RFIndex]{
+...
+}
+
+@subsubsection[#:tag "has-series-index?"]{has-series-index?}
+@defproc[(has-series-index? (arg0 Series)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "in-series"]{in-series}
+@defproc[(in-series (arg0 GenericType) (arg1 Series)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "indexable-series->index"]{indexable-series->index}
+@defproc[(indexable-series->index (arg0 IndexableSeries)) RFIndex]{
+...
+}
+
+@subsubsection[#:tag "series-data->indexable-sequence"]{series-data->indexable-sequence}
+@defproc[(series-data->indexable-sequence (arg0 (U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector))) (Sequenceof IndexDataType)]{
+...
+}
+
+@subsubsection[#:tag "SeriesDescription"]{SeriesDescription}
+@codeblock|{
+(provide
+ (struct-out SeriesDescription)
+ Series Series? SeriesList SeriesList? SeriesType IndexableSeries IndexableSeries?)
+
+(define-type Series (U GenSeries NSeries CSeries ISeries BSeries DatetimeSeries DateSeries))
+
+(define-predicate Series? Series)
+
+(define-type SeriesList (Listof Series))
+
+(define-predicate SeriesList? SeriesList)
+
+(define-type SeriesType (U 'GenericSeries 'NumericSeries 'CategoricalSeries 'IntegerSeries 'BooleanSeries 'DatetimeSeries 'DateSeries))
+
+(define-type IndexableSeries (U GenSeries CSeries ISeries NSeries DatetimeSeries DateSeries))
+
+(define-predicate IndexableSeries? IndexableSeries)
+
+(struct: SeriesDescription ([name : Label]
+                            [type : SeriesType]
+                            [length : Integer]) #:transparent)
+
+}|
+
+@subsubsection[#:tag "series-description"]{series-description}
+@defproc[(series-description (arg0 Label) (arg1 Series)) SeriesDescription]{
+...
+}
+
+@subsubsection[#:tag "series-type"]{series-type}
+@defproc[(series-type (arg0 Series)) SeriesType]{
+...
+}
+
+@subsubsection[#:tag "series-length"]{series-length}
+@defproc[(series-length (arg0 Series)) Index]{
+...
+}
+
 @; ======================================================================
 
 @section[#:tag "Indexing"]{Indexing}
 
+The axis labeling information in RacketFrame objects serves many purposes.
 @itemlist[
-
- @item{
-The axis labeling information in RacketFrame objects serves many purposes:
-
+@item{
 Identifies data (i.e. provides metadata) using known indicators, important for analysis, visualization, and interactive console display.
-Enables automatic and explicit data alignment.
-Allows intuitive getting and setting of subsets of the data set.
-In this section, we will focus on the final point: namely, how to slice, dice, and generally get and set subsets of pandas objects. The primary focus will be on Series and DataFrame as they have received more development attention in this area.
 }
-
+@item{
+Enables automatic and explicit data alignment.
+}
+@item{
+Allows intuitive getting and setting of subsets of the data set.
+}
 ]
+
+Indexing
+
+@codeblock|{
+(define-type Label Symbol)
+
+; series have the option to set any type of null value
+; and be converted to a GenSeries
+(define-type RFNULL Any)
+
+(define-predicate Label? Label)
+
+(define-predicate ListofLabel? (Listof Label))
+
+(define-predicate ListofFixnum? (Listof Fixnum))
+
+(define-predicate SetofIndex? (Setof Index))
+
+(define-predicate ListofIndex? (Listof Index))
+
+(define-predicate ListofFlonum? (Listof Flonum))
+
+(define-predicate ListofBoolean? (Listof Boolean))
+
+(define-predicate ListofDatetime? (Listof Datetime))
+
+(define-predicate ListofDate? (Listof Date))
+
+(define-predicate Listofdate? (Listof date))
+
+(define-predicate ListofAny? (Listof Any))
+
+(define-predicate ListofAnyPair? (Listof (Pair Any Any)))
+
+; Map index to a  (Listof Fixnum)
+(define-type Labeling (Listof (Pair Label (Listof Index))))
+
+(define-type SIndex (HashTable Label (Listof Index)))
+
+; Range Index
+(define-type IIndex (HashTable Fixnum (Listof Index)))
+
+(define-type FIndex (HashTable Flonum (Listof Index)))
+
+(define-type DTIndex (HashTable Datetime (Listof Index)))
+
+(define-type DIndex (HashTable date (Listof Index)))
+
+(define-type IndexDataType (U Label Fixnum Flonum Datetime date))
+
+(define-predicate ListofIndexDataType? (Listof IndexDataType))
+
+(define-predicate SetofIndexDataType? (Setof IndexDataType))
+
+(define-type LabelProjection (U (Listof Label) (Setof Label)))
+
+(define-type ListofIndex (Listof Index))
+
+(define-type ListofListofIndex (Listof (Listof Index)))
+
+(define-predicate ListofListofIndex? (Listof (Listof Index)))
+
+(define-type ListofListofString (Listof (Listof String)))
+
+(define-predicate ListofListofString? (Listof (Listof String)))
+
+(define-predicate LabelProjection? LabelProjection)
+
+(struct LabelIndex ([index : SIndex]) #:mutable #:transparent)
+(struct FixnumIndex ([index : IIndex]) #:mutable #:transparent)
+(struct FlonumIndex ([index : FIndex]) #:mutable #:transparent)
+(struct DatetimeIndex ([index : DTIndex]) #:mutable #:transparent)
+(struct DateIndex ([index : DIndex]) #:mutable #:transparent)
+
+(define-type IndexType (U SIndex IIndex FIndex DTIndex DIndex))
+
+; add RangeIndex later
+(define-type RFIndex (U LabelIndex FixnumIndex FlonumIndex DatetimeIndex DateIndex))
+
+(define-predicate RFIndex? RFIndex)
+
+(struct RFNoData () #:transparent)
+}|
 
 @subsection[#:style 'toc]{Index}
 
@@ -2947,7 +3225,7 @@ In this section, we will focus on the final point: namely, how to slice, dice, a
 ...
 }
 
-@subsection[#:style 'toc]{DateTimeIndex}
+@subsection[#:style 'toc]{DatetimeIndex}
 
 @; ======================================================================
 @section{DataFrames}
@@ -3119,6 +3397,76 @@ In this section, we will focus on the final point: namely, how to slice, dice, a
 
 @subsubsection[#:tag "in-data-frame"]{in-data-frame}
 @defproc[(in-data-frame (arg0 GenericType) (arg1 DataFrame)) Boolean]{
+...
+}
+
+@subsubsection[#:tag "data-frame+"]{data-frame+}
+@defproc[(data-frame+ (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-"]{data-frame-}
+@defproc[(data-frame- (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame*"]{data-frame*}
+@defproc[(data-frame* (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame/"]{data-frame/}
+@defproc[(data-frame/ (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame%"]{data-frame%}
+@defproc[(data-frame% (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-r"]{data-frame-r}
+@defproc[(data-frame-r (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame="]{data-frame=}
+@defproc[(data-frame= (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame!="]{data-frame!=}
+@defproc[(data-frame!= (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame>="]{data-frame>=}
+@defproc[(data-frame>= (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame<="]{data-frame<=}
+@defproc[(data-frame<= (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame>"]{data-frame>}
+@defproc[(data-frame> (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame<"]{data-frame<}
+@defproc[(data-frame< (arg0 DataFrame) (arg1 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-abs"]{data-frame-abs}
+@defproc[(data-frame-abs (arg0 DataFrame)) DataFrame]{
+...
+}
+
+@subsubsection[#:tag "data-frame-filter"]{data-frame-filter}
+@defproc[(data-frame-filter (arg0 DataFrame) (arg1 BSeries)) DataFrame]{
 ...
 }
 
@@ -4078,6 +4426,8 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 (data-frame-head fruits-data-frame-delimited-no-schema) }|
 
 @subsection[#:style 'toc]{Databases}
+@"\U2190" RacketFrames supports SQL Lite 3 databases, but the library can easily be extended to construct DataFrames from other databases.
+
 @codeblock|{
 (require typed/db)
             
