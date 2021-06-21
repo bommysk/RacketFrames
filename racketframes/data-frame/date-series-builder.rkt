@@ -7,7 +7,7 @@
  [new-DateSeriesBuilder (case-> 
 		      (-> DateSeriesBuilder)
 		      (Index -> DateSeriesBuilder))]
- [append-DateSeriesBuilder   (DateSeriesBuilder (U date String) -> Void)]
+ [append-DateSeriesBuilder   (DateSeriesBuilder (U RFDate String) -> Void)]
  [complete-DateSeriesBuilder (DateSeriesBuilder -> DateSeries)])
 
 (require typed/racket/date)
@@ -17,12 +17,12 @@
  (only-in racket/vector
 	  vector-copy)
  (only-in "date-series.rkt"
-          DateSeries new-DateSeries DATE_SERIES_DEFAULT_NULL_VALUE)
+          DateSeries new-DateSeries RFDate DATE_SERIES_DEFAULT_NULL_VALUE)
  (only-in "../util/datetime/parse.rkt"
           parse-racket-date parse-racket-datetime is-valid-date? is-valid-datetime?))
 
 (struct: DateSeriesBuilder ([index  : Index]
-                            [data : (Vectorof date)]) #:mutable)
+                            [data : (Vectorof RFDate)]) #:mutable)
 
 (define base-len 512)
 
@@ -34,8 +34,8 @@
 
 ;(define-type DateParseFormat (U 'date 'time 'datetime 'moment))
 
-(: append-DateSeriesBuilder (DateSeriesBuilder (U date String) -> Void))
-(define (append-DateSeriesBuilder builder date/str-value)
+(: append-DateSeriesBuilder (DateSeriesBuilder (U RFDate String) -> Void))
+(define (append-DateSeriesBuilder builder rfdate/str-value)
   
   (define-syntax bump
     (syntax-rules ()
@@ -52,26 +52,26 @@
     (let* ((data (DateSeriesBuilder-data builder))
 	   (curr-len (vector-length data))
 	   (new-len  (assert (inexact->exact (round (* 1.5 curr-len))) exact-integer?)))
-      (let: ((new-data : (Vectorof date) ((inst make-vector date) new-len DATE_SERIES_DEFAULT_NULL_VALUE)))
+      (let: ((new-data : (Vectorof RFDate) ((inst make-vector RFDate) new-len DATE_SERIES_DEFAULT_NULL_VALUE)))
 	    (do ([idx 0 (add1 idx)])
 		([>= idx curr-len] (set-DateSeriesBuilder-data! builder new-data))
 	      (vector-set! new-data idx (vector-ref data idx))))))
   
   (if (< (DateSeriesBuilder-index builder)         
          (vector-length (DateSeriesBuilder-data builder)))
-      (let ((dt (if (string? date/str-value)            
+      (let ((dt (if (string? rfdate/str-value)            
 		     (let ((dt (cond
-                                 [(is-valid-datetime? date/str-value) (parse-racket-datetime (string-trim date/str-value))]
-                                 [(is-valid-date? date/str-value) (parse-racket-date (string-trim date/str-value))]                                 
+                                 [(is-valid-datetime? rfdate/str-value) (parse-racket-datetime (string-trim rfdate/str-value))]
+                                 [(is-valid-date? rfdate/str-value) (parse-racket-date (string-trim rfdate/str-value))]                                 
                                  [else #f])))
                        (if dt (assert dt date?) DATE_SERIES_DEFAULT_NULL_VALUE))
-		     date/str-value)))
+		     rfdate/str-value)))
         (vector-set! (DateSeriesBuilder-data builder)
 		     (bump-index)
 		     dt))
       (begin
         (extend-data)       
-        (append-DateSeriesBuilder builder date/str-value))))
+        (append-DateSeriesBuilder builder rfdate/str-value))))
 
 (: complete-DateSeriesBuilder (DateSeriesBuilder -> DateSeries))
 (define (complete-DateSeriesBuilder builder)  

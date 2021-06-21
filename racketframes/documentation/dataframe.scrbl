@@ -737,12 +737,12 @@ Operations between Series (+, -, /, , *) align values based on their associated 
 ...
 }
 
-@subsubsection[#:tag "Fixnum Series Builder"]{Fixnum Series Builder}
+@subsubsection[#:tag "Integer Series Builder"]{Integer Series Builder}
 @codeblock|{
 (struct-out ISeriesBuilder)
 
 (struct: ISeriesBuilder ([index  : Index]
-			 [data : (Vectorof Fixnum)]) #:mutable)
+			 [data : (Vectorof RFFixnum)]) #:mutable)
 }|
 
 @subsubsection[#:tag "new-ISeriesBuilder"]{new-ISeriesBuilder}
@@ -2590,6 +2590,17 @@ levels shown in the table-of-contents panel.
 ...
 }
 
+'(new-DatetimeSeriesBuilder (case-> (-> DatetimeSeriesBuilder) (Index -> DatetimeSeriesBuilder)))
+@subsubsection[#:tag "append-DatetimeSeriesBuilder"]{append-DatetimeSeriesBuilder}
+@defproc[(append-DatetimeSeriesBuilder (arg0 DatetimeSeriesBuilder) (arg1 (U RFDatetime String))) Void]{
+...
+}
+
+@subsubsection[#:tag "complete-DatetimeSeriesBuilder"]{complete-DatetimeSeriesBuilder}
+@defproc[(complete-DatetimeSeriesBuilder (arg0 DatetimeSeriesBuilder)) DatetimeSeries]{
+...
+}
+
 @subsection[#:style 'toc]{Date Series}
 
 @local-table-of-contents[]
@@ -2810,6 +2821,19 @@ levels shown in the table-of-contents panel.
 ...
 }
 
+[new-DateSeriesBuilder (case-> 
+		      (-> DateSeriesBuilder)
+		      (Index -> DateSeriesBuilder))]
+
+@subsubsection[#:tag "append-DateSeriesBuilder"]{append-DateSeriesBuilder}
+@defproc[(append-DateSeriesBuilder (arg0 DateSeriesBuilder) (arg1 (U RFDate String))) Void]{
+...
+}
+
+@subsubsection[#:tag "complete-DateSeriesBuilder"]{complete-DateSeriesBuilder}
+@defproc[(complete-DateSeriesBuilder (arg0 DateSeriesBuilder)) DateSeries]{
+...
+
 @; ======================================================================
 
 @section[#:tag "Indexing"]{Indexing}
@@ -2829,35 +2853,77 @@ In this section, we will focus on the final point: namely, how to slice, dice, a
 
 @subsection[#:style 'toc]{Index}
 
-@subsubsection[#:tag "data-frame-loc"]{data-frame-loc}
+@subsubsection[#:tag "is-labeled?"]{is-labeled?}
+@defproc[(is-labeled? (arg0 LabelIndex)) Boolean]{
+...
+}
 
-@"\U2190" data-frame-loc is primarily label based, but may also be used with a boolean array. data-frame-loc will raise KeyError when the items are not found. Allowed inputs are:
+@subsubsection[#:tag "label-sort-positional"]{label-sort-positional}
+@defproc[(label-sort-positional (arg0 LabelIndex) (arg1 (#:project LabelProjection))) Labeling]{
+...
+}
 
-A single label, e.g. 5 or 'a' (Note that 5 is interpreted as a label of the index. This use is not an integer position along the index.).
+@subsubsection[#:tag "label-sort-lexical"]{label-sort-lexical}
+@defproc[(label-sort-lexical (arg0 LabelIndex)) Labeling]{
+...
+}
 
-A list or array of labels ['a', 'b', 'c'].
+@subsubsection[#:tag "build-index-from-sequence"]{build-index-from-sequence}
+@defproc[(build-index-from-sequence (arg0 (Sequenceof IndexDataType))) RFIndex]{
+...
+}
 
-A slice object with labels 'a':'f' (Note that contrary to usual python slices, both the start and the stop are included, when present in the index! See Slicing with labels.).
+@subsubsection[#:tag "build-index-from-list"]{build-index-from-list}
+@defproc[(build-index-from-list (arg0 (Listof IndexDataType))) RFIndex]{
+...
+}
 
-A boolean array.
+@subsubsection[#:tag "build-data-vector-from-sequence"]{build-data-vector-from-sequence}
+@defproc[(build-data-vector-from-sequence (arg0 (Sequenceof GenericType))) (Vectorof GenericType)]{
+...
+}
 
-A callable function with one argument (the calling Series, DataFrame or Panel) and that returns valid output for indexing (one of the above).
+@subsubsection[#:tag "labeling"]{labeling}
+@defproc[(labeling (arg0 LabelIndex)) (Listof (Pair Label (Listof Index)))]{
+...
+}
 
-@subsubsection[#:tag "data-frame-iloc"]{data-frame-iloc}
+@subsubsection[#:tag "get-index"]{get-index}
+@defproc[(get-index (arg0 RFIndex) (arg1 IndexDataType)) (Listof Index)]{
+...
+}
 
-data-frame-iloc is primarily integer position based (from 0 to length-1 of the axis), but may also be used with a boolean array. data-frame-iloc will raise IndexError if a requested indexer is out-of-bounds, except slice indexers which allow out-of-bounds indexing. (this conforms with Python/NumPy slice semantics). Allowed inputs are:
+@subsubsection[#:tag "extract-index"]{extract-index}
+@defproc[(extract-index (arg0 RFIndex)) IndexType]{
+...
+}
 
-An integer e.g. 5.
+@subsubsection[#:tag "is-indexed?"]{is-indexed?}
+@defproc[(is-indexed? (arg0 RFIndex)) Boolean]{
+...
+}
 
-A list or array of integers [4, 3, 0].
+@subsubsection[#:tag "index-keys"]{index-keys}
+@defproc[(index-keys (arg0 RFIndex)) (Listof IndexDataType)]{
+...
+}
 
-A slice object with ints 1:7.
+@subsubsection[#:tag "index-idxes"]{index-idxes}
+@defproc[(index-idxes (arg0 RFIndex)) (Listof Index)]{
+...
+}
 
-A boolean array.
-
-A callable function with one argument (the calling Series, DataFrame or Panel) and that returns valid output for indexing (one of the above).
+@subsubsection[#:tag "index-keys-intersection"]{index-keys-intersection}
+@defproc[(index-keys-intersection (arg0 (Listof RFIndex))) (Setof IndexDataType)]{
+...
+}
 
 @subsection[#:style 'toc]{MultiIndex}
+
+@subsubsection[#:tag "build-multi-index-from-list"]{build-multi-index-from-list}
+@defproc[(build-multi-index-from-list (arg0 (Listof (Listof GenericType)))) LabelIndex]{
+...
+}
 
 @subsection[#:style 'toc]{DateTimeIndex}
 

@@ -12,7 +12,8 @@
    (cons 'integer-col (new-ISeries (list 1 2 3 4)
                                    #:index (build-index-from-list (list 'a 'b 'c 'd))))
    (cons 'categorical-col (new-CSeries (vector 'hello 'world 'fizz 'buzz)
-                                       #:index (build-index-from-list (list 'a 'b 'c 'd))))))
+                                       #:index (build-index-from-list (list 'a 'b 'c 'd)))))
+  )
 
 ; create new data-frame-mix
 (define data-frame-mix (new-data-frame columns-mix))
