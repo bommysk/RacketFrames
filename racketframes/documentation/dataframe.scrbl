@@ -2590,7 +2590,19 @@ levels shown in the table-of-contents panel.
 ...
 }
 
-'(new-DatetimeSeriesBuilder (case-> (-> DatetimeSeriesBuilder) (Index -> DatetimeSeriesBuilder)))
+@subsubsection[#:tag "Datetime Series Builder"]{Datetime Series Builder}
+@codeblock|{
+(struct-out DatetimeSeriesBuilder)
+
+(struct: DatetimeSeriesBuilder ([index  : Index]
+			 [data : (Vectorof RFDatetime)]) #:mutable)
+}|
+
+@subsubsection[#:tag "new-DatetimeSeriesBuilder"]{new-DatetimeSeriesBuilder}
+@defproc[(new-DatetimeSeriesBuilder (arg0 (U Void Index))) DatetimeSeriesBuilder]{
+...
+}
+
 @subsubsection[#:tag "append-DatetimeSeriesBuilder"]{append-DatetimeSeriesBuilder}
 @defproc[(append-DatetimeSeriesBuilder (arg0 DatetimeSeriesBuilder) (arg1 (U RFDatetime String))) Void]{
 ...
@@ -2821,9 +2833,18 @@ levels shown in the table-of-contents panel.
 ...
 }
 
-[new-DateSeriesBuilder (case-> 
-		      (-> DateSeriesBuilder)
-		      (Index -> DateSeriesBuilder))]
+@subsubsection[#:tag "Date Series Builder"]{Date Series Builder}
+@codeblock|{
+  (struct-out DateSeriesBuilder)
+
+  (struct: DateSeriesBuilder ([index  : Index]
+  [data : (Vectorof RFDate)]) #:mutable)
+}|
+
+@subsubsection[#:tag "new-DateSeriesBuilder"]{new-DateSeriesBuilder}
+@defproc[(new-DateSeriesBuilder (arg0 (U Void Index))) DateSeriesBuilder]{
+...
+}
 
 @subsubsection[#:tag "append-DateSeriesBuilder"]{append-DateSeriesBuilder}
 @defproc[(append-DateSeriesBuilder (arg0 DateSeriesBuilder) (arg1 (U RFDate String))) Void]{
@@ -2833,6 +2854,7 @@ levels shown in the table-of-contents panel.
 @subsubsection[#:tag "complete-DateSeriesBuilder"]{complete-DateSeriesBuilder}
 @defproc[(complete-DateSeriesBuilder (arg0 DateSeriesBuilder)) DateSeries]{
 ...
+}
 
 @; ======================================================================
 
