@@ -3068,8 +3068,6 @@ Allows intuitive getting and setting of subsets of the data set.
 }
 ]
 
-Indexing
-
 @codeblock|{
 (define-type Label Symbol)
 
@@ -4398,6 +4396,26 @@ data-frame-groupby aggregate count
 
 @section[#:style 'toc]{Loading}
 
+@subsubsection[#:tag "data-frame-write-delim"]{data-frame-write-delim}
+@defproc[(data-frame-write-delim (arg0 DataFrame) (arg1 (#:output-port Output-Port)) (arg2 (#:heading Boolean)) (arg3 (#:delim String))) Void]{
+...
+}
+
+@subsubsection[#:tag "data-frame-write-csv"]{data-frame-write-csv}
+@defproc[(data-frame-write-csv (arg0 DataFrame) (arg1 Path-String)) Void]{
+...
+}
+
+@subsubsection[#:tag "data-frame-write-json"]{data-frame-write-json}
+@defproc[(data-frame-write-json (arg0 DataFrame) (arg1 (#:output-port Output-Port))) Void]{
+...
+}
+
+@subsubsection[#:tag "data-frame-write-json-file"]{data-frame-write-json-file}
+@defproc[(data-frame-write-json-file (arg0 DataFrame) (arg1 Path-String)) Void]{
+...
+}
+
 Loading data from various data sources is important for any DataFrames implementation.
 RacketFrames supports delimited files such as CSV (comma-separated value) as well as SQL Lite databases through the Racket SQL Lite driver.
 
@@ -4423,6 +4441,7 @@ Read CSV (comma-separated or other delimitted) file into DataFrame.
 ; no schema
 (define fruits-data-frame-delimited-no-schema (load-delimited-file "../sample-csv/random_demographic.csv" "|" #:schema #f))
 
+; (data-frame-head (case-> (DataFrame -> Void) (DataFrame (Option Index) -> Void)))
 (data-frame-head fruits-data-frame-delimited-no-schema) }|
 
 @subsection[#:style 'toc]{Databases}
