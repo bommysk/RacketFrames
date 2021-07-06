@@ -1,0 +1,12 @@
+@import "style/0.8.css";
+@import "../gizmos/DataTables/DataTables-1.10.20/css/jquery.dataTables.min.css";
+@import "../gizmos/DataTables/FixedColumns-3.3.0/css/fixedColumns.bootstrap.min.css";
+@import "../gizmos/DataTables/AutoFill-2.3.4/css/autoFill.dataTables.min.css";
+@import "../gizmos/DataTables/Buttons-1.6.1/css/buttons.dataTables.min.css";
+@import "../gizmos/DataTables/ColReorder-1.5.2/css/colReorder.dataTables.min.css";
+@import "../gizmos/DataTables/KeyTable-2.5.1/css/keyTable.dataTables.min.css";
+@import "../gizmos/DataTables/Responsive-2.2.3/css/responsive.dataTables.min.css";
+@import "../gizmos/DataTables/RowReorder-1.2.6/css/rowReorder.dataTables.min.css";
+@import "../gizmos/DataTables/Scroller-2.0.1/css/scroller.dataTables.min.css";
+@import "../gizmos/DataTables/Select-1.3.1/css/select.dataTables.min.css";
+@import "tabs.css";

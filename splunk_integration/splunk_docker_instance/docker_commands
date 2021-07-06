@@ -1,3 +1,5 @@
 docker run -d -p 8000:8000 -e "SPLUNK_START_ARGS=--accept-license" -e "SPLUNK_PASSWORD=<password>" -v /Users/shubhamkahal/Documents/thesis/SplunkDocker/data:/opt/splunk/etc/data -v /Users/shubhamkahal/Documents/thesis/SplunkDocker/custom_appserver_static:/opt/splunk/etc/apps/search/appserver/static --name splunk splunk/splunk:latest
 
 docker run -d -p 8000:8000 -e "SPLUNK_START_ARGS=--accept-license" -e "SPLUNK_PASSWORD=<password>" --name splunk splunk/splunk:latest
+
+http://localhost:8000/en-US/app/search/racketframes
