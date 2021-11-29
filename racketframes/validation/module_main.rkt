@@ -328,3 +328,11 @@
 (show-data-frame-description (data-frame-description data-frame-from-hash-vector))
 
 (data-frame-head data-frame-from-hash)
+
+; has empty Footnote column
+(define employment-df (load-csv-file "total_employment_by_economic_activity.csv" #:schema #f))
+
+(data-frame-head employment-df)
+
+;(series-print (apply-agg-data-frame 'mode (data-frame-groupby-fix (data-frame-drop (data-frame-drop employment-df 'Subclassification) 'Classificaion) (list 'Country_Area 'Year))))
+(data-frame-groupby-fix (data-frame-drop (data-frame-drop employment-df 'Subclassification) 'Classificaion) (list 'Country_Area 'Year))

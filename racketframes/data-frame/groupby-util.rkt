@@ -76,19 +76,19 @@
                  (lambda ([key : String] [val : (Listof GenericType)])
                    
                    (let ((key (assert key string?))
-                         (val (assert (flatten val) ListofReal?)))
+                         (val (flatten val)))
                      (hash-set! agg-value-hash key
                                 (cond 
-                                  [(eq? function-name 'sum) (apply + val)]
-                                  [(eq? function-name 'mean) (mean val)]                                  
+                                  [(eq? function-name 'sum) (apply + (assert val ListofReal?))]
+                                  [(eq? function-name 'mean) (mean (assert val ListofReal?))]                                  
                                   [(eq? function-name 'median) (median (lambda ([val1 : GenericType] [val2 : GenericType]) (if (and (real? val1) (real? val2))
                                                                                                                                (< val1 val2)
                                                                                                                                (string-ci<=? (~a val1) (~a val2)))) val)]
                                   [(eq? function-name 'mode) (most-frequent-element val)]
                                   [(eq? function-name 'count) (length val)]
-                                  [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) val)]
-                                  [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) val)]
-                                  [else (error 'apply-agg-data-frame "Unknown aggregate function.")])))))
+                                  [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) (assert val ListofReal?))]
+                                  [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) (assert val ListofReal?))]
+                                  [else (error 'apply-agg-gen-series "Unknown aggregate function.")])))))
 
   (agg-value-hash-to-gen-series agg-value-hash))
 

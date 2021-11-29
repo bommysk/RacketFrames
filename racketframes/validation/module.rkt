@@ -327,3 +327,7 @@
 (show-data-frame-description (data-frame-description data-frame-from-hash-vector))
 
 (data-frame-head data-frame-from-hash)
+
+(define employment-df (load-csv-file "total_employment_by_economic_activity.csv" #:schema #f))
+
+(data-frame-head employment-df)
