@@ -9,26 +9,32 @@
  [apply-agg-gen-series (Symbol GroupHash -> GenSeries)]
  [make-group-hash (-> GroupHash)]
  [make-agg-value-hash-sindex ((Listof (Pair String GenericType)) -> SIndex)]
- [agg-value-hash-to-gen-series (AggValueHash -> GenSeries)])
+ [agg-value-hash-to-gen-series (AggValueHash -> GenSeries)]
+ [make-agg-value-hash (-> AggValueHash)]
+ [do-agg (Symbol (Listof GenericType) -> GenericType)])
 
 (provide GroupHash AggValueHash)
  
 (require
   "../util/data-encode.rkt"
   (only-in "indexed-series.rkt"
-           LabelIndex SIndex Label Labeling LabelProjection idx->key)
+           LabelIndex SIndex Label Labeling LabelProjection idx->key build-index-from-list)
   (only-in "generic-series.rkt"
            GenSeries GenSeries? gen-series-data gen-series-index GenericType GenericType? gen-series-iloc gen-series-iref
            gen-series-length new-GenSeries gen-series-referencer))
 
 (define-type Key String)
-(define-type GroupHash (HashTable Key (Listof GenericType)))
-(define-type AggValueHash (HashTable Key GenericType))
+(define-type GroupHash (Mutable-HashTable Key (Listof GenericType)))
+(define-type AggValueHash (Mutable-HashTable Key GenericType))
 
 ; This function is self-explanatory, it consumes no arguments
 ; and creates a hash map which will represent a JoinHash.
 (: make-group-hash (-> GroupHash))
 (define (make-group-hash)
+  (make-hash))
+
+(: make-agg-value-hash (-> AggValueHash))
+(define (make-agg-value-hash)
   (make-hash))
 
 ; Used to determine the groups for the groupby. If by is a function, it’s called on each value of the object’s index.
@@ -63,6 +69,20 @@
 
 (define-predicate ListofReal? (Listof Real))
 
+(: do-agg (Symbol (Listof GenericType) -> GenericType))
+(define (do-agg function-name col-data)
+  (cond 
+    [(eq? function-name 'sum) (apply + (assert col-data ListofReal?))]
+    [(eq? function-name 'mean) (mean (assert col-data ListofReal?))]
+    [(eq? function-name 'median) (median (lambda ([val1 : GenericType] [val2 : GenericType]) (if (and (real? val1) (real? val2))
+                                                                                                 (< val1 val2)
+                                                                                                 (string-ci<=? (~a val1) (~a val2)))) col-data)]
+    [(eq? function-name 'mode) (most-frequent-element col-data)]
+    [(eq? function-name 'count) (length col-data)]
+    [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) (assert col-data ListofReal?))]
+    [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) (assert col-data ListofReal?))]
+    [else (error 'do-agg "Unknown aggregate function.")]))
+
 ; Applies the aggregate function specificed by function-name to the values in
 ; the column-name column. Currently supports 3: sum, mean, count, min, max.
 (: apply-agg-gen-series (Symbol GroupHash -> GenSeries))
@@ -78,17 +98,7 @@
                    (let ((key (assert key string?))
                          (val (flatten val)))
                      (hash-set! agg-value-hash key
-                                (cond 
-                                  [(eq? function-name 'sum) (apply + (assert val ListofReal?))]
-                                  [(eq? function-name 'mean) (mean (assert val ListofReal?))]                                  
-                                  [(eq? function-name 'median) (median (lambda ([val1 : GenericType] [val2 : GenericType]) (if (and (real? val1) (real? val2))
-                                                                                                                               (< val1 val2)
-                                                                                                                               (string-ci<=? (~a val1) (~a val2)))) val)]
-                                  [(eq? function-name 'mode) (most-frequent-element val)]
-                                  [(eq? function-name 'count) (length val)]
-                                  [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) (assert val ListofReal?))]
-                                  [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) (assert val ListofReal?))]
-                                  [else (error 'apply-agg-gen-series "Unknown aggregate function.")])))))
+                                (do-agg function-name val)))))
 
   (agg-value-hash-to-gen-series agg-value-hash))
 

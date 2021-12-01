@@ -42,7 +42,8 @@
  [data-frame-get-series (DataFrame (U Label (Listof Label)) -> (U Series (Listof Series)))]
  [data-frame-row-count (DataFrame -> Index)]
  [data-frame-column-count (DataFrame -> Index)]
- [in-data-frame (GenericType DataFrame -> Boolean)])
+ [in-data-frame (GenericType DataFrame -> Boolean)]
+ [seq->columns ((U Columns (Sequenceof Label (Sequenceof Any))) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] -> Columns)])
 
 (provide
  DataFrame DataFrame? Column Column? Columns Columns?
@@ -162,8 +163,8 @@
 
 ; ***********************************************************
 ; Support Multiple-Valued Sequences like hashtables
-(: seq->columns ((U Columns (Sequenceof Label (Sequenceof Any))) -> Columns))
-(define (seq->columns col/seq)
+(: seq->columns ((U Columns (Sequenceof Label (Sequenceof Any))) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] -> Columns))
+(define (seq->columns col/seq #:index [index #f])
   (if (Columns? col/seq)
       col/seq
       (let: ((hash : (HashTable Label (Listof Any)) (make-hash))
@@ -189,19 +190,19 @@
                              (set! cols (cons (cons k
                                                     (cond                                                      
                                                       [(eq? h-ref-series-type 'CategoricalSeries)
-                                                       (new-CSeries (list->vector (assert h-ref ListofLabel?)))]
+                                                       (new-CSeries (list->vector (assert h-ref ListofLabel?)) #:index index)]
                                                       [(eq? h-ref-series-type 'NumericSeries)
-                                                       (new-NSeries (assert h-ref ListofFlonum?))]
+                                                       (new-NSeries (assert (map (λ (num) (exact->inexact (assert num number?))) h-ref) ListofFlonum?)  #:index index)]
                                                       [(eq? h-ref-series-type 'IntegerSeries)
-                                                       (new-ISeries (assert h-ref ListofFixnum?))]
+                                                       (new-ISeries (assert h-ref ListofFixnum?) #:index index)]
                                                       [(eq? h-ref-series-type 'BooleanSeries)
-                                                       (new-BSeries (list->vector (assert h-ref ListofBoolean?)))]
+                                                       (new-BSeries (list->vector (assert h-ref ListofBoolean?)) #:index index)]
                                                       [(eq? h-ref-series-type 'DatetimeSeries)
-                                                       (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)))]
+                                                       (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)) #:index index)]
                                                       [(eq? h-ref-series-type 'DateSeries)
-                                                       (new-DateSeries (assert h-ref Listofdate?))]
+                                                       (new-DateSeries (assert h-ref Listofdate?) #:index index)]
                                                       [else
-                                                       (new-GenSeries (list->vector h-ref))])) cols))))))
+                                                       (new-GenSeries (list->vector h-ref) #:index index)])) cols))))))
         
         cols)))
 
@@ -216,7 +217,7 @@
 (define (new-data-frame cols #:index [index #f])
 
   (: cols/seq->columns Columns)
-  (define cols/seq->columns (seq->columns cols))
+  (define cols/seq->columns (seq->columns cols #:index index))
   
   (define (check-equal-length)
     (when  (pair? cols/seq->columns)

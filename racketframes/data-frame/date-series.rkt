@@ -29,7 +29,7 @@
  DateSeries? RFDate RFDate? (rename-out [DEFAULT_NULL_VALUE DATE_SERIES_DEFAULT_NULL_VALUE] [GroupHash date-series-grouphash]))
 
 (provide:
- [new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> DateSeries)]
+ [new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL]  -> DateSeries)]
  [set-DateSeries-index (DateSeries (U (Listof IndexDataType) RFIndex) -> DateSeries)]
  [date-series-iref (DateSeries (Listof Index) -> (Listof RFDate))]
  [date-series-index-ref (DateSeries IndexDataType -> (Listof RFDate))]
@@ -120,7 +120,7 @@
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a DateSeries
 ; struct object.
-(: new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DateSeries))
+(: new-DateSeries ((U (Vectorof date) (Sequenceof date) (Sequenceof RFDate)) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> DateSeries))
 (define (new-DateSeries data #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE]) 
 
   (define data-vector : (Vectorof RFDate) (make-RFDate-vector data))

@@ -18,9 +18,8 @@
  [data-frame-join-right (DataFrame DataFrame [#:on (Listof Symbol)] -> DataFrame)]
  [data-frame-join-inner (DataFrame DataFrame [#:on (Listof Symbol)] -> DataFrame)]
  [data-frame-join-outer (DataFrame DataFrame [#:on (Listof Symbol)] -> DataFrame)]
- [data-frame-groupby (DataFrame (Listof Label) -> GroupHash)]
- [data-frame-groupby-fix (DataFrame (Listof Label) -> GroupHashDataFrame)]
- [apply-agg-data-frame (Symbol GroupHash -> Series)]
+ [data-frame-groupby (DataFrame (Listof Label) -> DataFrameGroupHash)]
+ [apply-agg-data-frame (Symbol DataFrameGroupHash -> DataFrame)]
  [copy-column-row-error (Series Integer -> Void)]
  [copy-column-row ((Vectorof Series) (Vectorof SeriesBuilder) Index -> Void)]
  [dest-mapping-series-builders (DataFrameDescription Index -> (Listof SeriesBuilder))]
@@ -43,17 +42,18 @@
  (only-in "../util/symbol.rkt"
           symbol-prefix)
  (only-in "indexed-series.rkt"
-	  LabelIndex SIndex Label Labeling LabelProjection key-delimiter)
+	  RFIndex RFNULL RFNoData LabelIndex SIndex Label Labeling LabelProjection
+          key-delimiter build-index-from-list ListofIndexDataType?)
  (only-in "series.rkt"
 	  series-complete series-data series-iref series-referencer)
  (only-in "series-description.rkt"
-	  SeriesType Series
+	  SeriesType Series Series?
 	  SeriesDescription-type
 	  series-type series-length          
           IndexableSeries)
  (only-in "data-frame.rkt"
 	  DataFrame Column Columns Columns? new-data-frame data-frame-names
-	  data-frame-cseries data-frame-explode
+	  data-frame-cseries data-frame-explode data-frame-loc data-frame-series-ref
 	  DataFrameDescription DataFrameDescription-series data-frame-description)
  (only-in "generic-series.rkt"
 	  GenSeries GenSeries? GenericType gen-series-iref new-GenSeries
@@ -116,7 +116,7 @@
           data-frame-write-delim)
  (only-in "groupby-util.rkt"
           make-agg-value-hash-sindex agg-value-hash-to-gen-series GroupHash
-          AggValueHash))
+          AggValueHash make-agg-value-hash do-agg))
 
 ; ***********************************************************
 
@@ -871,7 +871,13 @@
 
 ; ***********************************************************
 
-(define-type GroupHashDataFrame (HashTable Key GroupHash))
+(define-type DataFrameGroupHash (HashTable Key GroupHash))
+
+; maps DataFrame index to mapping of columns to aggregate result
+; {'index_groupby_columns' : {'col':'agg_result', 'col':'agg_result', 'col':'agg_result'} ...}
+; the hash-keys will be converted to a RF index while the column data will be organized into
+; series.
+(define-type DataFrameAggValueHash (Mutable-HashTable Key AggValueHash))
 
 ; This function is self-explanatory, it consumes no arguments
 ; and creates a hash map which will represent a JoinHash.
@@ -879,14 +885,18 @@
 (define (make-group-hash)
   (make-hash))
 
-(: make-group-hash-data-frame (-> GroupHashDataFrame))
-(define (make-group-hash-data-frame)
+(: make-data-frame-group-hash (-> DataFrameGroupHash))
+(define (make-data-frame-group-hash)
+  (make-hash))
+
+(: make-data-frame-agg-value-hash (-> DataFrameAggValueHash))
+(define (make-data-frame-agg-value-hash)
   (make-hash))
 
 ;Used to determine the groups for the groupby. The Series VALUES will be used to determine the groups.
-(: data-frame-groupby-fix (DataFrame (Listof Label) -> GroupHashDataFrame))
-(define (data-frame-groupby-fix data-frame by)
-  (define: group-index : GroupHashDataFrame (make-group-hash-data-frame))
+(: data-frame-groupby (DataFrame (Listof Label) -> DataFrameGroupHash))
+(define (data-frame-groupby data-frame by)
+  (define: group-index : DataFrameGroupHash (make-data-frame-group-hash))
   (define: col-groups : (Listof IndexableSeries) (key-cols-series (data-frame-explode data-frame #:project by)))
   (define: group-data-cols : Columns (data-frame-explode data-frame #:project (set-subtract (list->set (data-frame-names data-frame)) (list->set by))))
   (define: col-data : (Listof IndexableSeries) (key-cols-series group-data-cols))
@@ -900,75 +910,67 @@
     (if (unsafe-fx>= i len)
 	group-index
 	(let: ((i : Index (assert i index?)))
-	      (let ((key (group-key i)))
-                (hash-update! group-index key
-                              (λ: ((col-grouping : GroupHash))
-                                (begin 
-                                  (for ([col-name col-names])                                  
-                                    (hash-update! col-grouping col-name
-                                                  (λ: ((col-group-data : (Listof GenericType)))
-                                                  (append (map (lambda ([series : IndexableSeries]) (series-iref series i)) col-data) col-group-data))
-                                                  (λ () (list))))
-                                  col-grouping))
-                              
-                              (λ () (make-group-hash))))
+          (let ((key (group-key i)))
+            (hash-update! group-index key
+                          (λ: ((col-grouping : GroupHash))
+                            (begin 
+                              (for ([col-name col-names])                                  
+                                (hash-update! col-grouping col-name
+                                              (λ: ((col-group-data : (Listof GenericType)))
+                                                (flatten (cons (series-iref (assert (data-frame-series-ref data-frame (string->symbol col-name)) Series?) i) col-group-data)))
+                                              (λ () (list))))
+                              col-grouping))
+                          (λ () (make-group-hash))))
           (loop (add1 i))))))
-
-;Used to determine the groups for the groupby. The Series VALUES will be used to determine the groups.
-(: data-frame-groupby (DataFrame (Listof Label) -> GroupHash))
-(define (data-frame-groupby data-frame by)
-  (define: group-index : GroupHash (make-group-hash))
-  (define: col-groups : (Listof IndexableSeries) (key-cols-series (data-frame-explode data-frame #:project by)))
-  (define: col-data : (Listof IndexableSeries) (key-cols-series (data-frame-explode data-frame #:project (set-subtract (list->set (data-frame-names data-frame)) (list->set by)))))
-
-  ; Get length of one of the IndexableSeries
-  (define len (series-length (car col-groups)))
-  (define: group-key : (Index -> String) (key-fn col-groups))
-
-  (let loop ([i 0])
-    (if (unsafe-fx>= i len)
-	group-index
-	(let: ((i : Index (assert i index?)))
-	      (let ((key (group-key i)))
-		(hash-update! group-index key
-			      (λ: ((idx : (Listof GenericType)))
-				  (append (map (lambda ([series : IndexableSeries]) (series-iref series i)) col-data) idx))
-			      (λ () (list))))
-	      (loop (add1 i))))))
 
 ; ***********************************************************
 
 ; ***********************************************************
 ;; DataFrame agg ops
 
+;; DataFrameAggValueHash (HashTable Key AggValueHash)
+(: agg-value-hash-to-data-frame (DataFrameAggValueHash -> DataFrame))
+(define (agg-value-hash-to-data-frame data-frame-agg-value-hash)
+  ; build multi-index if more than one grouping column is given
+  (let ((rf-index : RFIndex (build-index-from-list (assert (map (λ (str) (string->symbol str)) (hash-keys data-frame-agg-value-hash)) ListofIndexDataType?))) (col-data-hash : (Mutable-HashTable Label (Listof GenericType)) (make-hash)))
+    (begin 
+      (hash-for-each data-frame-agg-value-hash
+                     (lambda ([index-key : String] [agg-value-hash : AggValueHash])
+                       (hash-for-each agg-value-hash
+                                      (lambda ([col-name : String] [val : GenericType])
+                                        (hash-update! col-data-hash (string->symbol col-name)
+                                                      (λ: ((col-data : (Listof GenericType)))
+                                                        (cons val col-data))
+                                                      (λ () (list)))))))
+      
+      ;(display col-data-hash)
+      
+      (new-data-frame col-data-hash #:index rf-index))))
+
 ; Applies the aggregate function specificed by function-name to the values in
 ; the column-name column.
-(: apply-agg-data-frame (Symbol GroupHash -> GenSeries))
-(define (apply-agg-data-frame function-name group-hash)
-  (define len (hash-count group-hash))
+(: apply-agg-data-frame (Symbol DataFrameGroupHash -> DataFrame))
+(define (apply-agg-data-frame function-name data-frame-group-hash)
+  (define len (hash-count data-frame-group-hash))
 
-  (: agg-value-hash AggValueHash)
-  (define agg-value-hash (make-hash))
+  ; DataFrameAggValueHash (HashTable Key (HashTable Key GenericType))
+  (: data-frame-agg-value-hash DataFrameAggValueHash)
+  (define data-frame-agg-value-hash (make-data-frame-agg-value-hash))
 
-  (hash-for-each group-hash
-                 (lambda ([key : String] [val : (Listof GenericType)])
-                   
-                   (let ((key (assert key string?))
-                         (val (flatten val)))
-                     (hash-set! agg-value-hash key
-                                (cond 
-                                  [(eq? function-name 'sum) (apply + (assert val ListofReal?))]
-                                  [(eq? function-name 'mean) (mean (assert val ListofReal?))]
-                                  [(eq? function-name 'median) (median (lambda ([val1 : GenericType] [val2 : GenericType]) (if (and (real? val1) (real? val2))
-                                                                                                                               (< val1 val2)
-                                                                                                                               (string-ci<=? (~a val1) (~a val2)))) val)]
-                                  [(eq? function-name 'mode) (most-frequent-element val)]
-                                  [(eq? function-name 'count) (length val)]
-                                  [(eq? function-name 'min) (argmin (lambda ([x : Real]) x) (assert val ListofReal?))]
-                                  [(eq? function-name 'max) (argmax (lambda ([x : Real]) x) (assert val ListofReal?))]
-                                  [else (error 'apply-agg-data-frame "Unknown aggregate function.")])))))
-
-  (agg-value-hash-to-gen-series agg-value-hash))
+  (hash-for-each data-frame-group-hash
+                 (lambda ([df-index-key : String] [col-group-hash : GroupHash])
+                   (let ((agg-value-hash (make-agg-value-hash)))
+                     (begin 
+                       (hash-for-each col-group-hash
+                                      (lambda ([key : String] [col-data : (Listof GenericType)])
+                                        (let ((key (assert key string?))
+                                              (col-data (flatten col-data)))
+                                          (hash-set! agg-value-hash key 
+                                                     ; need object with df-index-key pointing to {df-index-key -> {key -> result}}
+                                                     ; only operate on numeric series for mathematical aggregate functions
+                                                     (do-agg function-name col-data)))))
+                       (hash-set! data-frame-agg-value-hash df-index-key agg-value-hash)))))
+  (agg-value-hash-to-data-frame data-frame-agg-value-hash))
 
 ; **********************************************************
 
