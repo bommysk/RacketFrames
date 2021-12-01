@@ -206,7 +206,6 @@
         
         cols)))
 
-
 ; ***********************************************************
 
 ; This function consumes a Listof Column and constructs a
@@ -252,7 +251,6 @@
           #t)))
   
   (check-equal-length)
-
 
   (when (not (are-all-unique? (map (λ: ((s : (Pair Symbol Series)))
                                      (car s)) cols/seq->columns)))

@@ -931,24 +931,81 @@
 ; ***********************************************************
 ;; DataFrame agg ops
 
+#|
++  (let ((data-frame-agg-value-hash-keys : (Listof Symbol) (list)) (col-data-hash : (Mutable-HashTable Label (Listof GenericType)) (make-hash)))
+     (begin
+       (hash-for-each data-frame-agg-value-hash
+                      (lambda ([index-key : String] [agg-value-hash : AggValueHash])
+-                       (hash-for-each agg-value-hash
++                       (begin
++                         (set! data-frame-agg-value-hash-keys (append data-frame-agg-value-hash-keys (list (string->symbol index-key))))
++                         (hash-for-each agg-value-hash
+
+
+; Support Multiple-Valued Sequences like hashtables
+(: data-frame-agg-value-hash->dataframe ((U Columns (Sequenceof Label (Sequenceof Any))) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] -> Columns))
+(define (data-frame-agg-value-hash->dataframe col/seq #:index [index #f])
+  (if (Columns? col/seq)
+      col/seq
+      (let: ((hash : (HashTable Label (Listof Any)) (make-hash))
+             (cols : Columns '()))
+        (begin
+          (for ([([k : Label] [v : (Sequenceof Any)]) col/seq])              
+            (let*: ((h-ref : (Listof Any) (hash-ref hash k (λ () '())))
+                    (v-value : (Listof Any)
+                             (if (list? v)
+                                 v
+                                 (if (vector? v)
+                                     (vector->list v)
+                                     (if (sequence? v)
+                                         (sequence->list v)
+                                         (list v))))))
+              
+              (hash-set! hash k (append v-value h-ref))))
+        
+          (hash-for-each hash
+                         (lambda ([k : Label] [v : (Listof Any)])
+                           (let*: ((h-ref : (Listof Any) (hash-ref hash k (λ () '())))
+                                   (h-ref-series-type : SeriesType (guess-series-type (map ~a h-ref))))
+                             (set! cols (cons (cons k
+                                                    (cond                                                      
+                                                      [(eq? h-ref-series-type 'CategoricalSeries)
+                                                       (new-CSeries (list->vector (assert h-ref ListofLabel?)) #:index index)]
+                                                      [(eq? h-ref-series-type 'NumericSeries)
+                                                       (new-NSeries (assert (map (λ (num) (exact->inexact (assert num number?))) h-ref) ListofFlonum?)  #:index index)]
+                                                      [(eq? h-ref-series-type 'IntegerSeries)
+                                                       (new-ISeries (assert h-ref ListofFixnum?) #:index index)]
+                                                      [(eq? h-ref-series-type 'BooleanSeries)
+                                                       (new-BSeries (list->vector (assert h-ref ListofBoolean?)) #:index index)]
+                                                      [(eq? h-ref-series-type 'DatetimeSeries)
+                                                       (new-DatetimeSeries (list->vector (assert h-ref ListofDatetime?)) #:index index)]
+                                                      [(eq? h-ref-series-type 'DateSeries)
+                                                       (new-DateSeries (assert h-ref Listofdate?) #:index index)]
+                                                      [else
+                                                       (new-GenSeries (list->vector h-ref) #:index index)])) cols))))))
+        
+        cols)))
+|#
 ;; DataFrameAggValueHash (HashTable Key AggValueHash)
 (: agg-value-hash-to-data-frame (DataFrameAggValueHash -> DataFrame))
 (define (agg-value-hash-to-data-frame data-frame-agg-value-hash)
   ; build multi-index if more than one grouping column is given
-  (let ((rf-index : RFIndex (build-index-from-list (assert (map (λ (str) (string->symbol str)) (hash-keys data-frame-agg-value-hash)) ListofIndexDataType?))) (col-data-hash : (Mutable-HashTable Label (Listof GenericType)) (make-hash)))
+  (let ((rf-index : (Listof Symbol) (list)) (col-data-hash : (Mutable-HashTable Label (Listof GenericType)) (make-hash)))
     (begin 
       (hash-for-each data-frame-agg-value-hash
                      (lambda ([index-key : String] [agg-value-hash : AggValueHash])
-                       (hash-for-each agg-value-hash
+                       (begin
+                         (set! rf-index (append (list (string->symbol index-key)) rf-index))
+                         (hash-for-each agg-value-hash
                                       (lambda ([col-name : String] [val : GenericType])
                                         (hash-update! col-data-hash (string->symbol col-name)
                                                       (λ: ((col-data : (Listof GenericType)))
                                                         (cons val col-data))
-                                                      (λ () (list)))))))
+                                                      (λ () (list))))))))
       
       ;(display col-data-hash)
       
-      (new-data-frame col-data-hash #:index rf-index))))
+      (new-data-frame col-data-hash #:index (build-index-from-list rf-index)))))
 
 ; Applies the aggregate function specificed by function-name to the values in
 ; the column-name column.
