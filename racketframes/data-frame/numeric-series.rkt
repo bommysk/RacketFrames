@@ -905,7 +905,7 @@
 
 ; ***********************************************************
 ;; NSeries agg ops
-(define-type AggValueHash (HashTable Key GenericType))
+(define-type AggValueHash (Mutable-HashTable Key GenericType))
 
 ; Applies the aggregate function specificed by function-name to the values in
 ; the column-name column. Currently supports 3: sum, avg, count.

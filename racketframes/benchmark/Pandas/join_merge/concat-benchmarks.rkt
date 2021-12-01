@@ -36,17 +36,17 @@
 (define frame-c (new-data-frame
                  (for/list: : Columns ([col 200])
                    (cons (string->symbol (number->string (+ col (random))))
-                           (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0) #f)))))
+                           (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0))))))
 
 (define twenty-frame-c (for/list: : (Listof DataFrame) ([i 20]) (new-data-frame
                  (for/list: : Columns ([col 200])
                    (cons (string->symbol (~a "df~" i "~" col))
-                           (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0) #f))))))
+                           (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0)))))))
 
 (define frame-f (new-data-frame
                  (for/list: : Columns ([col 200])
                    (cons (string->symbol (~a "df~" col))
-                           (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0) #f)))))
+                           (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0))))))
 
 (define twenty-frame-f (for/list: : (Listof DataFrame) ([i 20]) frame-f))
 
@@ -78,17 +78,17 @@
 
 
 (define iseries-append-bench-before (now))
-(define iseries-appended (iseries-append (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0) #f) (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0) #f)))
+(define iseries-appended (iseries-append (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0)) (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0))))
 (define iseries-append-bench-after (- (now) iseries-append-bench-before))
-(series-print iseries-appended  (current-output-port))
+(series-print iseries-appended)
 (fprintf (current-output-port)
          "iseries append bench ~v ms.\n"
          iseries-append-bench-after)
 
 (define cseries-append-bench-before (now))
-(define cseries-appended (cseries-append (new-CSeries (for/vector: : (Vectorof Symbol) ([i N]) 'a) #f) (new-CSeries (for/vector: : (Vectorof Symbol) ([i N]) 'b) #f)))
+(define cseries-appended (cseries-append (new-CSeries (for/vector: : (Vectorof Symbol) ([i N]) 'a)) (new-CSeries (for/vector: : (Vectorof Symbol) ([i N]) 'b))))
 (define cseries-append-bench-after (- (now) cseries-append-bench-before))
-(series-print cseries-appended  (current-output-port))
+(series-print cseries-appended)
 (fprintf (current-output-port)
          "cseries append bench ~v ms.\n"
          cseries-append-bench-after)

@@ -96,7 +96,7 @@
 (define (most-frequent-element-list xs)
   (: ht (HashTable Any Real))
   (define ht (make-hash))
-  (for [(x xs)] (hash-update! ht x (λ ((b : Real)) (assert (add1 b) real?)) (λ () 0))) 
+  (for [(x xs)] (hash-update! ht x (λ ((b : Real)) (assert (add1 b) real?)) (λ () 0)))
   (hash->list ht))
 
 (: most-frequent-elements((Listof (Pairof Any Real)) -> (Listof Any)))

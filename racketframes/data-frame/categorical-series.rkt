@@ -32,7 +32,7 @@
  (only-in "indexed-series.rkt"
 	  RFIndex RFIndex? RFNULL Label Label? idx->key key->lst-idx extract-index build-index-from-list
           build-multi-index-from-list LabelIndex LabelIndex-index is-labeled? IndexDataType
-          ListofIndex? ListofListofString ListofListofString?))
+          ListofIndex? ListofListofString ListofListofString? ListofIndexDataType?))
 
 (define-type CSeriesFn (Label -> Label))
 
@@ -87,8 +87,12 @@
         (if (RFIndex? labels)
             (begin
               (check-mismatch labels)
-                  (CSeries labels data (make-nominal-vector) null-value label-null-value))
-            (CSeries #f data (make-nominal-vector) null-value label-null-value))
+              (CSeries labels data (make-nominal-vector) null-value label-null-value))
+            (if labels
+                (let ((index (build-index-from-list (assert labels ListofIndexDataType?))))
+                  (check-mismatch index)
+                  (CSeries index data (make-nominal-vector) null-value label-null-value))
+                (CSeries #f data (make-nominal-vector) null-value label-null-value)))
         (let ((nom (vector-ref nominals idx)))
           (if (hash-has-key? nominal-code nom)
               (begin

@@ -180,8 +180,7 @@
 ; create new data-frame-integer
 (define data-frame-integer-labeled (new-data-frame columns-integer-labeled))
 
-(data-frame-write-delim data-frame-integer-labeled
-                     )
+(data-frame-write-delim data-frame-integer-labeled)
 
 (displayln "data-frame-loc")
 (data-frame-write-delim
@@ -223,8 +222,7 @@
 (gen-series-data (assert (data-frame-iloc data-frame-integer-labeled 3 1) GenSeries?))
 
 (data-frame-write-delim
- (assert (data-frame-iloc-label data-frame-integer-labeled (list 1 2 3) (list 'col1 'col2)) DataFrame?)
-)
+ (assert (data-frame-iloc-label data-frame-integer-labeled (list 1 2 3) (list 'col1 'col2)) DataFrame?))
 
 (gen-series-data (assert (data-frame-iloc-label data-frame-integer-labeled 1 (list 'col1 'col2)) GenSeries?))
 
@@ -319,7 +317,7 @@
 (series-print gen-series-with-index)
 
 ; dataframe constructors
-(define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3) 'b (list 3 5 6) 'c (list 3.4 5.5 6.7) 'd (list 'fizz 'buzz 'baz))))
+(define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3 7 8) 'b (list 3 5 6 10 10) 'c (list 3.4 5.5 6.7 4.0 95.6) 'd (list 'fizz 'buzz 'baz 'fizz 'fizz))))
 
 (show-data-frame-description (data-frame-description data-frame-from-hash))
 
@@ -328,3 +326,17 @@
 (show-data-frame-description (data-frame-description data-frame-from-hash-vector))
 
 (data-frame-head data-frame-from-hash)
+
+; has empty Footnote column
+(define employment-df (load-csv-file "total_employment_by_economic_activity.csv" #:schema #f))
+
+(data-frame-head employment-df)
+
+;(series-print (apply-agg-data-frame 'mode (data-frame-groupby-fix (data-frame-drop (data-frame-drop employment-df 'Subclassification) 'Classificaion) (list 'Country_Area 'Year))))
+
+(data-frame-write-delim data-frame-from-hash)
+(data-frame-groupby data-frame-from-hash (list 'd))
+(data-frame-write-delim (apply-agg-data-frame 'sum (data-frame-groupby data-frame-from-hash (list 'd))))
+(data-frame-loc (apply-agg-data-frame 'sum (data-frame-groupby data-frame-from-hash (list 'd))) 'fizz (list 'b))
+(data-frame-head (apply-agg-data-frame 'mean (data-frame-groupby data-frame-from-hash (list 'd))))
+(seq->columns (hash 'a (list 1 2 3 7 8) 'b (list 3 5 6 10 10) 'c (list 3.4 5.5 6.7 4.0 95.6) 'd (list 'fizz 'buzz 'baz 'fizz 'fizz) 'e (list 'fizz 3 'baz 'fizz 'fizz)) #:index (list 'fizz 'buzz 'baz 'fizz 'fizz))

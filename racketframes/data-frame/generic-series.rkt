@@ -30,7 +30,7 @@
 (define-predicate ListofGenericType? (Listof GenericType))
 
 (provide:
- [new-GenSeries ((Sequenceof GenericType) [#:index (Option (U (Listof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> GenSeries)]
+ [new-GenSeries ((Sequenceof GenericType) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))] [#:fill-null RFNULL] -> GenSeries)]
  [set-GenSeries-index (GenSeries (U (Listof IndexDataType) RFIndex) -> GenSeries)]
  [set-GenSeries-null-value (GenSeries RFNULL -> GenSeries)]
  [set-GenSeries-any-null-value-inplace (GenSeries GenericType -> Void)]
@@ -84,7 +84,7 @@
 ; Consumes a Vector of Fixnum and a list of Labels which
 ; can come in list form or SIndex form and produces a GenSeries
 ; struct object.
-(: new-GenSeries ((Sequenceof GenericType) [#:index (Option (U (Listof IndexDataType) RFIndex))]
+(: new-GenSeries ((Sequenceof GenericType) [#:index (Option (U (Sequenceof IndexDataType) RFIndex))]
                                          [#:fill-null RFNULL] [#:sort Boolean] [#:encode Boolean] -> GenSeries))
 (define (new-GenSeries data-vector #:index [labels #f] #:fill-null [null-value DEFAULT_NULL_VALUE] #:sort [do-sort #f] #:encode [encode #f])
   (: data (Vectorof GenericType))

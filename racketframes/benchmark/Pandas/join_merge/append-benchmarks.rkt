@@ -58,23 +58,23 @@
 ;******************
 (define columns-numerical
   (list
-   (cons 'A (new-ISeries col-a-data #f))
-   (cons 'B (new-ISeries col-b-data #f))
-   (cons 'C (new-ISeries col-c-data #f))
-   (cons 'D (new-NSeries col-d-data #f))))
+   (cons 'A (new-ISeries col-a-data))
+   (cons 'B (new-ISeries col-b-data))
+   (cons 'C (new-ISeries col-c-data))
+   (cons 'D (new-NSeries col-d-data))))
 
 ;******************
 ; data-frame-mixed
 ;******************
 (define columns-mixed
   (list
-   (cons 'A (new-ISeries col-a-data #f))
-   (cons 'B (new-ISeries col-b-data #f))
-   (cons 'C (new-ISeries col-c-data #f))
-   (cons 'D (new-NSeries col-d-data #f))
-   (cons 'ob1 (new-CSeries col-obj1-data #f))
-   (cons 'ob2 (new-CSeries col-obj2-data #f))
-   (cons 'int1 (new-ISeries col-int1-data #f))))
+   (cons 'A (new-ISeries col-a-data))
+   (cons 'B (new-ISeries col-b-data))
+   (cons 'C (new-ISeries col-c-data))
+   (cons 'D (new-NSeries col-d-data))
+   (cons 'ob1 (new-CSeries col-obj1-data))
+   (cons 'ob2 (new-CSeries col-obj2-data))
+   (cons 'int1 (new-ISeries col-int1-data))))
 
 ; create new data-frame-numerical
 (define data-frame-numerical (new-data-frame columns-numerical))

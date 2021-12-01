@@ -33,6 +33,7 @@
  "data-frame/data-frame-concat.rkt"
  "data-frame/data-frame-print.rkt"
  "data-frame/data-frame-join.rkt"
+ "data-frame/groupby-util.rkt"
  "data-frame/indexed-series.rkt"
  "data-frame/series.rkt"
  "data-frame/series-description.rkt"
@@ -74,6 +75,7 @@
  (all-from-out "data-frame/data-frame-concat.rkt")
  (all-from-out "data-frame/data-frame-print.rkt")
  (all-from-out "data-frame/data-frame-join.rkt")
+ (all-from-out "data-frame/groupby-util.rkt")
  ;(all-from-out "stats/tabulate.rkt")
  ;(all-from-out "stats/statistics.rkt")
  (all-from-out "data-frame/generic-series.rkt")
