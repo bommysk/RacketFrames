@@ -337,6 +337,6 @@
 (data-frame-write-delim data-frame-from-hash)
 (data-frame-groupby data-frame-from-hash (list 'd))
 (data-frame-write-delim (apply-agg-data-frame 'sum (data-frame-groupby data-frame-from-hash (list 'd))))
-(data-frame-loc (apply-agg-data-frame 'sum (data-frame-groupby data-frame-from-hash (list 'd))) 'fizz:: (list 'b))
+(data-frame-loc (apply-agg-data-frame 'sum (data-frame-groupby data-frame-from-hash (list 'd))) 'fizz (list 'b))
 (data-frame-head (apply-agg-data-frame 'mean (data-frame-groupby data-frame-from-hash (list 'd))))
 (seq->columns (hash 'a (list 1 2 3 7 8) 'b (list 3 5 6 10 10) 'c (list 3.4 5.5 6.7 4.0 95.6) 'd (list 'fizz 'buzz 'baz 'fizz 'fizz) 'e (list 'fizz 3 'baz 'fizz 'fizz)) #:index (list 'fizz 'buzz 'baz 'fizz 'fizz))

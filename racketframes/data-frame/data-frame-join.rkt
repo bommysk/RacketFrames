@@ -223,7 +223,8 @@
 (define (key-fn cols)
   (let: ((col-refs : (Listof (Index -> GenericType))
 		   (for/list ([col (in-list cols)])
-                     (series-referencer col))))
+                     (series-referencer col)))
+         (idx-counter : Index 0))
 	(λ: ((row-id : Index))
 	    (let ((outp (open-output-string)))
 	      (for ([col-ref (in-list col-refs)])
@@ -234,7 +235,9 @@
                                                ; pretty-format anything else
                                                [else (pretty-format seg)])))
                      (display seg-str outp)
-                     (display key-delimiter outp)))
+                     (set! idx-counter (assert (add1 idx-counter) index?))
+                     (unless (>= idx-counter (length col-refs))
+                       (display key-delimiter outp))))
               (get-output-string outp)))))
 
 ; ***********************************************************
