@@ -37,8 +37,8 @@
  [index-keys-intersection ((Listof RFIndex) -> (Setof IndexDataType))])
 
 (provide
- SIndex IIndex FIndex DTIndex Labeling ListofLabel? ListofIndexDataType? ListofAny? ListofAnyPair?
- Label Label? LabelProjection LabelProjection? LabelIndex? RFIndex? Datetime?
+ SIndex IIndex FIndex DTIndex Labeling ListofLabel? ListofIndexDataType? ListofAny? ListofAnyPair? ListofBoolean?
+ Label Label? LabelProjection LabelProjection? LabelIndex? RFIndex? Datetime? 
  RFIndex RFNULL IndexDataType ListofIndex ListofIndex? ListofListofString ListofListofString?
  LabelIndex LabelIndex-index
  FIndex FlonumIndex ListofFixnum? ListofFlonum? ListofBoolean? ListofDatetime? ListofDate? Listofdate?

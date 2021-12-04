@@ -97,7 +97,7 @@
       [(eq? series-type 'CategoricalSeries)
        (new-CSeries (assert data ListofLabel?) #:index labels)]
       [(eq? series-type 'NumericSeries)
-       (new-NSeries (list->flvector (assert (sequence->list data) ListofFlonum?)) #:index labels)]
+       (new-NSeries (list->flvector (assert (map (lambda ([num : GenericType]) (exact->inexact (assert num number?))) (sequence->list data)) ListofFlonum?)) #:index labels)]
       [(eq? series-type 'IntegerSeries)
        (new-ISeries (assert (sequence->list data) ListofFixnum?) #:index labels)]
       [(eq? series-type 'BooleanSeries)

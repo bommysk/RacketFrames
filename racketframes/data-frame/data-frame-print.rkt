@@ -186,14 +186,20 @@
 
 ; ***********************************************************
 
-; ***********************************************************
+; ******************************
 
 (: display-data-frame-row ((Vectorof Series) (Sequenceof Index) [#:delim String] -> Void))
-(define (display-data-frame-row series rows #:delim [delim " "])
-  ;;  (define: cols : (Sequenceof  (in-range (vector-length series)))
+(define (display-data-frame-row series rows #:delim [delim "\t"])
+  ;;  (define: cols : (Sequenceof  (in-range (vector-length series))) 
+  
   (for: ([row : Index rows])
 	(for ([col (in-range (vector-length series))])
-	     (let ((a-series (vector-ref series col)))               
+	     (let ((a-series (vector-ref series col)))
+               #|(if (data-frame-index data-frame)
+                   (display (idx->key (assert (data-frame-index data-frame)) (assert row index?)) outp)
+                   (display (assert row index?) outp))
+               (display delim outp)|#
+               
 	       (cond
                  ((GenSeries? a-series)
                   (display (format-gen-series a-series row)))
@@ -222,11 +228,7 @@
 (define (data-frame-head data-frame [count #f])
   (define: cols     : Columns (data-frame-explode data-frame))
   (define: headings : (Listof Label) (map column-heading cols))
-  (define: series   : (Vectorof Series) (list->vector (map column-series cols)))
-
-  ;; (show-frame-description (frame-description frame))
-
-  (display-heading cols)
+  (define: series   : (Vectorof Series) (list->vector (map column-series cols)))  
 
   (let ((count (min (Dim-rows (data-frame-dim data-frame))
                     (if (not count) default-head-rows count))))

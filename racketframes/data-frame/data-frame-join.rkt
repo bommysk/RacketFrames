@@ -125,8 +125,6 @@
 (define-type Key String)
 (define-type JoinHash (HashTable Key (Listof Index)))
 
-(define-predicate ListofReal? (Listof Real))
-
 ; ***********************************************************
 
 ; ***********************************************************
