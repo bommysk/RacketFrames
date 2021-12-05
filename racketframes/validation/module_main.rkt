@@ -327,6 +327,7 @@
 ; has empty Footnote column
 (define employment-df (load-csv-file "total_employment_by_economic_activity.csv" #:schema #f))
 
+(println "TOTAL EMPLOYMENT DATAFRAME")
 (data-frame-head employment-df)
 
 (define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))

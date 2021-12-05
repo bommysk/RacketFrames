@@ -431,8 +431,10 @@
           (let ([data (series-data (column-series col))])
             (cons (column-heading col)
                   (new-series (map func
-                                   (if (vector? data) (assert (vector->list (assert data vector?)) ListofGenericType?) (assert (flvector->list (assert data flvector?)) ListofGenericType?)))
-                                   #:index (data-frame-index data-frame)))))
+                                   (if (vector? data)
+                                       (assert (vector->list (assert data vector?)) ListofGenericType?)
+                                       (assert (flvector->list (assert data flvector?)) ListofGenericType?)))
+                              #:index (data-frame-index data-frame)))))
         (data-frame-explode data-frame))
    #:index (data-frame-index data-frame)))
 
