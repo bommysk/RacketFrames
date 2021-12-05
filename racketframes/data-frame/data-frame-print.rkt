@@ -39,7 +39,7 @@
  (only-in "types.rkt"
 	  Dim Dim-rows)
  (only-in "indexed-series.rkt"
-	  Label idx->key)
+	  Label RFIndex idx->key)
  (only-in "series-description.rkt"
 	  Series series-type)
  (only-in "data-frame.rkt"
@@ -79,14 +79,22 @@
 ; ***********************************************************
 
 (: display-heading (Columns -> Void))
-(define (display-heading cols)
-
+(define (display-heading cols)  
+  (define max-col-heading-length : Index
+    (string-length (argmax string-length (map (lambda ([col : Column]) (symbol->string (column-heading col))) cols))))
+  
+  (define width (if (< WIDTH max-col-heading-length)
+                    max-col-heading-length
+                    WIDTH))
+  
   (: format-heading (Symbol -> String))
   (define (format-heading heading)
     (~a (symbol->string heading)
-	#:width WIDTH
+	#:min-width width
 	#:align 'center))
 
+  (display "Index")
+  
   (for ([col cols])
        (let ((heading (column-heading col))
 	     (series  (column-series col)))
@@ -122,7 +130,7 @@
     (cond
       [(symbol? data)
           (~a (symbol->string data)
-              #:width WIDTH
+              #:min-width WIDTH
               #:align 'left)]
       [(integer? data)
           (~r data
@@ -136,7 +144,7 @@
        (~a (if data
                "#t"
                "#f")
-           #:width WIDTH
+           #:min-width WIDTH
            #:align 'left)]
       ; pretty-format struct
       [else (pretty-format data)])))
@@ -144,7 +152,7 @@
 (: format-cseries (CSeries Index -> String))
 (define (format-cseries cseries row)
   (~a (symbol->string (car (cseries-iref cseries (list row))))
-      #:width WIDTH
+      #:min-width WIDTH
       #:align 'left))
 
 (: format-nseries (NSeries Index -> String))
@@ -170,14 +178,11 @@
   (~a (if (car (bseries-iref bseries (list row)))
           "#t"
           "#f")
-      #:width WIDTH
+      #:min-width WIDTH
       #:align 'left))
 
 (: format-datetime-series (DatetimeSeries Index -> String))
 (define (format-datetime-series datetime-series row)
-  ;(~a (datetime->string (car (datetime-series-iref datetime-series (list row))) "~5")
-      ;#:width WIDTH
-      ;#:align 'left))
   (pretty-format (car (datetime-series-iref datetime-series (list row)))))
 
 (: format-date-series (DateSeries Index -> String))
@@ -186,14 +191,20 @@
 
 ; ***********************************************************
 
-; ***********************************************************
+; ******************************
 
-(: display-data-frame-row ((Vectorof Series) (Sequenceof Index) [#:delim String] -> Void))
-(define (display-data-frame-row series rows #:delim [delim " "])
-  ;;  (define: cols : (Sequenceof  (in-range (vector-length series)))
+(: display-data-frame-row ((Vectorof Series) (Sequenceof Index) [#:index (Option RFIndex)] [#:delim String] -> Void))
+(define (display-data-frame-row series rows #:delim [delim "\t"] #:index [index #f])
+  ;;  (define: cols : (Sequenceof  (in-range (vector-length series))) 
+  
   (for: ([row : Index rows])
 	(for ([col (in-range (vector-length series))])
-	     (let ((a-series (vector-ref series col)))               
+	     (let ((a-series (vector-ref series col)))
+               (if index
+                   (display (idx->key (assert index) (assert row index?)))
+                   (display (assert row index?)))
+               (display delim)
+               
 	       (cond
                  ((GenSeries? a-series)
                   (display (format-gen-series a-series row)))
@@ -224,13 +235,11 @@
   (define: headings : (Listof Label) (map column-heading cols))
   (define: series   : (Vectorof Series) (list->vector (map column-series cols)))
 
-  ;; (show-frame-description (frame-description frame))
-
-  (display-heading cols)
+  (display-heading (data-frame-explode data-frame))
 
   (let ((count (min (Dim-rows (data-frame-dim data-frame))
                     (if (not count) default-head-rows count))))
-    (display-data-frame-row series (in-range count))))
+    (display-data-frame-row series (in-range count) #:index (data-frame-index data-frame))))
 
 (: data-frame-write-delim (DataFrame [#:output-port Output-Port] [#:heading Boolean] [#:delim String] -> Void))
 (define (data-frame-write-delim data-frame #:output-port [outp (current-output-port)] #:heading [heading #t] #:delim [delim "\t"])

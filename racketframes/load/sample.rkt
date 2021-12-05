@@ -41,17 +41,18 @@
 
 (: guess-series-type ((Listof String) -> SeriesType))
 (define (guess-series-type col)
-  (cond
-   ((andmap exact-integer? (canonicalize-to-string-or-num col))
-    'IntegerSeries)
-   ((andmap number? (canonicalize-to-string-or-num col))
-    'NumericSeries)
-   ((andmap string? (canonicalize-to-string-or-num col))
+  (let ((converted-data (canonicalize-to-string-or-num col)))
     (cond
-      [(andmap is-valid-datetime? col) 'DatetimeSeries]
-      [(andmap is-valid-date? col) 'DatetimeSeries]
-      [else 'CategoricalSeries]))
-   (else 'GenericSeries)))
+      ((andmap exact-integer? converted-data)
+       'IntegerSeries)
+      ((andmap number? converted-data)
+       'NumericSeries)
+      ((andmap string? converted-data)
+       (cond
+         [(andmap is-valid-datetime? col) 'DatetimeSeries]
+         [(andmap is-valid-date? col) 'DatetimeSeries]
+         [else 'CategoricalSeries]))
+      (else 'GenericSeries))))
 
 (: guess-series-type-sql ((Listof Any) -> SeriesType))
 (define (guess-series-type-sql col)

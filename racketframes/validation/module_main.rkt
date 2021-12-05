@@ -178,7 +178,7 @@
                             #:index (build-index-from-list (list 'i 'j 'k 'l))))))
 
 ; create new data-frame-integer
-(define data-frame-integer-labeled (new-data-frame columns-integer-labeled))
+(define data-frame-integer-labeled (new-data-frame columns-integer-labeled #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
 (data-frame-write-delim data-frame-integer-labeled)
 
@@ -197,34 +197,31 @@
                             #:index (build-index-from-list (list 'a 'b 'c 'd))))))
 
 ; create new data-frame-integer
-(define data-frame-integer-labeled-2 (new-data-frame columns-integer-labeled-2))
+(define data-frame-integer-labeled-2 (new-data-frame columns-integer-labeled-2 #:index (build-index-from-list (list 'a 'b 'c 'd))))
 
 (displayln "data-frame-loc-2")
 (data-frame-write-delim
- (assert (data-frame-loc data-frame-integer-labeled-2 (list 'b 'c 'd) (list 'col2 'col3)) DataFrame?)
-)
+ (assert (data-frame-loc data-frame-integer-labeled-2 (list 'b 'c 'd) (list 'col2 'col3)) DataFrame?))
 
 (set! data-frame-integer-labeled (data-frame-set-index data-frame-integer-labeled (list 'a 'b 'c 'd)))
 
 (data-frame-write-delim
- (assert (data-frame-loc data-frame-integer-labeled (list 'b 'c 'd) (list 'col2 'col3)) DataFrame?)
-)
+ (assert (data-frame-loc data-frame-integer-labeled (list 'b 'c 'd) (list 'col2 'col3)) DataFrame?))
 
 (data-frame-write-delim
- (assert (data-frame-iloc data-frame-integer-labeled (list 1 2 3) (list 0 1)) DataFrame?)
-)
+ (assert (data-frame-iloc data-frame-integer-labeled (list 1 2 3) (list 0 1)) DataFrame?))
 
 (println "Hash list")
 (hash->list (LabelIndex-index data-frame-integer-labeled))
 
-(iseries-data (assert (data-frame-iloc data-frame-integer-labeled (list 1 2 3) 1) ISeries?))
+(series-data (assert (data-frame-iloc data-frame-integer-labeled (list 1 2 3) 1) Series?))
 
-(gen-series-data (assert (data-frame-iloc data-frame-integer-labeled 3 1) GenSeries?))
+(series-data (assert (data-frame-iloc data-frame-integer-labeled 3 1) Series?))
 
 (data-frame-write-delim
  (assert (data-frame-iloc-label data-frame-integer-labeled (list 1 2 3) (list 'col1 'col2)) DataFrame?))
 
-(gen-series-data (assert (data-frame-iloc-label data-frame-integer-labeled 1 (list 'col1 'col2)) GenSeries?))
+(series-data (assert (data-frame-iloc-label data-frame-integer-labeled 1 (list 'col1 'col2)) Series?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Dataframe Load Test Cases;
@@ -330,13 +327,30 @@
 ; has empty Footnote column
 (define employment-df (load-csv-file "total_employment_by_economic_activity.csv" #:schema #f))
 
+(println "TOTAL EMPLOYMENT DATAFRAME")
 (data-frame-head employment-df)
 
-;(series-print (apply-agg-data-frame 'mode (data-frame-groupby-fix (data-frame-drop (data-frame-drop employment-df 'Subclassification) 'Classificaion) (list 'Country_Area 'Year))))
+(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+
+(show-data-frame-description (data-frame-description max-by-country-area-df))
+
+(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
+
+(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
+
+(println "HIGHEST VALUE FOR JAMAICA")
+(series-loc (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?) 'Value)
 
 (data-frame-write-delim data-frame-from-hash)
 (data-frame-groupby data-frame-from-hash (list 'd))
 (data-frame-write-delim (apply-agg-data-frame 'sum (data-frame-groupby data-frame-from-hash (list 'd))))
 (data-frame-loc (apply-agg-data-frame 'sum (data-frame-groupby data-frame-from-hash (list 'd))) 'fizz (list 'b))
-(data-frame-head (apply-agg-data-frame 'mean (data-frame-groupby data-frame-from-hash (list 'd))))
+(data-frame-write-delim (apply-agg-data-frame 'mean (data-frame-groupby data-frame-from-hash (list 'd))))
 (seq->columns (hash 'a (list 1 2 3 7 8) 'b (list 3 5 6 10 10) 'c (list 3.4 5.5 6.7 4.0 95.6) 'd (list 'fizz 'buzz 'baz 'fizz 'fizz) 'e (list 'fizz 3 'baz 'fizz 'fizz)) #:index (list 'fizz 'buzz 'baz 'fizz 'fizz))
+
+(series-print (new-series (list 1 2 3) #:index (build-multi-index-from-list (list (list 'a 'b 'c) (list ':5 5 5)))))
+
+(series-loc (new-series (list 1 2 3) #:index (build-multi-index-from-list (list (list 'a 'b 'c) (list ':5 5 5)))) 'b::5::)
+(series-loc (new-series (list 1 2 3) #:index (build-multi-index-from-list (list (list 'a 'b 'c) (list ':5 5 5)))) 'a:::5::)
+
+(data-frame-write-delim (data-frame-apply (apply-agg-data-frame 'mean (data-frame-groupby data-frame-from-hash (list 'd))) (lambda ([val : Any]) (add1 (assert val number?)))))

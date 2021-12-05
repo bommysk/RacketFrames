@@ -74,7 +74,7 @@
           ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime? ListofDate? Listofdate? ListofIndex?
           Label LabelProjection LabelProjection? LabelIndex LabelIndex-index
           build-index-from-labels build-index-from-list build-index-from-sequence
-          label-index idx->key idx->label IndexDataType RFIndex? extract-index)
+          label-index idx->key idx->label IndexDataType RFIndex? extract-index get-index index-keys)
  (only-in "series-description.rkt"
 	  series-description series-length series-type 
           Series Series? SeriesType
@@ -82,7 +82,7 @@
           SeriesDescription-type SeriesDescription-length
           IndexableSeries IndexableSeries?)
  (only-in "series.rkt"
-          series-data set-series-index get-series-index in-series
+          new-series series-data set-series-index get-series-index in-series
           series-loc-boolean series-loc series-iloc indexable-series->index)
  (only-in "generic-series.rkt"
          GenSeries GenericType GenSeries?
@@ -653,6 +653,17 @@
 ; ***********************************************************
 ; Indexing into data-frame
 
+(: loc-data-frame-index ((Listof IndexDataType) (U (Listof Label) (Listof Boolean)) -> RFIndex))
+(define (loc-data-frame-index df-index loc-label)  
+  (if (ListofBoolean? loc-label)
+      (if (not (= (length df-index) (length loc-label)))
+          (error "boolean loc list must be equal in size to data-frame index")
+          (build-index-from-list 
+           (filter (lambda ([val : IndexDataType])
+                     (list-ref loc-label (assert (index-of df-index val) index?)))
+                   df-index)))
+      (build-index-from-list loc-label)))
+
 (: data-frame-loc (DataFrame (U Label (Listof Label) (Listof Boolean)) LabelProjection -> (U Series DataFrame)))
 (define (data-frame-loc data-frame label projection)
   ; This function consumes a DataFrame and LabelProjection and
@@ -662,14 +673,19 @@
     (data-frame-explode data-frame #:project project))
   
   (define cols (data-frame-cols data-frame projection))
+  
+  ;(define df-index : RFIndex (loc-data-frame-index (get-index (data-frame-index data-frame)) label))
 
   (if (list? label)  
       (new-data-frame
        (for/list: : Columns ([col cols])
-         (column (column-heading col) (assert (series-loc (column-series col) label) Series?))))
-      (new-GenSeries
+         (column (column-heading col) (assert (series-loc (column-series col) label) Series?)))
+       #:index (loc-data-frame-index (index-keys (assert (data-frame-index data-frame))) label))
+      (new-series       
        (for/vector: : (Vectorof GenericType) ([col cols])
-         (series-loc (column-series col) label)))))
+         (series-loc (column-series col) label))
+       #:index (for/list: : (Listof Label) ([col cols])
+                 (column-heading col)))))
 
 ; doesn't preserve index currently, just gives new Range index
 (: data-frame-iloc (DataFrame (U Index (Listof Index)) (U Index (Listof Index)) -> (U Series DataFrame)))
@@ -698,9 +714,11 @@
          ; there will be only one column in this case, 2 lists can't be
          ; passed into this function
          (assert (series-iloc (column-series (car cols)) idx-row) Series?)
-         (new-GenSeries
+         (new-series
           (for/vector: : (Vectorof GenericType) ([col cols])
-           (series-iloc (column-series col) idx-row))))))
+            (series-iloc (column-series col) idx-row))
+          #:index (for/list: : (Listof Label) ([col cols])
+                 (column-heading col))))))
 
 ; iloc works based on integer positioning. So no matter what your row labels are, you can always, e.g., get the first row by doing
 ; df.iloc[0, 0], takes in row and col indicies

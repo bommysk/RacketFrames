@@ -17,7 +17,8 @@
  [data-frame> (DataFrame DataFrame -> DataFrame)]
  [data-frame< (DataFrame DataFrame -> DataFrame)]
  [data-frame-abs (DataFrame -> DataFrame)]
- [data-frame-filter (DataFrame BSeries -> DataFrame)])
+ [data-frame-filter (DataFrame BSeries -> DataFrame)]
+ [data-frame-apply (DataFrame (Any -> Any) -> DataFrame)])
 ; ***********************************************************
 
 (require
@@ -33,15 +34,15 @@
  (only-in "indexed-series.rkt"
 	  Label Labeling LabelProjection)
  (only-in "series.rkt"
-	  series-complete series-data)
+	  new-series series-complete series-data)
  (only-in "series-description.rkt"
 	  SeriesType Series
 	  SeriesDescription-type
 	  series-type series-length)
  (only-in "data-frame.rkt"
-	  DataFrame Columns new-data-frame data-frame-names column-heading
+	  DataFrame Columns Column new-data-frame data-frame-series data-frame-names column-heading
 	  data-frame-series-ref data-frame-cseries data-frame-nseries data-frame-iseries data-frame-explode
-	  DataFrameDescription DataFrameDescription-series data-frame-description column-series)
+	  DataFrameDescription DataFrameDescription-series data-frame-description column-series data-frame-index)
  (only-in "data-frame-join.rkt"
           dest-mapping-series-builders copy-column-row)
  (only-in "numeric-series.rkt"
@@ -52,7 +53,7 @@
           */ns/is //ns/is +/is/ns -/is/ns */is/ns
           //is/ns >/ns/is </ns/is >=/ns/is <=/ns/is 
           =/ns/is !=/ns/is >/is/ns </is/ns >=/is/ns 
-          <=/is/ns =/is/ns !=/is/ns)
+          <=/is/ns =/is/ns !=/is/ns flvector->list)
  (only-in "numeric-series-ops.rkt"
           nseries-abs)
  (only-in "integer-series.rkt"
@@ -413,13 +414,29 @@
                                    (else (error 'data-frame-abs
                                                 "Incorrect series type ~a, must be Integer or Numeric."
                                                 (series-type df-series)))))))
-                       (data-frame-names df))))
+                       (data-frame-names df))
+                  #:index (data-frame-index df)))
 
 ; DataFrame.apply(func[, axis, broadcast, ...])	Applies function along input axis of DataFrame.
 ; (: data-frame-apply axis func)
 
+(define-type ListofGenericType (Listof Any))
+(define-predicate ListofGenericType? ListofGenericType)
+
 ; DataFrame.applymap(func)	Apply a function to a DataFrame that is intended to operate elementwise, i.e.
-; (: data-frame-applymap func)
+(: data-frame-apply (DataFrame (Any -> Any) -> DataFrame))
+(define (data-frame-apply data-frame func)
+  (new-data-frame 
+   (map (λ: ((col : Column))
+          (let ([data (series-data (column-series col))])
+            (cons (column-heading col)
+                  (new-series (map func
+                                   (if (vector? data)
+                                       (assert (vector->list (assert data vector?)) ListofGenericType?)
+                                       (assert (flvector->list (assert data flvector?)) ListofGenericType?)))
+                              #:index (data-frame-index data-frame)))))
+        (data-frame-explode data-frame))
+   #:index (data-frame-index data-frame)))
 
 ; DataFrame.aggregate(func[, axis])	Aggregate using callable, string, dict, or list of string/callables
 ; (: data-frame-aggregate func)

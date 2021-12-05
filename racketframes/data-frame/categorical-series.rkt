@@ -34,8 +34,6 @@
           build-multi-index-from-list LabelIndex LabelIndex-index is-labeled? IndexDataType
           ListofIndex? ListofListofString ListofListofString? ListofIndexDataType?))
 
-(define-type CSeriesFn (Label -> Label))
-
 (define DEFAULT_NULL_VALUE : Label '||)
 (struct: CSeries ([index : (Option RFIndex)]
                   [data : (Vectorof Index)]
