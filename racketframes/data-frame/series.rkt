@@ -28,66 +28,67 @@
   racket/vector
   (only-in "indexed-series.rkt"
           Label RFIndex IndexDataType ListofFlonum? ListofFixnum? ListofBoolean? ListofDatetime? ListofDate? Listofdate? ListofLabel? ListofIndexDataType? build-index-from-sequence ListofListofString)
- (only-in "series-description.rkt"
-	  Series Series? SeriesList SeriesList? SeriesType IndexableSeries IndexableSeries? series-type)
- (only-in "groupby-util.rkt" gen-series-groupby [GroupHash gen-series-grouphash])
- (only-in "generic-series.rkt"
-          GenericType GenSeries GenSeries? new-GenSeries gen-series-length gen-series-data gen-series-index gen-series-iref in-gen-series
-          set-GenSeries-index gen-series-loc-boolean gen-series-loc gen-series-loc-multi-index gen-series-iloc gen-series-index-ref
-          set-GenSeries-null-value set-GenSeries-any-null-value-inplace gen-series-null-value gen-series-referencer)
- (only-in "categorical-series.rkt"
-          CSeries CSeries? new-CSeries cseries-length cseries-data cseries-index cseries-iref in-cseries set-CSeries-index
-          cseries-referencer cseries-loc-boolean cseries-iloc cseries-loc cseries-loc-multi-index cseries-index-ref
-          set-CSeries-null-value cseries-null-value cseries-groupby cseries-grouphash)
- (only-in "numeric-series.rkt"
-          NSeries NSeries? new-NSeries nseries-length nseries-data nseries-index nseries-iref nseries-referencer in-nseries
-          set-NSeries-index nseries-loc-boolean nseries-loc nseries-loc-multi-index nseries-iloc nseries-index-ref list->flvector flvector->list
-          set-NSeries-null-value nseries-null-value nseries-groupby nseries-grouphash flvector->vector)
- (only-in "integer-series.rkt"
-	  ISeries ISeries? new-ISeries iseries-length iseries-data iseries-index in-iseries iseries-iref iseries-referencer
-          set-ISeries-index iseries-loc-boolean iseries-loc iseries-loc-multi-index iseries-iloc iseries-index-ref RFFixnum RFFixnum?
-          set-ISeries-null-value iseries-null-value iseries-groupby iseries-grouphash)
- (only-in "boolean-series.rkt"
-	  BSeries BSeries? new-BSeries bseries-length bseries-data bseries-index bseries-iref in-bseries bseries-referencer
-          set-BSeries-index bseries-loc-boolean bseries-loc bseries-loc-multi-index bseries-iloc bseries-index-ref
-          set-BSeries-null-value bseries-null-value bseries-groupby bseries-grouphash)
- (only-in "datetime-series.rkt"
-	  DatetimeSeries DatetimeSeries? new-DatetimeSeries DatetimeSeries-index DatetimeSeries-data datetime-series-length datetime-series-data datetime-series-index
+  (only-in "series-description.rkt"
+           Series Series? SeriesList SeriesList? SeriesType IndexableSeries IndexableSeries? series-type)
+  (only-in "groupby-util.rkt" gen-series-groupby [GroupHash gen-series-grouphash])
+  (only-in "generic-series.rkt"
+           GenericType GenSeries GenSeries? new-GenSeries gen-series-length gen-series-data gen-series-index gen-series-iref in-gen-series
+           set-GenSeries-index gen-series-loc-boolean gen-series-loc gen-series-loc-multi-index gen-series-iloc gen-series-index-ref
+           set-GenSeries-null-value set-GenSeries-any-null-value-inplace gen-series-null-value gen-series-referencer map/gen-s)
+  (only-in "categorical-series.rkt"
+           CSeries CSeries? new-CSeries cseries-length cseries-data cseries-index cseries-iref in-cseries set-CSeries-index
+           cseries-referencer cseries-loc-boolean cseries-iloc cseries-loc cseries-loc-multi-index cseries-index-ref
+           set-CSeries-null-value cseries-null-value cseries-groupby cseries-grouphash)
+  (only-in "series-iter.rkt" cseries-map)
+  (only-in "numeric-series.rkt"
+           NSeries NSeries? new-NSeries nseries-length nseries-data nseries-index nseries-iref nseries-referencer in-nseries
+           set-NSeries-index nseries-loc-boolean nseries-loc nseries-loc-multi-index nseries-iloc nseries-index-ref list->flvector flvector->list
+           set-NSeries-null-value nseries-null-value nseries-groupby nseries-grouphash flvector->vector map/ns)
+  (only-in "integer-series.rkt"
+           ISeries ISeries? new-ISeries iseries-length iseries-data iseries-index in-iseries iseries-iref iseries-referencer
+           set-ISeries-index iseries-loc-boolean iseries-loc iseries-loc-multi-index iseries-iloc iseries-index-ref RFFixnum RFFixnum?
+           set-ISeries-null-value iseries-null-value iseries-groupby iseries-grouphash map/is)
+  (only-in "boolean-series.rkt"
+           BSeries BSeries? new-BSeries bseries-length bseries-data bseries-index bseries-iref in-bseries bseries-referencer
+           set-BSeries-index bseries-loc-boolean bseries-loc bseries-loc-multi-index bseries-iloc bseries-index-ref
+           set-BSeries-null-value bseries-null-value bseries-groupby bseries-grouphash map/bs)
+  (only-in "datetime-series.rkt"
+          DatetimeSeries DatetimeSeries? new-DatetimeSeries DatetimeSeries-index DatetimeSeries-data datetime-series-length datetime-series-data datetime-series-index
           datetime-series-iref datetime-series-referencer in-datetime-series
           set-DatetimeSeries-index datetime-series-loc-boolean datetime-series-loc datetime-series-loc-multi-index datetime-series-iloc datetime-series-index-ref datetime-series-groupby
-          set-DatetimeSeries-null-value datetime-series-null-value datetime-series-grouphash RFDatetime RFDatetime?)
- (only-in "date-series.rkt"
-	  DateSeries DateSeries? new-DateSeries DateSeries-index DateSeries-data date-series-length date-series-data date-series-index date-series-iref date-series-referencer
-          in-date-series date-series-groupby date-series-grouphash
-          set-DateSeries-index set-DateSeries-null-value date-series-null-value date-series-loc-boolean date-series-loc date-series-loc-multi-index date-series-iloc date-series-index-ref
-          RFDate RFDate?)
- 
- (only-in "series-builder.rkt" SeriesBuilder)
- (only-in "generic-series-builder.rkt"
-          GenSeriesBuilder GenSeriesBuilder?
-          complete-GenSeriesBuilder)
- (only-in "categorical-series-builder.rkt"
-	  CSeriesBuilder CSeriesBuilder?
-	  complete-CSeriesBuilder)
- (only-in "numeric-series-builder.rkt"
-	  NSeriesBuilder NSeriesBuilder?
-	  complete-NSeriesBuilder)
- (only-in "integer-series-builder.rkt"
-	  ISeriesBuilder ISeriesBuilder?
-	  complete-ISeriesBuilder)
- (only-in "boolean-series-builder.rkt"
-	  BSeriesBuilder BSeriesBuilder?
-	  complete-BSeriesBuilder)
- (only-in "datetime-series-builder.rkt"
-	  DatetimeSeriesBuilder DatetimeSeriesBuilder?
-	  complete-DatetimeSeriesBuilder)
- (only-in "date-series-builder.rkt"
-	  DateSeriesBuilder DateSeriesBuilder?
-	  complete-DateSeriesBuilder)
- (only-in "../load/sample.rkt"
-          guess-series-type)
- (only-in "../util/datetime/types.rkt"
-          Datetime Datetime?))
+          set-DatetimeSeries-null-value datetime-series-null-value datetime-series-grouphash RFDatetime RFDatetime? map/datetime-series-data)
+  (only-in "date-series.rkt"
+           DateSeries DateSeries? new-DateSeries DateSeries-index DateSeries-data date-series-length date-series-data date-series-index date-series-iref date-series-referencer
+           in-date-series date-series-groupby date-series-grouphash
+           set-DateSeries-index set-DateSeries-null-value date-series-null-value date-series-loc-boolean date-series-loc date-series-loc-multi-index date-series-iloc date-series-index-ref
+           RFDate RFDate? map/date-series-data)
+  
+  (only-in "series-builder.rkt" SeriesBuilder)
+  (only-in "generic-series-builder.rkt"
+           GenSeriesBuilder GenSeriesBuilder?
+           complete-GenSeriesBuilder)
+  (only-in "categorical-series-builder.rkt"
+           CSeriesBuilder CSeriesBuilder?
+           complete-CSeriesBuilder)
+  (only-in "numeric-series-builder.rkt"
+           NSeriesBuilder NSeriesBuilder?
+           complete-NSeriesBuilder)
+  (only-in "integer-series-builder.rkt"
+           ISeriesBuilder ISeriesBuilder?
+           complete-ISeriesBuilder)
+  (only-in "boolean-series-builder.rkt"
+           BSeriesBuilder BSeriesBuilder?
+           complete-BSeriesBuilder)
+  (only-in "datetime-series-builder.rkt"
+           DatetimeSeriesBuilder DatetimeSeriesBuilder?
+           complete-DatetimeSeriesBuilder)
+  (only-in "date-series-builder.rkt"
+           DateSeriesBuilder DateSeriesBuilder?
+           complete-DateSeriesBuilder)
+  (only-in "../load/sample.rkt"
+           guess-series-type)
+  (only-in "../util/datetime/types.rkt"
+           Datetime Datetime?))
 
 ; add option to disable sampling and make GenericSeries by default
 (: new-series ((Sequenceof Any) [#:index (Option (U (Listof IndexDataType) RFIndex))] -> Series))
@@ -206,6 +207,37 @@
      (date-series-groupby series #:by-value by-value)]
     [else
      (gen-series-groupby series #:by-value by-value)]))
+#|
+(define-type CSeriesFn (Label -> Label))
+(define-predicate CSeriesFn? (Label -> Label))
+(define-type NSeriesFn (Flonum -> Flonum))
+(define-predicate NSeriesFn? NSeriesFn)
+(define-type ISeriesFn (Fixnum -> Fixnum))
+(define-predicate ISeriesFn? ISeriesFn)
+(define-type BSeriesFn (Boolean -> Boolean))
+(define-predicate BSeriesFn? BSeriesFn)
+(define-type DatetimeSeriesFn (Datetime -> Datetime))
+(define-predicate DatetimeSeriesFn? DatetimeSeriesFn)
+(define-type DateSeriesFn (date -> date))
+(define-predicate DateSeriesFn? DateSeriesFn)
+
+(: series-map (Series (Any -> Any) -> Series))
+(define (series-map series func)
+  (cond                                                      
+    [(CSeries? series)
+     (cseries-map series (assert func CSeriesFn?))]
+    [(NSeries? series)
+     (map/ns series (assert func NSeriesFn?))]
+    [(ISeries? series)
+     (map/is series (assert func ISeriesFn?))]
+    [(BSeries? series)
+     (map/bs series (assert func BSeriesFn?))]
+    [(DatetimeSeries? series)
+     (map/datetime-series-data series (assert func DatetimeSeriesFn?))]
+    [(DateSeries? series)
+     (map/date-series-data series (assert func DateSeriesFn?))]
+    [else
+     (map/gen-s series func)])) |#
 
 (: series-length (Series -> Index))
 (define (series-length series)
