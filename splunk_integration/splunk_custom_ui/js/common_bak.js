@@ -1,7 +1,7 @@
 require([
-    "../app/search/js/double_headers/latest",
-    "../app/search/js/style/latest",
-    "../app/search/js/tabs/latest"
+    "../app/mxd3/js/double_headers/latest",
+    "../app/mxd3/js/style/latest",
+    "../app/mxd3/js/tabs/latest"
   ],
   function() {}
 );

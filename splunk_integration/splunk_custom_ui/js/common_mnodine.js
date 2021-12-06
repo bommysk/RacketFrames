@@ -5,10 +5,10 @@ i18n_register({"plural": function(n) { return n == 1 ? 0 : 1; }, "catalog": {}})
 require.config({
   waitSeconds: 0,  
   paths: {
-    'tabs': '../app/search/js/tabs/latest',
-    'session_storage': '../app/search/js/session_storage/latest',
-    'caching': '../app/search/js/caching/latest',
-    'style':  '../app/search/js/style/5.3.mnodine'    
+    'tabs': '../app/mxd3/js/tabs/latest',
+    'session_storage': '../app/mxd3/js/session_storage/latest',
+    'caching': '../app/mxd3/js/caching/latest',
+    'style':  '../app/mxd3/js/style/5.3.mnodine'    
   }
 });
 

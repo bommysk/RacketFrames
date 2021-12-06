@@ -1,7 +1,3 @@
-// Translations for en_US
-i18n_register({"plural": function(n) { return n == 1 ? 0 : 1; }, "catalog": {}});
-
-
 ////////////////////////////////////////////////////////////////////
 //                                                                //
 // Style JS implements our core custom JS functionality in Splunk //
@@ -11,9 +7,9 @@ i18n_register({"plural": function(n) { return n == 1 ? 0 : 1; }, "catalog": {}})
 require.config({
   waitSeconds: 0,
   paths: {
-    'lib': '../app/search/js/style/lib/latest',
-    'nested_headers': '../app/search/js/double_headers/latest',
-    'splunk_datatables': '../app/search/js/datatables/latest'
+    'lib': '../app/mxd3/js/style/lib/latest',
+    'nested_headers': '../app/mxd3/js/nested_headers/latest',
+    'splunk_datatables': '../app/mxd3/js/datatables/latest'
   }
 });
 
@@ -40,11 +36,11 @@ require([
         return true;
       },
       render: function($container, rowData) {
-        // Display some of the rowData in the expanded row        
+        // Display some of the rowData in the expanded row
         $container.append(eval(this.row_expansion_body));
       }
   });
-    
+
   var CustomCellRenderer = TableView.BaseCellRenderer.extend({
     row_index: -1,
     row_count: 0,
@@ -126,9 +122,6 @@ require([
       if (this.row_count == 0) {
         this.row_index = -1;
       }
-
-      $(document).trigger("mailer_teardown");
-
     },
     render: function ($td, cell) {
       if (this.subview_id) {
@@ -138,6 +131,7 @@ require([
       var value = cell.value;
       var field = cell.field;
       var html_value = value;
+      var row = this.rows[this.row_index];
 
       /************************/
       /* Image renderer */
@@ -147,7 +141,7 @@ require([
         image_token_value = this.tokens.get('image.' + cell.field);
 
         if (!image_token_value) {
-          for (let token in this.tokens.attributes) {            
+          for (let token in this.tokens.attributes) {
             let coreRegex = this.isImageRegexToken[token];
             if (coreRegex) {
               let myRegex = new RegExp(coreRegex[1]);
@@ -178,36 +172,29 @@ require([
       /* Style renderer */
       /************************/
       // support for NA
-      if (cell && value && value.toString().toLowerCase() == "na") {
+      if (cell && value && value.toString().toLowerCase() === "na") {
         $td.addClass("light");
+        $td.text(value.toString().toUpperCase());
+        return true;
       }
 
       // support for EX
-      if (cell && value && value.toString().toLowerCase() == "ex") {
+      if (cell && value && value.toString().toLowerCase() === "ex") {
         $td.addClass("lt_blue light");
+        $td.text(value.toString().toUpperCase());
+        return true;
       }
 
       // support for numeric columns
       if ( /^-?[0-9][0-9.,]*$/.test(value) ) {
-	$td.addClass("numeric");
-      }
-	
-      this.style_lookup_cookie = this.dashboard_name + "_style_lookup_cookie";
-
-      // read lookup only once
-      if (!$.cookie(this.style_lookup_cookie)) {
-        var that = this;
-
-        // add an event listener for when lookup data is ready
-        $(document).on("style_lookup_ready", function (e, opts) {
-          lib.bg_lookup(cell, $td, opts.data, that.rows);
-        });
-      } else {
-        var data = JSON.parse($.cookie(this.style_lookup_cookie));
-        lib.bg_lookup(cell, $td, data, this.rows);
+        $td.addClass("numeric");
       }
 
-      var row = this.rows[this.row_index];      
+      this.style_lookup_event = `style_lookup_${this.dashboard_name}_${this.table_id}_ready`;
+
+      if (this.style_lookup_data) {
+        lib.bg_lookup(cell, $td, this.style_lookup_data, this.rows);
+      }
 
       // Check for default style as literal "style.*"
       let default_token_value = this.tokens.get("style.*");
@@ -286,13 +273,13 @@ require([
         console.error("Failed evaluating style for field " + cell.field + ". Error:", err);
       }
 
-      var js_eval_col_token_values = [];
+      let js_eval_col_token_values = [];
       // get the value of the token
-      var js_eval_col_token_value = this.tokens.get("js_eval_col." + this.dashboard_id + "." + cell.field);
+      let js_eval_col_token_value = this.tokens.get("js_eval_col." + this.dashboard_id + "." + cell.field);
 
       if (!js_eval_col_token_value) {
         js_eval_col_token_value = this.tokens.get("config.js_eval_col." + this.dashboard_id + "." + cell.field);
-      }  
+      }
 
       if (js_eval_col_token_value) {
         js_eval_col_token_values.push(token_value);
@@ -306,17 +293,17 @@ require([
       if (js_eval_col_token_value) {
         js_eval_col_token_values.push(js_eval_col_token_value);
       }
-      for (var token in this.tokens.attributes) {
-        var coreRegex = this.isJSEvalColRegexToken[token];
+      for (let token in this.tokens.attributes) {
+        let coreRegex = this.isJSEvalColRegexToken[token];
         if (coreRegex) {
-          var myRegex = new RegExp(coreRegex[1]);
+          let myRegex = new RegExp(coreRegex[1]);
           if (myRegex.exec(cell.field)) {
             js_eval_col_token_values.push(this.tokens.get(token));
           }
         }
       }
 
-      for (var js_eval_col_token_value of js_eval_col_token_values) {
+      for (let js_eval_col_token_value of js_eval_col_token_values) {
         try {
           // execute the eval to determine the classes names
           value = eval(js_eval_col_token_value);
@@ -324,13 +311,32 @@ require([
         } catch (err) {
           console.error("Failed evaluating style for field " + cell.field + ". Error:", err);
         }
-      }
+      }      
+      
+      
+
+      let custom_drilldown_applied = false;
+      let link = '#';
+
+      //this.custom_drilldown_lookup_cookie = `custom_drilldown_lookup_cookie_${this.dashboard_name}_${this.table_id}`;
+      this.custom_drilldown_lookup_event = `custom_drilldown_lookup_${this.dashboard_name}_${this.dashboard_id}_ready`;
+
+      // add an event listener for when lookup data is ready
+     
+      if (this.custom_drilldown_lookup_data) {
+        link = lib.construct_drilldown_link(cell, $td, this.custom_drilldown_lookup_data, row);
+
+        if (link) {
+          lib.set_drilldown(cell, $td, link);        
+          custom_drilldown_applied = true;
+        }
+      }    
 
       /************************/
       /* * Tooltip renderer * */
       /************************/
       // tooltips injected as events get priority over csv lookup
-      // to avoid duplicate tooltips also we want this to be the 
+      // to avoid duplicate tooltips also we want this to be the
       // preferred approach
       let tooltip_applied = false;
       let tooltip_check = `_${field}_tooltip`;
@@ -354,133 +360,134 @@ require([
 
             if (tip && tip.length && (!tip.includes('<') && !tip.includes('>')) && tip.length > tooltip_truncation_limit && tooltip_placement) {
               message = message.substring(0, tooltip_truncation_limit) + "...";
-              let tooltip_element = _.template('<a href="#" data-toggle="tooltip" data-placement="<%- tooltip_placement%>" title="<%- tip%>"><%- message%></a>', {
+              let tooltip_element = _.template('<a href="#" data-toggle="tooltip" data-placement="<%- tooltip_placement%>" data-original-title="<%- tip%>"><%- message%></a>', {
                 tip: tip,
                 message: message,
                 tooltip_placement: tooltip_placement
               });
               multi_value_html += `<div tabindex="${idx}" class="multivalue-subcell" data-mv-index="${idx}">${tooltip_element}</div>`;
             } else {
-	      multi_value_html += `<div tabindex="${idx}" class="multivalue-subcell" data-mv-index="${idx}">${element}</div>`;
+              multi_value_html += `<div tabindex="${idx}" class="multivalue-subcell" data-mv-index="${idx}">${element}</div>`;
             }
         });
 
         $td.html(multi_value_html);
       }
+
       try {
+        // tooltip provided as part of query output
         if (row && tooltip_check in row) {
           let original_field_value = row[field];
           let tip = row[tooltip_check];
 
           if (tip && tooltip_placement) {
-	    var full_value = $.isArray(original_field_value) ? multi_value_html : original_field_value;
-            html_value = _.template('<span data-toggle="tooltip" data-placement="<%- tooltip_placement%>" data-original-title="<%- tip%>"><%- value%></span>', {
+            let full_value = $.isArray(original_field_value) ? multi_value_html : original_field_value;
+            html_value = _.template('<a href="#" data-toggle="tooltip" data-placement="<%- tooltip_placement%>" data-original-title="<%- tip%>"><%- value%></a>', {
               tip: tip,
               value: full_value,
               tooltip_placement: tooltip_placement
             });
 
+            lib.set_tooltip($td, tip, tooltip_placement, full_value);
+
             tooltip_applied = true;
           }
-        } else {
-          this.tooltips_cookie = this.dashboard_name + "_tooltips_cookie";
+        } 
+        else {
+          //this.tooltip_lookup_cookie = `tooltip_lookup_cookie_${this.dashboard_name}_${this.table_id}`;
+          this.tooltip_lookup_event = `tooltip_lookup_${this.dashboard_name}_${this.dashboard_id}_ready`;
 
-          // read lookup only once
-          if (!$.cookie(this.tooltips_cookie)) {
-            var that = this;
+          if (this.tooltip_lookup_data) {
+            for (let threshold_field in this.tooltip_lookup_data) {
+              if (RegExp(threshold_field).test(cell.field)) {
+                let full_value = $.isArray(html_value) ? multi_value_html : html_value;
+                let tip = lib.tooltip_lookup(cell, this.tooltip_lookup_data, this.rows);
 
-            $(document).on("fetched_tooltips", function (e, opts) {
-              let tooltip_data = opts.data;
+                lib.set_tooltip($td, tip, tooltip_placement, full_value);
 
-              if (tooltip_data) {
-                for (const tooltip of tooltip_data) {
-                  if (tooltip.Field && tooltip.Field === field) {
-                    let tip = lib.tooltip_lookup(cell, tooltip_data, that.rows);
-
-                    if (tip && tooltip_placement) {
-		      var full_value = $.isArray(value) ? multi_value_html : value;
-                      html_value = 
-_.template('<span data-toggle="tooltip" data-placement="<%- tooltip_placement%>" data-original-title="<%- tip%>"><%- value%></span>', {
-                        tip: tip,
-                        value: full_value,
-                        tooltip_placement: tooltip_placement
-                      });
-
-                      tooltip_applied = true;
-                    }
-
-                    break;
-                  }
-                }
-              }
-            });
-          } else {
-            let tooltip_data = JSON.parse($.cookie(this.tooltips_cookie));
-
-            for (const tooltip of tooltip_data) {
-              if (tooltip.Field && tooltip.Field === field) {
-
-                let tip = lib.tooltip_lookup(cell, tooltip_data, this.rows);
-
-                if (tip && tooltip_placement) {
-console.log("HERE 3");
-		  var full_value = $.isArray(value) ? multi_value_html : value;
-                  html_value = `<span data-toggle="tooltip" data-placement="${tooltip_placement}" data-original-title="${tip}">${full_value}</span>`;
-
-                  tooltip_applied = true;
-                }
-
-                break;
+                tooltip_applied = true;
               }
             }
-          }
-	}
-      } catch (err) {
+          } 
+        }
+      } 
+      catch (err) {
         console.error("Failed evaluating tooltip for field " + cell.field + ". Error:", err);
       }
 
       if (this.has_tooltips) {
-	if (tooltip_applied) {
-	  $td.html(html_value);
-	} else {
-	  if (! $.isArray(value)) {
-	    let message = value;
-	    let tip = value;
+        if (! $.isArray(value)) {
+          let message = value;
+          let tip = value;
 
-	    if (tip && tip.length && (!tip.includes('<') && !tip.includes('>')) && tip.length > tooltip_truncation_limit && tooltip_placement) {
-	      message = message.substring(0, tooltip_truncation_limit) + "..."
-		$td.html(_.template('<a href="#" data-toggle="tooltip" data-placement="<%- tooltip_placement%>" title="<%- tip%>"><%- message%></a>', {
-			   tip: tip,
-					message: message,
-					tooltip_placement: tooltip_placement
-					}));
-	    } else {
-	      // this allows us to use html and xml tags as the cell value
-	      // i.e. <asserts>
-	      $td.text(value);
-	    }
-	  }
-	}
-
-      } else {
-	if (! $.isArray(value)) {
-	  // this allows us to use html and xml tags as the cell value
-	  // i.e. <asserts>
-	  $td.text(value);
-	}
+          if (tip && tip.length && (!tip.includes('<') && !tip.includes('>')) && tip.length > tooltip_truncation_limit && tooltip_placement) {
+            message = message.substring(0, tooltip_truncation_limit) + "..."
+            lib.set_tooltip($td, tip, tooltip_placement, message);            
+          }
+        }
       }
 
-      // This line wires up the Bootstrap tooltip to the cell markup
-      // This won't do anything if tooltips weren't created above
-      $td.find('[data-toggle="tooltip"]').tooltip({
-	html: true,
-	container: 'body'
-      });
+      if (!tooltip_applied && !custom_drilldown_applied && (! $.isArray(value))) {
+        $td.text(value);
+      }
 
       // Returning false means that we haven't updated the outer html/text of the cell, e.g. adding a callback
       return true;
     }
   });
+
+   function read_custom_drilldown_lookup(table_id) {
+    return new Promise(function (resolve, reject) {
+        // get the value of the style+_file token    
+        const custom_drilldown_lookup = `${dashboard_name}_${table_id}_drilldowns.csv`;
+        const custom_drilldown_lookup_ready_event = `custom_drilldown_lookup_${dashboard_name}_${table_id}_ready`;
+
+        try {
+          let searchManager = new SearchManager({
+            cache: true,
+            search: "| inputlookup " + custom_drilldown_lookup
+          });
+
+          searchManager.on("search:error", function (state, job) {
+            resolve({
+              "custom_drilldown_lookup_data": false
+            });
+          });
+
+          searchManager.on("search:fail", function (state, job) {
+            resolve({
+              "custom_drilldown_lookup_data": false
+            });
+          });
+
+          searchManager.on("search:done", function (state, job) {
+            if (state.content.resultCount === 0) {
+              resolve({
+              "custom_drilldown_lookup_data": false
+            });
+            }
+          });
+
+          let searchResults = searchManager.data('results', {
+            output_mode: 'json',
+            count: 0
+          });
+
+          searchResults.on("data", function () {
+            if (searchResults.hasData()) {
+              let customDrilldownResultArray = searchResults.data()["results"];
+
+              resolve({
+                "custom_drilldown_lookup_data": customDrilldownResultArray
+              });
+            }
+          });
+        } catch (err) {
+          console.log(err);
+          return false;
+        }
+    });
+  }
 
   function set_token(name, value) {
     default_token_model.set(name, value);
@@ -574,7 +581,7 @@ console.log("HERE 3");
       try {
         let searchManager = new SearchManager({
           cache: true,
-          search: "| inputlookup " + scheduled_report_csv
+          search: `| inputlookup ${scheduled_report_csv}`
         });
 
         searchManager.on("search:error", function (state, job) {
@@ -628,35 +635,48 @@ console.log("HERE 3");
     });
   }
 
-  function read_style_lookup() {
-    // get the value of the style+_file token
-    let style_file = default_token_model.get("style_file");
+  function read_style_lookup(table_id) {
+    return new Promise(function(resolve, reject) {
+      // get the value of the style+_file token
+      let style_file = default_token_model.get("style_file");
 
-    try {
-      if (style_file) {
-        let style_lookup = eval(style_file);
+      let style_lookup = `${dashboard_name}_${table_id}_style.csv`;
+
+      if (!table_id) {
+        style_lookup = `${dashboard_name}_style.csv`;
+      }
+
+      console.log(`Style CSV file: ${style_file}`);
+
+      try {
+        if (style_file) {
+          style_lookup = eval(style_file);
+        }
+        else {
+          style_lookup = `${dashboard_name}_${table_id}_styles.csv`;
+        }
 
         let searchManager = new SearchManager({
           cache: true,
-          search: "| inputlookup " + style_lookup
+          search: `| inputlookup ${style_lookup}`
         });
 
         searchManager.on("search:error", function (state, job) {
-          $(document).trigger("style_lookup_ready", {
-            "data": false
+          $(document).trigger(`style_lookup_${dashboard_name}_${table_id}_ready`, {
+            "style_lookup_data": false
           });
         });
 
         searchManager.on("search:fail", function (state, job) {
-          $(document).trigger("style_lookup_ready", {
-            "data": false
+          $(document).trigger(`style_lookup_${dashboard_name}_${table_id}_ready`, {
+            "style_lookup_data": false
           });
         });
 
         searchManager.on("search:done", function (state, job) {
           if (state.content.resultCount === 0) {
-            $(document).trigger("style_lookup_ready", {
-              "data": false
+            $(document).trigger(`style_lookup_${dashboard_name}_${table_id}_ready`, {
+              "style_lookup_data": false
             });
           }
         });
@@ -668,100 +688,97 @@ console.log("HERE 3");
 
         searchResults.on("data", function () {
           if (searchResults.hasData()) {
-            let styleResultArray = searchResults.data()["results"];
+            resolve({'style_lookup_data' : searchResults.data()["results"]});        
+          }
+        });
+      } catch (err) {
+        console.log(err);
+        return false;
+      }
+    });
+  }
 
-            let date = new Date();
-            date.setTime(date.getTime() + (60 * 1000));
-            $.cookie(dashboard_name + "_style_lookup_cookie", JSON.stringify(styleResultArray), {
-              expires: date
-            }); // expires after 1 minute
+  function read_tooltip_lookup(table_id) {
+    return new Promise(function (resolve, reject) {
+      let tooltips_csv = `${dashboard_name}_${table_id}_tooltips.csv`;
+
+      if (!table_id) {
+        tooltips_csv = `${dashboard_name}_tooltips.csv`;
+      }
+
+      console.log(`Tooltips CSV: ${tooltips_csv}`);
+
+      try {
+        // read tooltips lookup
+        let searchManager = new SearchManager({
+          cache: true,
+          search: `| inputlookup ${tooltips_csv}`
+        });
+
+        searchManager.on("search:error", function (state, job) {
+          resolve({
+            "tooltip_lookup_data": false
+          });
+        });
+
+        searchManager.on("search:fail", function (state, job) {
+          resolve({
+            "tooltip_lookup_data": false
+          });
+        });
+
+        searchManager.on("search:done", function (state, job) {
+          if (state.content.resultCount === 0) {
+            resolve({
+            "tooltip_lookup_data": false
+          });
+          }
+        });
+
+        let searchResults = searchManager.data('results', {
+          output_mode: 'json',
+          count: 0
+        });
+
+        searchResults.on("data", function () {
+          if (searchResults.hasData()) {
+            let tooltips = searchResults.data()["results"];
+            let tooltips_hash = {};
+
+            for (const tooltip of tooltips) {
+              tooltips_hash[tooltip.Field] = tooltip;
+            }
+
+            // expires after 1 hour, clear cookies when testing      
+            //save_storage(`tooltip_lookup_cookie_${dashboard_name}_${table_id}`, tooltips_hash); 
+
             // Create the event, need to pass data as an object, arrays get truncated to just first value
-            $(document).trigger("style_lookup_ready", {
-              "data": styleResultArray
+            resolve({
+              "tooltip_lookup_data": tooltips_hash
             });
           }
         });
+      } catch (err) {
+        console.log(err);
+        return false;
       }
-    } catch (err) {
-      console.log(err);
-      return false;
-    }
-  }
-
-  function fetch_tooltips(table_id) {
-    let tooltips_csv = `${dashboard_name}_${table_id}_tooltips.csv`;
-
-    console.log(`Tooltips CSV: ${tooltips_csv}`);
-
-    try {
-      // read tooltips lookup
-      let searchManager = new SearchManager({
-        cache: true,
-        search: "| inputlookup " + tooltips_csv
-      });
-
-      searchManager.on("search:error", function (state, job) {
-        $(document).trigger("fetched_tooltips", {
-          "data": false
-        });
-      });
-
-      searchManager.on("search:fail", function (state, job) {
-        $(document).trigger("fetched_tooltips", {
-          "data": false
-        });
-      });
-
-      searchManager.on("search:done", function (state, job) {
-        if (state.content.resultCount === 0) {
-          $(document).trigger("fetched_tooltips", {
-            "data": false
-          });
-        }
-      });
-
-      let searchResults = searchManager.data('results', {
-        output_mode: 'json',
-        count: 0
-      });
-
-      searchResults.on("data", function () {
-        if (searchResults.hasData()) {
-          let tooltips = searchResults.data()["results"];
-
-          console.log("tooltips");
-          console.log(tooltips);
-
-          let date = new Date();
-          date.setTime(date.getTime() + (1200 * 1000));
-          $.cookie(dashboard_name + "_tooltips_cookie", JSON.stringify(tooltips), {
-            expires: date
-          }); // expires after 20 minute
-
-          // Create the event, need to pass data as an object, arrays get truncated to just first value
-          $(document).trigger("fetched_tooltips", {
-            "data": tooltips
-          });
-        }
-      });
-    } catch (err) {
-      console.log(err);
-      return false;
-    }
+    });
   }
 
   function run(all_view_instances) {
     let has_style_file = default_token_model.get("style_file");
+    let has_custom_drilldown_lookup = default_token_model.get("custom_drilldown_lookup");
     let has_tooltips = default_token_model.get("tooltips");
     let tooltip_placement = default_token_model.get('tooltip_placement');
     if (!tooltip_placement) {
       tooltip_placement = default_token_model.get('tooltips.placement');
-    }    
+    }
     let all_view_instances_count = all_view_instances.length;
     let total_view_nested_headers_count = all_view_instances_count;
     let datatables_global_token_value = default_token_model.get("datatables");
 
     has_style_file = has_style_file && eval(has_style_file);
+    has_custom_drilldown_lookup = has_custom_drilldown_lookup && eval(has_custom_drilldown_lookup);
 
     // get tooltips of whole dashboard not individual tables
     if (tooltip_placement) {
@@ -770,7 +787,7 @@ console.log("HERE 3");
       tooltip_placement = 'right';
     }
 
-    has_tooltips = has_tooltips && eval(has_tooltips);
+    has_tooltips = has_tooltips && eval(has_tooltips);    
 
     let all_views = [];
     // Keep track of rendered views
@@ -880,7 +897,7 @@ console.log("HERE 3");
                     if (!value) {
                       return;
                     }
-                    // get right row set for multiple tables                         
+                    // get right row set for multiple tables
                     console.log("js_eval.click_link---------------->" + value);
                     set_token('click_link', eval(value));
                     unset_token('js_eval.click_link');
@@ -891,11 +908,13 @@ console.log("HERE 3");
                     if (!value) {
                       return;
                     }
-                    // get right row set for multiple tables                         
+                    // get right row set for multiple tables
                     console.log("config.js_eval.click_link---------------->" + value);
                     set_token('config.click_link', eval(value));
                     unset_token('config.js_eval.click_link');
                   });
+
+                  let deferred_read_lookup = [];
 
                   // Create a new instance of the new custom cell renderer
                   let customCellRenderer = new CustomCellRenderer();
@@ -908,35 +927,70 @@ console.log("HERE 3");
                   customCellRenderer.rows = rows;
                   customCellRenderer.fields = fields;
                   customCellRenderer.subview_id = subview.id;
-                  
+
                   // Assigning all of the style functions extensions
                   Object.assign(customCellRenderer, lib);
-                  // Adding the Cell Renderer to the table 
-
-                  console.log("ADDING CELL RENDERER");
-                  subview.addCellRenderer(customCellRenderer);
-                  // Create an instance of the basic row renderer
-                  let tableRowRenderer = new RowRenderer();
-                  let row_expansion_body = default_token_model.get("config.row_expansion_body");
-                  if (row_expansion_body) {
-                    console.log("ADDING ROW RENDERER");
-                    tableRowRenderer.row_expansion_body = row_expansion_body;
-                    subview.addRowExpansionRenderer(tableRowRenderer);
-                  }                  
+                  // Adding the Cell Renderer to the table
+                    
                   
-                  subview.viz.children.viz.children.vizList.stats.render();
-                  //subview.table.render();
-                  custom_cell_renderers[subview.id] = customCellRenderer;
-                  console.log(customCellRenderer)
+                  // Trigger events after binding in render function                  
+                  //const style_lookup_cookie = `style_lookup_cookie_${dashboard_name}_${view.id}`;
+                  if (has_style_file) {
+                    // if (!get_storage(style_lookup_cookie)) {
+                    deferred_read_lookup.push(read_style_lookup(view.id));
+                    // }
+                  }
 
                   // Trigger events after binding in render function
-                  if (has_style_file) {
-                    read_style_lookup();
+                  //const custom_drilldown_lookup_cookie = `custom_drilldown_lookup_cookie_${dashboard_name}_${view.id}`;
+                  if (has_custom_drilldown_lookup) {
+                    //if (!get_storage(custom_drilldown_lookup_cookie)) {
+                    console.log("!!! custom_drilldown_lookup_data waiting !!!");
+                    deferred_read_lookup.push(read_custom_drilldown_lookup(view.id));
+                    console.log("!!! custom_drilldown_lookup_data !!!");
+                      //console.log(custom_drilldown_lookup_data);
+                    //}
                   }
 
+                  //const tooltip_lookup_cookie = `tooltip_lookup_cookie_${dashboard_name}_${view.id}`;
                   if (has_tooltips) {
-                    fetch_tooltips(view.id);
+                    //if (!get_storage(tooltip_lookup_cookie)) {
+                    deferred_read_lookup.push(read_tooltip_lookup(view.id));
+                    //}
                   }
+
+                  Promise.all(deferred_read_lookup)
+                   .then(function (lookup_data_objs) {
+                      console.log("RESOLVING ALL READ LOOKUP PROMISES");
+                      console.log(lookup_data_objs);
+                      for (let lookup_obj of lookup_data_objs) {
+                        let lookup_type = Object.keys(lookup_obj)[0];
+                        let lookup_data = lookup_obj[lookup_type];
+                        customCellRenderer[lookup_type] = lookup_data;
+                      }
+
+                      console.log("ADDING CUSTOM STYLE CELL RENDERER");
+                      subview.addCellRenderer(customCellRenderer);
+
+                      // Create an instance of the basic row renderer
+                      let tableRowRenderer = new RowRenderer();
+                      let row_expansion_body = default_token_model.get("config.row_expansion_body");
+                      if (row_expansion_body) {
+                        console.log("ADDING ROW RENDERER");
+                        tableRowRenderer.row_expansion_body = row_expansion_body;
+                        subview.addRowExpansionRenderer(tableRowRenderer);
+                        subview.viz.children.viz.children.vizList.stats.render();
+                      }
+
+                      subview.viz.children.viz.children.vizList.stats.render();
+                      //subview.table.render();
+                      custom_cell_renderers[subview.id] = customCellRenderer;
+                      console.log(customCellRenderer)
+                      $(document).trigger("read_lookups_complete");
+                    }, function (reason) {
+                      console.log("promise failed");
+                      console.log(reason);
+                    });                  
 
                   // View Refresh Button
                   let refresh_enabled_token_value = default_token_model.get('refresh_enabled');
@@ -999,8 +1053,9 @@ console.log("HERE 3");
 
                     let datatables_id_token_value = default_token_model.get(`datatables#${view.id}`);
                     let datatables_idx_token_value = default_token_model.get(`datatables${i + 1}`);
+                    let no_datatables_set = submitted_token_model.get(`no_datatables`);
 
-                    if (datatables_global_token_value && eval(datatables_global_token_value)) {
+                    if ((datatables_global_token_value && eval(datatables_global_token_value)) && !no_datatables_set) {
                       if (datatables_id_token_value && (!eval(datatables_id_token_value))) {
                         console.log(`datatables#${view.id} disabled`);
                         set_token(`tbl#${view.id}_display`, true);
@@ -1013,7 +1068,7 @@ console.log("HERE 3");
                         resolve(subview);
                       } else {
                         // setup datatables
-                        // Show Hide Column Checkboxes  
+                        // Show Hide Column Checkboxes
                         let datatables_show_hide_column_token_value = default_token_model.get(`datatables#${view.id}.show_hide_column`);
                         if (!datatables_show_hide_column_token_value) {
                           // check for global setting, table specific gets precedence
@@ -1096,10 +1151,30 @@ console.log("HERE 3");
             console.log(reason);
           });
       }
-    });    
-  } 
+    });
 
-  // globals, var variables will be hoisted    
+    $(document).on("full_render_complete", function (e, opts) {
+      console.log("full render callback");
+      all_views.forEach(function (view) {
+        if (view.subview && view.subview.table) {
+          console.log(`Checking if initial render not successful..: ${view.subview.id}`);
+
+          if (!custom_cell_renderers_success[view.subview.id]) {
+            console.log(`Initial render not successful, retrying..: ${view.subview.id}`)
+            let subview_search = mvc.Components.getInstance(view.subview.options.managerid);
+            view.subview.viz.children.viz.children.vizList.stats.render();
+          }
+
+          if (!nested_headers_formatted[view.subview.id] || !nested_headers.is_formatted(view.subview)) {
+            console.log(`Initial nested headers not successful.. retrying: ${view.subview.id}`);
+            view.subview.viz.children.viz.children.vizList.stats.render();
+          }
+        }
+      });
+    });
+  }
+
+  // globals, var variables will be hoisted
   // Obtain a reference to the tokens service
   var default_token_model = mvc.Components.get("default");
   var submitted_token_model = mvc.Components.get("submitted");
@@ -1148,8 +1223,8 @@ console.log("HERE 3");
   // Run rendering
   let addCustomCellRenderer = function () {
     run(all_view_instances);
-  }  
-  
+  }
+
   let addCellRendererOnce = _.once(addCustomCellRenderer);
   addCellRendererOnce();
 });

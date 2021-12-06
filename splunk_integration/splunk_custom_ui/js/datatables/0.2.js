@@ -15,25 +15,25 @@ i18n_register({
 require.config({
   waitSeconds: 0,
   paths: {
-    'datatables.net': '../app/search/gizmos/DataTables/DataTables-1.10.20/js/jquery.dataTables.min',
-    'datatables.net-bootstrap': '../app/search/gizmos/DataTables/DataTables-1.10.20/js/dataTables.bootstrap.min',
-    'datatables.net-fixed-columns': '../app/search/gizmos/DataTables/FixedColumns-3.3.0/js/dataTables.fixedColumns.min',
-    'datatables.net-auto-fill': '../app/search/gizmos/DataTables/AutoFill-2.3.4/js/dataTables.autoFill.min',
-    'datatables.net-buttons': '../app/search/gizmos/DataTables/Buttons-1.6.1/js/dataTables.buttons.min',
-    'datatables.net-buttons-flash': '../app/search/gizmos/DataTables/Buttons-1.6.1/js/buttons.flash.min',
-    'jszip': '../app/search/gizmos/DataTables/JSZip-3.2.0/jszip.min',
-    'pdfmake': '../app/search/gizmos/DataTables/pdfmake-0.1.62/pdfmake.min',
-    'vfs-fonts': '../app/search/gizmos/DataTables/pdfmake-0.1.62/vfs_fonts',
-    'datatables.net-buttons-html5': '../app/search/gizmos/DataTables/Buttons-1.6.1/js/buttons.html5.min',
-    'datatables.net-buttons-print': '../app/search/gizmos/DataTables/Buttons-1.6.1/js/buttons.print.min',
-    'datatables.net-buttons-colvis': '../app/search/gizmos/DataTables/Buttons-1.6.1/js/buttons.colVis.min',
-    'datatables.net-col-reorder': '../app/search/gizmos/DataTables/ColReorder-1.5.2/js/dataTables.colReorder.min',
-    'datatables.net-key-table': '../app/search/gizmos/DataTables/KeyTable-2.5.1/js/dataTables.keyTable.min',
-    'datatables.net-responsive': '../app/search/gizmos/DataTables/Responsive-2.2.3/js/dataTables.responsive.min',
-    'datatables.net-row-reorder': '../app/search/gizmos/DataTables/RowReorder-1.2.6/js/dataTables.rowReorder.min',
-    'datatables.net-scroller': '../app/search/gizmos/DataTables/Scroller-2.0.1/js/dataTables.scroller.min',
-    'datatables.net-select': '../app/search/gizmos/DataTables/Select-1.3.1/js/dataTables.select.min',
-    'datatables.rows-group': '../app/search/gizmos/DataTables/RowsGroup/js/dataTables.rowsGroup'
+    'datatables.net': '../app/mxd3/gizmos/DataTables/DataTables-1.10.20/js/jquery.dataTables.min',
+    'datatables.net-bootstrap': '../app/mxd3/gizmos/DataTables/DataTables-1.10.20/js/dataTables.bootstrap.min',
+    'datatables.net-fixed-columns': '../app/mxd3/gizmos/DataTables/FixedColumns-3.3.0/js/dataTables.fixedColumns.min',
+    'datatables.net-auto-fill': '../app/mxd3/gizmos/DataTables/AutoFill-2.3.4/js/dataTables.autoFill.min',
+    'datatables.net-buttons': '../app/mxd3/gizmos/DataTables/Buttons-1.6.1/js/dataTables.buttons.min',
+    'datatables.net-buttons-flash': '../app/mxd3/gizmos/DataTables/Buttons-1.6.1/js/buttons.flash.min',
+    'jszip': '../app/mxd3/gizmos/DataTables/JSZip-3.2.0/jszip.min',
+    'pdfmake': '../app/mxd3/gizmos/DataTables/pdfmake-0.1.62/pdfmake.min',
+    'vfs-fonts': '../app/mxd3/gizmos/DataTables/pdfmake-0.1.62/vfs_fonts',
+    'datatables.net-buttons-html5': '../app/mxd3/gizmos/DataTables/Buttons-1.6.1/js/buttons.html5.min',
+    'datatables.net-buttons-print': '../app/mxd3/gizmos/DataTables/Buttons-1.6.1/js/buttons.print.min',
+    'datatables.net-buttons-colvis': '../app/mxd3/gizmos/DataTables/Buttons-1.6.1/js/buttons.colVis.min',
+    'datatables.net-col-reorder': '../app/mxd3/gizmos/DataTables/ColReorder-1.5.2/js/dataTables.colReorder.min',
+    'datatables.net-key-table': '../app/mxd3/gizmos/DataTables/KeyTable-2.5.1/js/dataTables.keyTable.min',
+    'datatables.net-responsive': '../app/mxd3/gizmos/DataTables/Responsive-2.2.3/js/dataTables.responsive.min',
+    'datatables.net-row-reorder': '../app/mxd3/gizmos/DataTables/RowReorder-1.2.6/js/dataTables.rowReorder.min',
+    'datatables.net-scroller': '../app/mxd3/gizmos/DataTables/Scroller-2.0.1/js/dataTables.scroller.min',
+    'datatables.net-select': '../app/mxd3/gizmos/DataTables/Select-1.3.1/js/dataTables.select.min',
+    'datatables.rows-group': '../app/mxd3/gizmos/DataTables/RowsGroup/js/dataTables.rowsGroup'
   },
   shim: {
     'datatables.net': {
@@ -190,7 +190,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
 
   hide_length_paginate();
 
-  // globals, var variables will be hoisted    
+  // globals, var variables will be hoisted
   // Obtain a reference to the tokens service
   var default_token_model = mvc.Components.get("default");
   var submitted_token_model = mvc.Components.get("submitted");
@@ -209,7 +209,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
   jQuery.extend(jQuery.fn.dataTableExt.oSort, {
     "html-numeric-pre": function (a) {
       var x = String(a).replace(/<[\s\S]*?>/g, "");
-      if (x === 'NA')
+      if (x === 'NA' || x === 'EX')
         x = -9007199254740992; // -2^64 - smallest number possible
       return parseFloat(x);
     },
@@ -231,7 +231,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
       return 'html-numeric';
     } else if (typeof sData !== 'string') {
       return null;
-    } else if (sData === 'NA') {
+    } else if (sData === 'NA' || sData === 'EX') {
       /* SPLUNK NULL */
       return 'html-numeric';
     }
@@ -280,7 +280,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
     idxs: []
   };
 
-  // DataTables cannot handle rowspans 
+  // DataTables cannot handle rowspans
   // - using attributes data-rowspan and data-hide in the HTML emulate rowspan
   //   after table loaded into DataTables
 
@@ -353,7 +353,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
     }
   }
 
-  // Create DataTable rowspan call back  
+  // Create DataTable rowspan call back
   $.fn.dataTableExt.oApi.fnFakeRowspan = function (oSettings) {
     if (oSettings) {
       $.each(oSettings.aoData, fake_rowspan);
@@ -534,7 +534,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
     let class_name = element.id + "_col";
     let all_th = $("#" + view_id + " table thead tr th");
 
-    // we have a number column as the first column    
+    // we have a number column as the first column
     if ($(all_th[0]).hasClass('row-number')) {
       fields.unshift("");
     }
@@ -752,6 +752,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
     let datatable_col_avg = false;
     let datatable_col_avg_text = false;
     let datatable_rows_group = [];
+    let datatable_max_height = "800px";
 
     // datatable config global
     let datatable_global_row_count_token = default_token_model.get("datatables.config.row_count");
@@ -769,6 +770,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
     let datatable_global_col_avg_token = default_token_model.get("datatables.config.col_avg");
     let datatable_global_col_avg_text_token = default_token_model.get("datatables.config.col_avg_text");
     let datatable_global_rows_group_token = default_token_model.get("datatables.config.rows_group");
+    let datatable_global_max_height_token = default_token_model.get("datatables.config.max_height");
 
     // datatable config ID specific
     let datatable_id_row_count_token = default_token_model.get(`datatables#${view_id}.config.row_count`);
@@ -787,6 +789,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
     let datatable_id_col_avg_token = default_token_model.get(`datatables#${view_id}.config.col_avg`);
     let datatable_id_col_avg_text_token = default_token_model.get(`datatables#${view_id}.config.col_avg_text`);
     let datatable_id_rows_group_token = default_token_model.get(`datatables#${view_id}.config.rows_group`);
+    let datatable_id_max_height_token = default_token_model.get(`datatables#${view_id}.config.max_height`);
 
     // datatable config index specific
     let datatable_idx_row_count_token = default_token_model.get(`datatables${i + 1}.config.row_count`);
@@ -805,6 +808,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
     let datatable_idx_col_avg_token = default_token_model.get(`datatables${i + 1}.config.col_avg`);
     let datatable_idx_col_avg_text_token = default_token_model.get(`datatables${i + 1}.config.col_avg_text`);
     let datatable_idx_rows_group_token = default_token_model.get(`datatables${i + 1}.config.rows_group`);
+    let datatable_idx_max_height_token = default_token_model.get(`datatables${i + 1}.config.max_height`);
 
     let mail_format = default_token_model.get('mail_format');
 
@@ -874,6 +878,11 @@ define(libs, function ($, jszip, mvc, TableElement) {
       datatable_rows_group = datatable_rows_group_config;
     }
 
+    let datatable_max_height_config = getDatatableConfig(datatable_global_max_height_token, datatable_id_max_height_token, datatable_idx_max_height_token);
+    if (datatable_max_height_config) {
+      datatable_max_height = datatable_max_height_config;
+    }
+
     let columnDefs = [{
       className: "border_left",
       "targets": border_targets
@@ -884,7 +893,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
     //"stateSave": true,
     let table_options = {
       "order": [],
-      "scrollY": "800px",
+      "scrollY": datatable_max_height,
       "scrollX": true,
       "scrollCollapse": true,
       "scroller": true,
@@ -917,7 +926,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
         }
 
         setTimeout(function () {
-          if (splunk_datatable.data()) {
+          if (splunk_datatable && splunk_datatable.data()) {
             if (splunk_datatable.data().count() > datatable_row_count) {
               if ($("#temp_remove_length_paginate").length) {
                 $('#temp_remove_length_paginate').remove();
@@ -927,8 +936,8 @@ define(libs, function ($, jszip, mvc, TableElement) {
             }
           }
         }, 500);
-      },      
-      columnDefs      
+      },
+      columnDefs
     };
 
     if (datatable_rows_group.length > 0) {
@@ -940,10 +949,10 @@ define(libs, function ($, jszip, mvc, TableElement) {
     table_options.footerCallback = function (row, data, start, end, display) {
       let api = this.api();
 
-      /* This function checks checks whether the given value is a string and 
+      /* This function checks checks whether the given value is a string and
        * converts to a valid number if possible else returns 0.
        * If the value is a valid number then the number is returned, else
-       * returns 0. 
+       * returns 0.
        */
       let intVal = function (i) {
         return typeof i === 'string' ?
@@ -976,7 +985,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
       if (datatable_col_total) {
         datatable_col_total.forEach(function (col) {
           col = colIdx(col);
-          // Remove the formatting to get integer data for summation          
+          // Remove the formatting to get integer data for summation
           if (col > -1) {
             // Total over page with filters
             let total = colTotal(col);
@@ -1001,7 +1010,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
             let data_length = api.column(col, {
                 filter: "applied"
               })
-              .data().flatten().toArray().filter(val => val !== "NA" && val !== "N/A").length;
+              .data().flatten().toArray().filter(val => val !== "NA" && val !== "N/A" && val !== "EX").length;
 
             let total = colTotal(col);
 
@@ -1015,7 +1024,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
         });
 
         const avg_footer_text = (datatable_col_avg_text === true) ? "Average " : datatable_col_avg_text;
-        $(api.column(0).footer()).html(avg_footer_text);          
+        $(api.column(0).footer()).html(avg_footer_text);
         $(api.column(0).footer()).addClass("avg_footer");
       }
     }
@@ -1024,14 +1033,14 @@ define(libs, function ($, jszip, mvc, TableElement) {
     if (datatable_left_fixed_columns_config) {
       datatable_left_fixed_columns = datatable_left_fixed_columns_config;
     }
-      
+
     if (mail_format) {
       delete table_options.fixedHeader;
       delete table_options.scrollY;
-      delete table_options.scrollX;      
+      delete table_options.scrollX;
       delete table_options.scrollCollapse;
     }
- 
+
     if (datatable_left_fixed_columns && !mail_format) {
       if (!table_options.fixedColumns) {
         table_options.fixedColumns = {};
@@ -1109,7 +1118,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
           let cellXfCount = $('cellXfs', styles).attr('count');
 
           // Built-in datatables excel styles
-          // https://datatables.net/reference/button/excelHtml5#Built-in-styles          
+          // https://datatables.net/reference/button/excelHtml5#Built-in-styles
           let lt_green_style = 40;
           let let_red_style = 35;
           let lt_blue_style = 46;
@@ -1209,7 +1218,7 @@ define(libs, function ($, jszip, mvc, TableElement) {
         $('<tfoot/>').append($(tfoot_tr_html))
       );
 
-      // clear out all headers we don't want the text again    
+      // clear out all headers we don't want the text again
       $(`${table_selector} tfoot tr th`).html("");
 
       // remove footer borders

@@ -4,7 +4,7 @@ i18n_register({"plural": function(n) { return n == 1 ? 0 : 1; }, "catalog": {}})
 require.config({
   waitSeconds: 0,  
   paths: {
-    'spinner': '../app/search/gizmos/js/spin.min'
+    'spinner': '../app/mxd3/gizmos/js/spin.min'
   }
 });
 

@@ -3,7 +3,7 @@ require([
     'jquery',
     'splunkjs/mvc',
     'splunkjs/mvc/tableview',
-    '../app/search/js/style/lib/0.6',
+    '../app/mxd3/js/style/lib/0.6',
     'splunkjs/mvc/simplexml/ready!'
 
 ], function(_, $, mvc, TableView, lib) {

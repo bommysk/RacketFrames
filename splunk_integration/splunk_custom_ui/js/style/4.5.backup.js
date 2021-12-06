@@ -7,7 +7,7 @@ require([
     'splunkjs/mvc',
     'splunkjs/mvc/tableview',
     'splunkjs/mvc/searchmanager',
-    '../app/search/js/style/lib/latest',
+    '../app/mxd3/js/style/lib/latest',
     'splunkjs/mvc/simplexml/ready!'
 
 ], function(_, $, mvc, TableView, SearchManager, lib) {

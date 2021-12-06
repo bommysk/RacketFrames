@@ -189,6 +189,10 @@ table.dataTable.cell-border tbody td.align-right {
   border-right-width: 5px !important;
 }
 
+/* Override default datatables stripe coloring. */
+table.dataTable tbody > tr.even { background-color: #ffffff !important; }
+table.dataTable tbody > tr.odd { background-color: #E8E8E8 !important; }
+
 table.dataTable.cell-border tbody td.aggregation_border {
   border-top-color: grey !important;
   border-top-width: 3px !important;
