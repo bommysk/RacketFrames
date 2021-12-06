@@ -1,7 +1,7 @@
 require([
-    "../app/search/js/double_headers/6.6",
-    "../app/search/js/style/latest",
-    "../app/search/js/tabs/latest"
+    "../app/mxd3/js/double_headers/6.6",
+    "../app/mxd3/js/style/latest",
+    "../app/mxd3/js/tabs/latest"
   ],
   function() {}
 );

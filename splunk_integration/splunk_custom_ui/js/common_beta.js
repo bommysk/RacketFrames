@@ -1,6 +1,6 @@
 require([
-    "../app/search/js/double_headers/latest",
-    "../app/search/js/common_cell_renderer/1.2",
+    "../app/mxd3/js/double_headers/latest",
+    "../app/mxd3/js/common_cell_renderer/1.2",
    ],
   function() {}
 );

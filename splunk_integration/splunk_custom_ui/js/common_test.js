@@ -5,7 +5,7 @@ i18n_register({"plural": function(n) { return n == 1 ? 0 : 1; }, "catalog": {}})
 require.config({
   waitSeconds: 0,  
   paths: {
-    'test_style_renderer': '../app/search/js/test/table_cell_render_all_cells',
+    'test_style_renderer': '../app/mxd3/js/test/table_cell_render_all_cells',
   }
 });
 

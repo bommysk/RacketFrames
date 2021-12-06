@@ -4,10 +4,10 @@ i18n_register({ "catalog": {}, "plural": function(n) { return n == 1 ? 0 : 1; } 
 require.config({
   waitSeconds: 0,  
   paths: {
-    'lib': '../app/search/js/style/lib/latest',
-    'nested_headers': '../app/search/js/double_headers/latest',
-    'splunk_datatables': '../app/search/js/datatables/latest',
-    'utils': '../app/search/js/utils/latest'
+    'lib': '../app/mxd3/js/style/lib/latest',
+    'nested_headers': '../app/mxd3/js/double_headers/latest',
+    'splunk_datatables': '../app/mxd3/js/datatables/latest',
+    'utils': '../app/mxd3/js/utils/latest'
   }
 });
 

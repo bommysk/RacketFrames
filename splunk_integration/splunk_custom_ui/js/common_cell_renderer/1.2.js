@@ -3,10 +3,10 @@ require([
   'jquery',
   'splunkjs/mvc',
   'splunkjs/mvc/tableview',
-  '../app/search/js/double_link/latest',
-  '../app/search/js/images/1.2',
-  '../app/search/js/style/beta',
-  '../app/search/js/style/lib/latest',
+  '../app/mxd3/js/double_link/latest',
+  '../app/mxd3/js/images/1.2',
+  '../app/mxd3/js/style/beta',
+  '../app/mxd3/js/style/lib/latest',
   'splunkjs/mvc/simplexml/ready!'
 ], function(_, $, mvc, TableView, double_link, images, style, lib) {
   var CustomCellRenderer = TableView.BaseCellRenderer.extend({

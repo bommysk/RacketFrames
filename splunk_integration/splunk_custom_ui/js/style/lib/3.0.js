@@ -1,4 +1,4 @@
-define(['underscore'], function(_) {
+define(['underscore','splunkjs/mvc'], function(_, mvc) {
 
     function isColor(strColor) {
       return /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(strColor);
@@ -114,21 +114,17 @@ define(['underscore'], function(_) {
       }
     }
 
-    function getTooltip(field, value, resultArray, rows) {
+    function getTooltip(field, value, resultHash, rows) {
       try {
-        for (let row in resultArray) {
-          let threshold_field = resultArray[row]["Field"];
-
-          if (!threshold_field)
-            continue;
-
-          let ref_field = resultArray[row]["Ref_Field"];
-          let values = resultArray[row]["Values"];
+        for (let threshold_field in resultHash) {
+          let tooltip_obj = resultHash[threshold_field];
+          let ref_field = tooltip_obj["Ref_Field"];
+          let values = tooltip_obj["Values"];
           if (values) {
             values = JSON.parse(values);
           }          
-          let tooltip = resultArray[row]["Tooltip"];     
-          let type = resultArray[row]["Type"];
+          let tooltip = tooltip_obj["Tooltip"];     
+          let type = tooltip_obj["Type"];
 
           if (RegExp(threshold_field).test(field)) {
             if (ref_field) {
@@ -199,7 +195,199 @@ define(['underscore'], function(_) {
       return classes.join(",");
     }
 
-  var getGroupClasses = _.memoize(_getGroupClasses);
+    var getGroupClasses = _.memoize(_getGroupClasses);
+
+    let set_drilldown = (cell, $td, link) => {        
+      if (link && cell &&
+        (cell.value && cell.value.toString().toLowerCase() !== "na" && cell.value.toString().toLowerCase() !== "ex")) {
+        let a;          
+
+        $td.addClass('table-link');
+
+        // tooltip has been applied 
+        if ($td.find('[data-toggle="tooltip"]').length) {            
+          a = $td.find('a');
+          a.attr("href", link).attr("target", "_blank");            
+        }
+        else {          
+          a = $('<a>').attr("href", link).attr("target", "_blank").text(cell.value);
+          $td.empty().append(a);
+        }
+
+        a.click(function(e) {
+          e.preventDefault();
+          //window.location = $(e.currentTarget).attr('href');
+          // or for popup:
+          window.open($(e.currentTarget).attr('href'));
+        });
+      }
+    }
+
+    let set_tooltip = ($td, tip, tooltip_placement, full_value) => {        
+      if (tip && tooltip_placement &&
+        (full_value && full_value.toString().toLowerCase() !== "na" && full_value.toString().toLowerCase() !== "ex")) {
+        // custom drilldown has been applied 
+        if ($td.find('a').length) {            
+          let a = $td.find('a');
+          let href = a.attr('href');
+
+          let html_value = `<a href="${href}" target="_blank" data-toggle="tooltip" data-placement="${tooltip_placement}" data-original-title="${tip}">${full_value}</a>`;            
+
+          $td.html(html_value);
+          $td.find('a').click(function(e) {
+            e.preventDefault();
+            //window.location = $(e.currentTarget).attr('href');
+            // or for popup:
+            window.open($(e.currentTarget).attr('href'));
+          });
+        }
+        else {            
+          html_value = `<a href="#" data-toggle="tooltip" data-placement="${tooltip_placement}" data-original-title="${tip}">${full_value}</a>`;  
+          $td.html(html_value);
+        }                
+        
+        // This line wires up the Bootstrap tooltip to the cell markup
+        // This won't do anything if tooltips weren't created above
+        $td.find('[data-toggle="tooltip"]').tooltip({
+          html: true,
+          container: 'body'
+        });          
+      }
+    } 
+
+  function eval_link_expr(eval_token_dict, link_expr, row) {
+    if (! link_expr.includes("$")) {
+      return link_expr;
+    }
+
+    const re = /\$([^=]+?)\$/g;
+    let m, token_name_extracted,token_name_extracted_orig;
+    let default_token_model = mvc.Components.get("default");
+
+    do {
+        m = re.exec(link_expr);
+        if (m) {
+          token_name_extracted = m[1];
+          if (token_name_extracted.startsWith("row.")) {
+            // escape period because it is a special character in regex
+            token_name_extracted_orig = token_name_extracted;
+            token_name_extracted = 'row\\.' + token_name_extracted_orig.split('.')[1];
+            let row_token_value = row[token_name_extracted_orig.split('.')[1]];
+            //if (default_token_model.get('developer_mode_enabled')) console.log(`Token replace: $${token_name_extracted}$ with: ` + eval(token_name_extracted_orig));
+            link_expr = link_expr.replace(new RegExp(`\\$${token_name_extracted}\\$`, 'g'), row_token_value);
+          }
+          else {
+            let eval_token_dict_value = eval_token_dict[`$${token_name_extracted}$`];
+
+            if (! eval_token_dict_value) {
+              eval_token_dict_value = default_token_model.get(token_name_extracted);
+            }
+            //console.log(`Token replace: $${token_name_extracted}$ with: ` + eval_token_dict_value);
+            link_expr = link_expr.replace(new RegExp(`\\$${token_name_extracted}\\$`, 'g'), eval_token_dict_value);
+          }
+        }
+        //console.log(`Link Expr: ${link_expr}`);
+    } while (m);
+
+    return link_expr;
+  }
+
+  function eval_token_value_expr(eval_token_dict, token_name, token_value_expr, row) {
+    if (! token_value_expr.includes("$")) {
+      return eval(token_value_expr);
+    }
+
+    const re = /\s*\$([^=]+)\$\s*/g;
+    let m, token_name_extracted,token_name_extracted_orig;
+
+    do {
+        m = re.exec(token_value_expr);
+        if (m) {
+          token_name_extracted = m[1];
+          if (token_name_extracted.startsWith("row.")) {
+            // escape period because it is a special character in regex
+            token_name_extracted_orig = token_name_extracted;
+            token_name_extracted = 'row\\.' + token_name_extracted_orig.split('.')[1];
+            let row_token_value = row[token_name_extracted_orig.split('.')[1]];
+            //console.log(`Token replace: $${token_name_extracted}$ with: ` + eval(token_name_extracted_orig));
+            token_value_expr = token_value_expr.replace(new RegExp(`\\$${token_name_extracted}\\$`, 'g'), row_token_value);
+          }
+          else {
+            //console.log(`Token replace: $${token_name_extracted}$ with: ` + eval_token_dict[`$${token_name_extracted}$`]);
+            token_value_expr = token_value_expr.replace(new RegExp(`\\$${token_name_extracted}\\$`, 'g'), eval_token_dict[`$${token_name_extracted}$`]);
+          }
+        }
+        //console.log(`Token Value Expr: ${token_value_expr}`);
+    } while (m);
+
+    eval_token_dict[`$${token_name}$`] = eval(token_value_expr);
+
+    return eval_token_dict[`$${token_name}$`];
+  }
+
+  // drilldown_lookup_obj maps to a row in the custom drilldown lookup and has all the information
+  // needed to construct an anchor link
+  function construct_drilldown_link(cell, $td, drilldown_lookup_obj, row) {
+    let field = cell.field;
+    let value = cell.value;
+
+    if (!value)
+        return "";
+
+    // construct link
+    // check if field regex matches cell.field
+    // if not return ""
+    // if yes then construct link
+    try {
+      // [{Field, Eval_Tokens, Link_Expression}...]
+      for (let drilldown_lookup_row in drilldown_lookup_obj) {
+        let threshold_field = drilldown_lookup_obj[drilldown_lookup_row]["Field"];
+
+        if (!threshold_field)
+          continue;
+
+        if (RegExp(threshold_field).test(field)) {
+          let custom_link = "";
+          let eval_token_dict = {};
+          // array of string expressions ["$token$=value","$token$=value","$token$=value"...]
+          let eval_tokens = eval(drilldown_lookup_obj[drilldown_lookup_row]["Eval_Tokens"]);
+
+          if (! eval_tokens) {
+            eval_tokens = [];
+          }
+
+          //eval_tokens format: [[token_name,token_value],[token_name,token_value],[token_name,token_value]...]
+          for (let eval_token of eval_tokens) {
+            let [token_name, token_value] = eval_token;
+            token_name = token_name.trim();
+            token_value = token_value.trim();
+
+            eval_token_dict[token_name] = eval_token_value_expr(eval_token_dict, token_name, token_value, row);
+          }
+
+          let link_expression = new URL(drilldown_lookup_obj[drilldown_lookup_row]["Link_Expression"], document.baseURI).href.replace(/amp;/g, '');
+
+          if (! link_expression) {
+            return false;
+          }
+
+          link_expression = eval_link_expr(eval_token_dict, link_expression, row);          
+
+          if (! link_expression) {
+            return false;
+          }
+
+          return link_expression;
+        }
+      }
+    } catch  (err) {
+      console.log(err);
+      return false;
+    }
+
+    return "";
+  }
+ 
 
   return {
     bg_color_text: function(value) {
@@ -730,14 +918,14 @@ bg_color_atpg_cov_td: function(value) {
 
         return "";
     },
-    tooltip_lookup: function(cell, resultArray, rows) {
+    tooltip_lookup: function(cell, resultHash, rows) {
         var field = cell.field;
         var value = cell.value;
 
         if (!value)
             return "";
 
-        return getTooltip(field, value, resultArray, rows);        
+        return getTooltip(field, value, resultHash, rows);        
     },
     calculate_group_classes: function(cellRenderer, cell) {
         return getGroupClasses(cell.field, cellRenderer);
@@ -747,7 +935,11 @@ bg_color_atpg_cov_td: function(value) {
     calculate_range,
     calculate_range_class,
     calculate_mapping,
-    calculate_mapping_class
+    calculate_mapping_class,
+    set_drilldown,
+    set_tooltip,
+    eval_link_expr,
+    eval_token_value_expr,
+    construct_drilldown_link
   }
-
 });

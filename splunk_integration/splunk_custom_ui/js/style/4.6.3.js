@@ -8,9 +8,9 @@ i18n_register({ "catalog": {}, "plural": function(n) { return n == 1 ? 0 : 1; } 
 require.config({
   waitSeconds: 10,  
   paths: {    
-    'lib': '../app/search/js/style/lib/latest',
-    'nested_headers': '../app/search/js/double_headers/6.7',
-    'datatables.net': '../app/search/gizmos/DataTables/js/jquery.dataTables.min'    
+    'lib': '../app/mxd3/js/style/lib/latest',
+    'nested_headers': '../app/mxd3/js/double_headers/6.7',
+    'datatables.net': '../app/mxd3/gizmos/DataTables/js/jquery.dataTables.min'    
   }
 });
 
