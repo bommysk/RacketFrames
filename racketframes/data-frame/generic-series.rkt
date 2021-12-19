@@ -359,12 +359,23 @@
 ; ***********************************************************
 
 ; ***********************************************************
+(: build-gen-series-index-from-predicate (GenSeries (GenericType -> Boolean) -> RFIndex))
+(define (build-gen-series-index-from-predicate gen-series pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([i (gen-series-data gen-series)]
+      [n (in-naturals)]
+      #:when (pred i))
+     (if (gen-series-index gen-series)
+         (idx->key (assert (gen-series-index gen-series)) (assert n index?))
+         (assert n index?)))))
+
 (: gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries))
 (define (gen-series-filter gen-series filter-function)
   ; need to use new filtered data to get the new index
   ; setting #f is naive
   ; TODO filter index as well
-  (new-GenSeries (vector-filter filter-function (gen-series-data gen-series))))
+  (new-GenSeries (vector-filter filter-function (gen-series-data gen-series)) #:index (build-gen-series-index-from-predicate gen-series filter-function)))
 
 (: gen-series-filter-not (GenSeries (GenericType -> Boolean) -> GenSeries))
 (define (gen-series-filter-not gen-series filter-function)

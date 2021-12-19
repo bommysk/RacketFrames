@@ -951,7 +951,6 @@
 (define (nseries-filter nseries filter-function)
   ; need to use new filtered data to get the new index
   ; setting #f is naive
-  ; TODO filter index as well
   (new-NSeries (filter filter-function (flvector->list (nseries-data nseries))) #:index (build-nseries-index-from-predicate nseries filter-function)))
 
 (: nseries-filter-not (NSeries (Flonum -> Boolean) -> NSeries))

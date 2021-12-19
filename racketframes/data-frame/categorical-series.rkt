@@ -366,13 +366,35 @@
                    (display-val (if (cseries-value-is-null? cseries val) (cseries-custom-null-value cseries) val)))
               (displayln display-val)))))))
 
+(: build-cseries-index-from-predicate (CSeries (Label -> Boolean) -> RFIndex))
+(define (build-cseries-index-from-predicate cseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (cseries-data cseries)]
+      [n (in-naturals)]
+      #:when (pred val))
+     (if (cseries-index cseries)
+         (idx->key (assert (cseries-index cseries)) (assert n index?))
+         (assert n index?)))))
+
 (: cseries-filter (CSeries (Label -> Boolean) -> CSeries))
 (define (cseries-filter cseries filter-function)
   ; need to use new filtered data to get the new index
   ; setting #f is naive
   ; TODO filter index as well
-  (new-CSeries (vector-filter filter-function (cseries-data cseries))))
+  (new-CSeries (vector-filter filter-function (cseries-data cseries)) #:index (build-cseries-index-from-predicate cseries filter-function)))
+
+(: build-cseries-index-from-predicate-not (CSeries (Label -> Boolean) -> RFIndex))
+(define (build-cseries-index-from-predicate-not cseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (cseries-data cseries)]
+      [n (in-naturals)]
+      #:when (not (pred val)))
+     (if (cseries-index cseries)
+         (idx->key (assert (cseries-index cseries)) (assert n index?))
+         (assert n index?)))))      
 
 (: cseries-filter-not (CSeries (Label -> Boolean) -> CSeries))
 (define (cseries-filter-not cseries filter-function)
-  (new-CSeries (vector-filter-not filter-function (cseries-data cseries))))
+  (new-CSeries (vector-filter-not filter-function (cseries-data cseries))  #:index (build-cseries-index-from-predicate-not cseries filter-function)))

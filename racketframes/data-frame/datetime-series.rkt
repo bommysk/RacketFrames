@@ -622,14 +622,36 @@
 ; ***********************************************************
 
 ; ***********************************************************
+(: build-datetime-series-index-from-predicate (DatetimeSeries (RFDatetime -> Boolean) -> RFIndex))
+(define (build-datetime-series-index-from-predicate datetime-series pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([i (datetime-series-data datetime-series)]
+      [n (in-naturals)]
+      #:when (pred i))
+     (if (datetime-series-index datetime-series)
+         (idx->key (assert (datetime-series-index datetime-series)) (assert n index?))
+         (assert n index?)))))
+
 (: datetime-series-filter (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries))
 (define (datetime-series-filter datetime-series filter-function)
   ; need to use new filtered data to get the new index
   ; setting #f is naive
   ; TODO filter index as well
-  (new-DatetimeSeries (vector-filter filter-function (datetime-series-data datetime-series))))
+  (new-DatetimeSeries (vector-filter filter-function (datetime-series-data datetime-series)) #:index (build-datetime-series-index-from-predicate datetime-series filter-function)))
+
+(: build-datetime-series-index-from-predicate-not (DatetimeSeries (RFDatetime -> Boolean) -> RFIndex))
+(define (build-datetime-series-index-from-predicate-not datetime-series pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([i (datetime-series-data datetime-series)]
+      [n (in-naturals)]
+      #:when (not (pred i)))
+     (if (datetime-series-index datetime-series)
+         (idx->key (assert (datetime-series-index datetime-series)) (assert n index?))
+         (assert n index?)))))
 
 (: datetime-series-filter-not (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries))
 (define (datetime-series-filter-not datetime-series filter-function)
-  (new-DatetimeSeries (vector-filter-not filter-function (datetime-series-data datetime-series))))
+  (new-DatetimeSeries (vector-filter-not filter-function (datetime-series-data datetime-series)) #:index (build-datetime-series-index-from-predicate-not datetime-series filter-function)))
 ; ***********************************************************
