@@ -26,7 +26,9 @@
  [cseries-print (CSeries [#:output-port Output-Port] -> Void)]
  [cseries-loc-boolean (CSeries (Listof Boolean) -> (U Label CSeries))]
  [cseries-loc (CSeries (U Label (Listof Label) (Listof Boolean)) -> (U Label CSeries))]
- [cseries-loc-multi-index (CSeries (U (Listof String) ListofListofString) -> (U Label CSeries))])
+ [cseries-loc-multi-index (CSeries (U (Listof String) ListofListofString) -> (U Label CSeries))]
+ [cseries-filter (CSeries (Label -> Boolean) -> CSeries)]
+ [cseries-filter-not (CSeries (Label -> Boolean) -> CSeries)])
 
 (require
  (only-in "indexed-series.rkt"
@@ -229,7 +231,7 @@
 (define (cseries-loc cseries label)
   (unless (CSeries-index cseries)
     (let ((k (current-continuation-marks)))
-      (raise (make-exn:fail:contract "iseries must have an index." k))))
+      (raise (make-exn:fail:contract "cseries must have an index." k))))
 
   (if (ListofBoolean? label)
       (cseries-loc-boolean cseries label)
@@ -363,3 +365,14 @@
             (let* ((val (vector-ref nominals (vector-ref data i)))
                    (display-val (if (cseries-value-is-null? cseries val) (cseries-custom-null-value cseries) val)))
               (displayln display-val)))))))
+
+(: cseries-filter (CSeries (Label -> Boolean) -> CSeries))
+(define (cseries-filter cseries filter-function)
+  ; need to use new filtered data to get the new index
+  ; setting #f is naive
+  ; TODO filter index as well
+  (new-CSeries (vector-filter filter-function (cseries-data cseries))))
+
+(: cseries-filter-not (CSeries (Label -> Boolean) -> CSeries))
+(define (cseries-filter-not cseries filter-function)
+  (new-CSeries (vector-filter-not filter-function (cseries-data cseries))))

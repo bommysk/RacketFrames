@@ -34,20 +34,20 @@
   (only-in "generic-series.rkt"
            GenericType GenSeries GenSeries? new-GenSeries gen-series-length gen-series-data gen-series-index gen-series-iref in-gen-series
            set-GenSeries-index gen-series-loc-boolean gen-series-loc gen-series-loc-multi-index gen-series-iloc gen-series-index-ref
-           set-GenSeries-null-value set-GenSeries-any-null-value-inplace gen-series-null-value gen-series-referencer map/gen-s)
+           set-GenSeries-null-value set-GenSeries-any-null-value-inplace gen-series-null-value gen-series-referencer map/gen-s gen-series-filter)
   (only-in "categorical-series.rkt"
            CSeries CSeries? new-CSeries cseries-length cseries-data cseries-index cseries-iref in-cseries set-CSeries-index
            cseries-referencer cseries-loc-boolean cseries-iloc cseries-loc cseries-loc-multi-index cseries-index-ref
-           set-CSeries-null-value cseries-null-value cseries-groupby cseries-grouphash)
+           set-CSeries-null-value cseries-null-value cseries-groupby cseries-grouphash cseries-filter cseries-filter-not)
   (only-in "series-iter.rkt" cseries-map)
   (only-in "numeric-series.rkt"
            NSeries NSeries? new-NSeries nseries-length nseries-data nseries-index nseries-iref nseries-referencer in-nseries
            set-NSeries-index nseries-loc-boolean nseries-loc nseries-loc-multi-index nseries-iloc nseries-index-ref list->flvector flvector->list
-           set-NSeries-null-value nseries-null-value nseries-groupby nseries-grouphash flvector->vector map/ns)
+           set-NSeries-null-value nseries-null-value nseries-groupby nseries-grouphash flvector->vector map/ns nseries-filter)
   (only-in "integer-series.rkt"
            ISeries ISeries? new-ISeries iseries-length iseries-data iseries-index in-iseries iseries-iref iseries-referencer
            set-ISeries-index iseries-loc-boolean iseries-loc iseries-loc-multi-index iseries-iloc iseries-index-ref RFFixnum RFFixnum?
-           set-ISeries-null-value iseries-null-value iseries-groupby iseries-grouphash map/is)
+           set-ISeries-null-value iseries-null-value iseries-groupby iseries-grouphash map/is iseries-filter)
   (only-in "boolean-series.rkt"
            BSeries BSeries? new-BSeries bseries-length bseries-data bseries-index bseries-iref in-bseries bseries-referencer
            set-BSeries-index bseries-loc-boolean bseries-loc bseries-loc-multi-index bseries-iloc bseries-index-ref
@@ -422,3 +422,31 @@
     [(DatetimeSeries? series) (in-datetime-series (assert val Datetime?) (assert series DatetimeSeries?))]
     [(DateSeries? series) (in-date-series (assert val date?) (assert series DateSeries?))]
     [else (error "Unknown or not supported series type in DataFrame")]))
+
+;define-type does not deliver this level of granularity when it comes to procedures. Even moreover, the brief false hope that we might easily wring such type differentiation for procedures manually using define-predicate is dashed by:
+;Evaluates to a predicate for the type t, with the type (Any -> Boolean : t). t may not contain function types, or types that may refer to mutable data such as (Vectorof Integer). So we need to do assert checks in filter procedure.
+
+;(define-type Gen->Bool (GenericType -> Boolean))
+;(define-type RFFixnum->Bool (RFFixnum -> Boolean))
+;(define-predicate RFFixnum->Bool? RFFixnum->Bool)
+(: series-filter ((GenericType -> Boolean) Series -> Series))
+(define (series-filter filter-procedure series)
+  (cond
+    [(GenSeries? series) (gen-series-filter (assert series GenSeries?) filter-procedure)]
+    [(NSeries? series) (nseries-filter (assert series NSeries?) filter-procedure)]
+    [(CSeries? series) (cseries-filter (assert series CSeries?) filter-procedure)]   
+    [(ISeries? series) (iseries-filter (assert series ISeries?) filter-procedure)]
+    ;[(BSeries? series) (in-bseries (assert val boolean?) (assert series BSeries?))]
+    ;[(DatetimeSeries? series) (in-datetime-series (assert val Datetime?) (assert series DatetimeSeries?))]
+    ;[(DateSeries? series) (in-date-series (assert val date?) (assert series DateSeries?))]
+    [else (error "Unknown or not supported series type in DataFrame")]))
+
+(series-filter (lambda ([x : GenericType]) (even? (assert x fixnum?))) (new-series (list 1 2 3 4 5)))
+
+(series-filter (lambda ([x : GenericType]) (> (assert x flonum?) 2)) (new-series (list 1 2 3.2 4 5.8)))
+
+; FUTURE WORK ;
+;(: re-align-series-index (Series RFIndex))
+; loop through series and grab positional index and use idx->key function to get the matching index value
+; this is especially useful if series has been modified or filtered and the new index needs to be set
+; accordingly

@@ -45,6 +45,8 @@
  [nseries-groupby (NSeries [#:by-value Boolean] -> GroupHash)]
  [apply-agg-nseries (Symbol GroupHash -> GenSeries)]
  [nseries-index (NSeries -> (U False RFIndex))]
+ [nseries-filter (NSeries (Flonum -> Boolean) -> NSeries)]
+ [nseries-filter-not (NSeries (Flonum -> Boolean) -> NSeries)]
  [map/ns (NSeries (Flonum -> Flonum) -> NSeries)]
  [bop/ns (NSeries NSeries (Flonum Flonum -> Flonum) -> NSeries)]
  [+/ns (NSeries NSeries -> NSeries)]
@@ -933,3 +935,14 @@
                                   [else (error 'apply-agg-data-frame "Unknown aggregate function.")])))))
 
   (agg-value-hash-to-gen-series agg-value-hash))
+
+(: nseries-filter (NSeries (Flonum -> Boolean) -> NSeries))
+(define (nseries-filter nseries filter-function)
+  ; need to use new filtered data to get the new index
+  ; setting #f is naive
+  ; TODO filter index as well
+  (new-NSeries (filter filter-function (flvector->list (nseries-data nseries)))))
+
+(: nseries-filter-not (NSeries (Flonum -> Boolean) -> NSeries))
+(define (nseries-filter-not nseries filter-function)
+  (new-NSeries (filter-not filter-function (flvector->list (nseries-data nseries)))))

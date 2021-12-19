@@ -330,16 +330,19 @@
 (println "TOTAL EMPLOYMENT DATAFRAME")
 (data-frame-head employment-df)
 
-(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Sex))))
+
+(data-frame-head max-by-country-area-df)
+;(series-filter (series-data (data-frame-series-ref max-by-country-area-df 'Value)))
 
 (show-data-frame-description (data-frame-description max-by-country-area-df))
 
-(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
+;(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
 
-(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
+;(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
 
-(println "HIGHEST VALUE FOR JAMAICA")
-(series-loc (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?) 'Value)
+;(println "HIGHEST VALUE FOR JAMAICA")
+;(series-loc (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?) 'Value)
 
 (data-frame-write-delim data-frame-from-hash)
 (data-frame-groupby data-frame-from-hash (list 'd))

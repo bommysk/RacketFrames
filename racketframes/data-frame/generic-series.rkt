@@ -50,7 +50,9 @@
  [gen-series-iloc (GenSeries (U Index (Listof Index)) -> (U GenericType GenSeries))]
  [gen-series-iloc-range (GenSeries Index Index -> GenSeries)]
  [map/gen-s (GenSeries (GenericType -> GenericType) -> GenSeries)]
- [gen-series-print (GenSeries [#:output-port Output-Port] -> Void)])
+ [gen-series-print (GenSeries [#:output-port Output-Port] -> Void)]
+ [gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries)]
+ [gen-series-filter-not (GenSeries (GenericType -> Boolean) -> GenSeries)])
 
 ; ***********************************************************
 (define DEFAULT_NULL_VALUE : GenericType null)
@@ -354,4 +356,17 @@
                   (display (assert i index?) port))
               (display " " port)
               (displayln val port)))))))
+; ***********************************************************
+
+; ***********************************************************
+(: gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries))
+(define (gen-series-filter gen-series filter-function)
+  ; need to use new filtered data to get the new index
+  ; setting #f is naive
+  ; TODO filter index as well
+  (new-GenSeries (vector-filter filter-function (gen-series-data gen-series))))
+
+(: gen-series-filter-not (GenSeries (GenericType -> Boolean) -> GenSeries))
+(define (gen-series-filter-not gen-series filter-function)
+  (new-GenSeries (vector-filter-not filter-function (gen-series-data gen-series))))
 ; ***********************************************************

@@ -593,6 +593,7 @@
 (define (iseries-filter iseries filter-function)
   ; need to use new filtered data to get the new index
   ; setting #f is naive
+  ; TODO filter index as well
   (new-ISeries (vector-filter filter-function (iseries-data iseries))))
 
 (: iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries))
