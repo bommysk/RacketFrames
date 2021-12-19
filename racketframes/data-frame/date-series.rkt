@@ -70,7 +70,10 @@
  [set-DateSeries-null-value (DateSeries RFNULL -> DateSeries)]
  [set-DateSeries-date-null-value-inplace (DateSeries date -> Void)]
 
- [derive-date-value (DateSeries RFDate -> date)])
+ [derive-date-value (DateSeries RFDate -> date)]
+
+ [date-series-filter (DateSeries (RFDate -> Boolean) -> DateSeries)]
+ [date-series-filter-not (DateSeries (RFDate -> Boolean) -> DateSeries)])
 ; ***********************************************************
 
 #|
@@ -622,3 +625,15 @@
 
 ; ***********************************************************
 
+; ***********************************************************
+(: date-series-filter (DateSeries (RFDate -> Boolean) -> DateSeries))
+(define (date-series-filter date-series filter-function)
+  ; need to use new filtered data to get the new index
+  ; setting #f is naive
+  ; TODO filter index as well
+  (new-DateSeries (vector-filter filter-function (date-series-data date-series))))
+
+(: date-series-filter-not (DateSeries (RFDate -> Boolean) -> DateSeries))
+(define (date-series-filter-not date-series filter-function)
+  (new-DateSeries (vector-filter-not filter-function (date-series-data date-series))))
+; ***********************************************************

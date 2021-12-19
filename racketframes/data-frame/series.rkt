@@ -19,7 +19,8 @@
  [has-series-index? (Series -> Boolean)]
  [in-series (GenericType Series -> Boolean)]
  [indexable-series->index (IndexableSeries -> RFIndex)]
- [series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector) -> (Sequenceof IndexDataType))])
+ [series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector) -> (Sequenceof IndexDataType))]
+ (series-filter ((GenericType -> Boolean) Series -> Series)))
 
 
 (require
@@ -56,12 +57,12 @@
           DatetimeSeries DatetimeSeries? new-DatetimeSeries DatetimeSeries-index DatetimeSeries-data datetime-series-length datetime-series-data datetime-series-index
           datetime-series-iref datetime-series-referencer in-datetime-series
           set-DatetimeSeries-index datetime-series-loc-boolean datetime-series-loc datetime-series-loc-multi-index datetime-series-iloc datetime-series-index-ref datetime-series-groupby
-          set-DatetimeSeries-null-value datetime-series-null-value datetime-series-grouphash RFDatetime RFDatetime? map/datetime-series-data)
+          set-DatetimeSeries-null-value datetime-series-null-value datetime-series-grouphash RFDatetime RFDatetime? map/datetime-series-data datetime-series-filter)
   (only-in "date-series.rkt"
            DateSeries DateSeries? new-DateSeries DateSeries-index DateSeries-data date-series-length date-series-data date-series-index date-series-iref date-series-referencer
            in-date-series date-series-groupby date-series-grouphash
            set-DateSeries-index set-DateSeries-null-value date-series-null-value date-series-loc-boolean date-series-loc date-series-loc-multi-index date-series-iloc date-series-index-ref
-           RFDate RFDate? map/date-series-data)
+           RFDate RFDate? map/date-series-data date-series-filter)
   
   (only-in "series-builder.rkt" SeriesBuilder)
   (only-in "generic-series-builder.rkt"
@@ -436,14 +437,10 @@
     [(NSeries? series) (nseries-filter (assert series NSeries?) filter-procedure)]
     [(CSeries? series) (cseries-filter (assert series CSeries?) filter-procedure)]   
     [(ISeries? series) (iseries-filter (assert series ISeries?) filter-procedure)]
-    ;[(BSeries? series) (in-bseries (assert val boolean?) (assert series BSeries?))]
-    ;[(DatetimeSeries? series) (in-datetime-series (assert val Datetime?) (assert series DatetimeSeries?))]
-    ;[(DateSeries? series) (in-date-series (assert val date?) (assert series DateSeries?))]
+    ;[(BSeries? series) (bseries-filter (assert series BSeries?) filter-procedure)]
+    [(DatetimeSeries? series) (datetime-series-filter (assert series DatetimeSeries?) filter-procedure)]
+    [(DateSeries? series) (date-series-filter (assert series DateSeries?) filter-procedure)]
     [else (error "Unknown or not supported series type in DataFrame")]))
-
-(series-filter (lambda ([x : GenericType]) (even? (assert x fixnum?))) (new-series (list 1 2 3 4 5)))
-
-(series-filter (lambda ([x : GenericType]) (> (assert x flonum?) 2)) (new-series (list 1 2 3.2 4 5.8)))
 
 ; FUTURE WORK ;
 ;(: re-align-series-index (Series RFIndex))

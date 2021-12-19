@@ -936,12 +936,23 @@
 
   (agg-value-hash-to-gen-series agg-value-hash))
 
+(: build-nseries-index-from-predicate (NSeries (Flonum -> Boolean) -> RFIndex))
+(define (build-nseries-index-from-predicate nseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([i (flvector->list (nseries-data nseries))]
+      [n (in-naturals)]
+      #:when (pred (assert i flonum?)))
+     (if (nseries-index nseries)
+         (idx->key (assert (nseries-index nseries)) (assert n index?))
+         (assert n index?)))))
+
 (: nseries-filter (NSeries (Flonum -> Boolean) -> NSeries))
 (define (nseries-filter nseries filter-function)
   ; need to use new filtered data to get the new index
   ; setting #f is naive
   ; TODO filter index as well
-  (new-NSeries (filter filter-function (flvector->list (nseries-data nseries)))))
+  (new-NSeries (filter filter-function (flvector->list (nseries-data nseries))) #:index (build-nseries-index-from-predicate nseries filter-function)))
 
 (: nseries-filter-not (NSeries (Flonum -> Boolean) -> NSeries))
 (define (nseries-filter-not nseries filter-function)

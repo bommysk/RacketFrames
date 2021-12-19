@@ -589,12 +589,23 @@
 ; ***********************************************************
 
 ; ***********************************************************
+(: build-iseries-index-from-predicate (ISeries (RFFixnum -> Boolean) -> RFIndex))
+(define (build-iseries-index-from-predicate iseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([i (iseries-data iseries)]
+      [n (in-naturals)]
+      #:when (pred (assert i RFFixnum?)))
+     (if (iseries-index iseries)
+         (idx->key (assert (iseries-index iseries)) (assert n index?))
+         (assert n index?)))))
+
 (: iseries-filter (ISeries (RFFixnum -> Boolean) -> ISeries))
 (define (iseries-filter iseries filter-function)
   ; need to use new filtered data to get the new index
   ; setting #f is naive
-  ; TODO filter index as well
-  (new-ISeries (vector-filter filter-function (iseries-data iseries))))
+  ; TODO filter index as well  
+  (new-ISeries (vector-filter filter-function (iseries-data iseries)) #:index (build-iseries-index-from-predicate iseries filter-function)))
 
 (: iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries))
 (define (iseries-filter-not iseries filter-function)

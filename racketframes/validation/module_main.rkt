@@ -357,3 +357,7 @@
 (series-loc (new-series (list 1 2 3) #:index (build-multi-index-from-list (list (list 'a 'b 'c) (list ':5 5 5)))) 'a:::5::)
 
 (data-frame-write-delim (data-frame-apply (apply-agg-data-frame 'mean (data-frame-groupby data-frame-from-hash (list 'd))) (lambda ([val : Any]) (add1 (assert val number?)))))
+
+(series-print (series-filter (lambda ([x : GenericType]) (even? (assert x fixnum?))) (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e))))
+
+(series-print (series-filter (lambda ([x : GenericType]) (> (assert x flonum?) 2)) (new-series (list 1 2 3.2 4 5.8))))

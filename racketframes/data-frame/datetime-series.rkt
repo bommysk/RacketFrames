@@ -72,7 +72,9 @@
 
  [datetime-series-groupby (DatetimeSeries [#:by-value Boolean] -> GroupHash)]
  [set-DatetimeSeries-null-value (DatetimeSeries RFNULL -> DatetimeSeries)]
- [set-DatetimeSeries-datetime-null-value-inplace (DatetimeSeries Datetime -> Void)])
+ [set-DatetimeSeries-datetime-null-value-inplace (DatetimeSeries Datetime -> Void)]
+ [datetime-series-filter (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries)]
+ [datetime-series-filter-not (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries)])
 ; ***********************************************************
 
 (define-type RFDatetime (U Datetime RFNoData))
@@ -619,3 +621,15 @@
 
 ; ***********************************************************
 
+; ***********************************************************
+(: datetime-series-filter (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries))
+(define (datetime-series-filter datetime-series filter-function)
+  ; need to use new filtered data to get the new index
+  ; setting #f is naive
+  ; TODO filter index as well
+  (new-DatetimeSeries (vector-filter filter-function (datetime-series-data datetime-series))))
+
+(: datetime-series-filter-not (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries))
+(define (datetime-series-filter-not datetime-series filter-function)
+  (new-DatetimeSeries (vector-filter-not filter-function (datetime-series-data datetime-series))))
+; ***********************************************************
