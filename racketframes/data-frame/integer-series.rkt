@@ -603,8 +603,7 @@
 (: iseries-filter (ISeries (RFFixnum -> Boolean) -> ISeries))
 (define (iseries-filter iseries filter-function)
   ; need to use new filtered data to get the new index
-  ; setting #f is naive
-  ; TODO filter index as well  
+  ; setting #f is naive  
   (new-ISeries (vector-filter filter-function (iseries-data iseries)) #:index (build-iseries-index-from-predicate iseries filter-function)))
 
 (: build-iseries-index-from-predicate-not (ISeries (RFFixnum -> Boolean) -> RFIndex))

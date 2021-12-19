@@ -52,7 +52,7 @@
   (only-in "boolean-series.rkt"
            BSeries BSeries? new-BSeries bseries-length bseries-data bseries-index bseries-iref in-bseries bseries-referencer
            set-BSeries-index bseries-loc-boolean bseries-loc bseries-loc-multi-index bseries-iloc bseries-index-ref
-           set-BSeries-null-value bseries-null-value bseries-groupby bseries-grouphash map/bs)
+           set-BSeries-null-value bseries-null-value bseries-groupby bseries-grouphash map/bs bseries-filter)
   (only-in "datetime-series.rkt"
           DatetimeSeries DatetimeSeries? new-DatetimeSeries DatetimeSeries-index DatetimeSeries-data datetime-series-length datetime-series-data datetime-series-index
           datetime-series-iref datetime-series-referencer in-datetime-series
@@ -437,7 +437,7 @@
     [(NSeries? series) (nseries-filter (assert series NSeries?) filter-procedure)]
     [(CSeries? series) (cseries-filter (assert series CSeries?) filter-procedure)]   
     [(ISeries? series) (iseries-filter (assert series ISeries?) filter-procedure)]
-    ;[(BSeries? series) (bseries-filter (assert series BSeries?) filter-procedure)]
+    [(BSeries? series) (bseries-filter (assert series BSeries?) filter-procedure)]
     [(DatetimeSeries? series) (datetime-series-filter (assert series DatetimeSeries?) filter-procedure)]
     [(DateSeries? series) (date-series-filter (assert series DateSeries?) filter-procedure)]
     [else (error "Unknown or not supported series type in DataFrame")]))
