@@ -72,7 +72,11 @@
 
  [datetime-series-groupby (DatetimeSeries [#:by-value Boolean] -> GroupHash)]
  [set-DatetimeSeries-null-value (DatetimeSeries RFNULL -> DatetimeSeries)]
- [set-DatetimeSeries-datetime-null-value-inplace (DatetimeSeries Datetime -> Void)])
+ [set-DatetimeSeries-datetime-null-value-inplace (DatetimeSeries Datetime -> Void)]
+ [datetime-series-index-from-predicate (DatetimeSeries (RFDatetime -> Boolean) -> RFIndex)]
+ [datetime-series-data-idxes-from-predicate (DatetimeSeries (RFDatetime -> Boolean) -> (Listof Index))]
+ [datetime-series-filter (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries)]
+ [datetime-series-filter-not (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries)])
 ; ***********************************************************
 
 (define-type RFDatetime (U Datetime RFNoData))
@@ -619,3 +623,44 @@
 
 ; ***********************************************************
 
+; ***********************************************************
+(: datetime-series-index-from-predicate (DatetimeSeries (RFDatetime -> Boolean) -> RFIndex))
+(define (datetime-series-index-from-predicate datetime-series pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (datetime-series-data datetime-series)]
+      [n (in-naturals)]
+      #:when (pred (assert val date?)))
+     (if (datetime-series-index datetime-series)
+         (idx->key (assert (datetime-series-index datetime-series)) (assert n index?))
+         (assert n index?)))))
+
+(: datetime-series-data-idxes-from-predicate (DatetimeSeries (RFDatetime -> Boolean) -> (Listof Index)))
+(define (datetime-series-data-idxes-from-predicate datetime-series pred)    
+   (for/list : (Listof Index)
+     ([val (datetime-series-data datetime-series)]
+      [n (in-naturals)]
+      #:when (pred (assert val date?)))
+         (assert n index?)))
+
+(: datetime-series-filter (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries))
+(define (datetime-series-filter datetime-series filter-function)
+  ; need to use new filtered data to get the new index
+  ; setting #f is naive  
+  (new-DatetimeSeries (vector-filter filter-function (datetime-series-data datetime-series)) #:index (datetime-series-index-from-predicate datetime-series filter-function)))
+
+(: datetime-series-index-from-predicate-not (DatetimeSeries (RFDatetime -> Boolean) -> RFIndex))
+(define (datetime-series-index-from-predicate-not datetime-series pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (datetime-series-data datetime-series)]
+      [n (in-naturals)]
+      #:when (not (pred (assert val date?))))
+     (if (datetime-series-index datetime-series)
+         (idx->key (assert (datetime-series-index datetime-series)) (assert n index?))
+         (assert n index?)))))
+
+(: datetime-series-filter-not (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries))
+(define (datetime-series-filter-not datetime-series filter-function)
+  (new-DatetimeSeries (vector-filter-not filter-function (datetime-series-data datetime-series)) #:index (datetime-series-index-from-predicate-not datetime-series filter-function)))
+; ***********************************************************

@@ -75,6 +75,8 @@
  [iseries-print (ISeries [#:output-port Output-Port] -> Void)]
  [iseries-filter (ISeries (RFFixnum -> Boolean) -> ISeries)]
  [iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries)]
+ [iseries-data-idxes-from-predicate (ISeries (RFFixnum -> Boolean) -> (Listof Index))]
+ [iseries-index-from-predicate (ISeries (RFFixnum -> Boolean) -> RFIndex)]
  [fxvector->list (FxVector Fixnum -> (Listof Fixnum))]
  [list->fxvector ((Listof Fixnum) -> FxVector)]
  [iseries-notna (ISeries -> ISeries)]
@@ -589,15 +591,45 @@
 ; ***********************************************************
 
 ; ***********************************************************
+(: iseries-index-from-predicate (ISeries (RFFixnum -> Boolean) -> RFIndex))
+(define (iseries-index-from-predicate iseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (iseries-data iseries)]
+      [n (in-naturals)]
+      #:when (pred (assert val RFFixnum?)))
+     (if (iseries-index iseries)
+         (idx->key (assert (iseries-index iseries)) (assert n index?))
+         (assert n index?)))))
+
+(: iseries-data-idxes-from-predicate (ISeries (RFFixnum -> Boolean) -> (Listof Index)))
+(define (iseries-data-idxes-from-predicate iseries pred)    
+   (for/list : (Listof Index)
+     ([val (iseries-data iseries)]
+      [n (in-naturals)]
+      #:when (pred (assert val RFFixnum?)))
+         (assert n index?)))
+
 (: iseries-filter (ISeries (RFFixnum -> Boolean) -> ISeries))
 (define (iseries-filter iseries filter-function)
   ; need to use new filtered data to get the new index
-  ; setting #f is naive
-  (new-ISeries (vector-filter filter-function (iseries-data iseries))))
+  ; setting #f is naive  
+  (new-ISeries (vector-filter filter-function (iseries-data iseries)) #:index (iseries-index-from-predicate iseries filter-function)))
+
+(: iseries-index-from-predicate-not (ISeries (RFFixnum -> Boolean) -> RFIndex))
+(define (iseries-index-from-predicate-not iseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (iseries-data iseries)]
+      [n (in-naturals)]
+      #:when (not (pred (assert val RFFixnum?))))
+     (if (iseries-index iseries)
+         (idx->key (assert (iseries-index iseries)) (assert n index?))
+         (assert n index?)))))
 
 (: iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries))
 (define (iseries-filter-not iseries filter-function)
-  (new-ISeries (vector-filter-not filter-function (iseries-data iseries))))
+  (new-ISeries (vector-filter-not filter-function (iseries-data iseries)) #:index (iseries-index-from-predicate-not iseries filter-function)))
 ; ***********************************************************
 
 ; ***********************************************************

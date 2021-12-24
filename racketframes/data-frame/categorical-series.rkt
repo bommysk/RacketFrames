@@ -26,7 +26,11 @@
  [cseries-print (CSeries [#:output-port Output-Port] -> Void)]
  [cseries-loc-boolean (CSeries (Listof Boolean) -> (U Label CSeries))]
  [cseries-loc (CSeries (U Label (Listof Label) (Listof Boolean)) -> (U Label CSeries))]
- [cseries-loc-multi-index (CSeries (U (Listof String) ListofListofString) -> (U Label CSeries))])
+ [cseries-loc-multi-index (CSeries (U (Listof String) ListofListofString) -> (U Label CSeries))]
+ [cseries-filter (CSeries (Label -> Boolean) -> CSeries)]
+ [cseries-filter-not (CSeries (Label -> Boolean) -> CSeries)]
+ [cseries-index-from-predicate (CSeries (Label -> Boolean) -> RFIndex)]
+ [cseries-data-idxes-from-predicate (CSeries (Label -> Boolean) -> (Listof Index))])
 
 (require
  (only-in "indexed-series.rkt"
@@ -229,7 +233,7 @@
 (define (cseries-loc cseries label)
   (unless (CSeries-index cseries)
     (let ((k (current-continuation-marks)))
-      (raise (make-exn:fail:contract "iseries must have an index." k))))
+      (raise (make-exn:fail:contract "cseries must have an index." k))))
 
   (if (ListofBoolean? label)
       (cseries-loc-boolean cseries label)
@@ -363,3 +367,51 @@
             (let* ((val (vector-ref nominals (vector-ref data i)))
                    (display-val (if (cseries-value-is-null? cseries val) (cseries-custom-null-value cseries) val)))
               (displayln display-val)))))))
+
+(: cseries-index-from-predicate (CSeries (Label -> Boolean) -> RFIndex))
+(define (cseries-index-from-predicate cseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (cseries-data cseries)]
+      [n (in-naturals)]
+      #:when (pred (assert val date?)))
+     (if (cseries-index cseries)
+         (idx->key (assert (cseries-index cseries)) (assert n index?))
+         (assert n index?)))))
+
+(: cseries-data-idxes-from-predicate (CSeries (Label -> Boolean) -> (Listof Index)))
+(define (cseries-data-idxes-from-predicate cseries pred)    
+   (for/list : (Listof Index)
+     ([val (cseries-data cseries)]
+      [n (in-naturals)]
+      #:when (pred (assert val date?)))
+         (assert n index?)))
+
+(: cseries-data-idxes-from-predicate-not (CSeries (Label -> Boolean) -> (Listof Index)))
+(define (cseries-data-idxes-from-predicate-not cseries pred)    
+   (for/list : (Listof Index)
+     ([val (cseries-data cseries)]
+      [n (in-naturals)]
+      #:when (not (pred (assert val date?))))
+         (assert n index?)))
+
+(: cseries-filter (CSeries (Label -> Boolean) -> CSeries))
+(define (cseries-filter cseries filter-function)
+  ; need to use new filtered data to get the new index
+  ; setting #f is naive  
+  (new-CSeries (vector-filter filter-function (cseries-data cseries)) #:index (cseries-index-from-predicate cseries filter-function)))
+
+(: cseries-index-from-predicate-not (CSeries (Label -> Boolean) -> RFIndex))
+(define (cseries-index-from-predicate-not cseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (cseries-data cseries)]
+      [n (in-naturals)]
+      #:when (not (pred (assert val date?))))
+     (if (cseries-index cseries)
+         (idx->key (assert (cseries-index cseries)) (assert n index?))
+         (assert n index?)))))
+
+(: cseries-filter-not (CSeries (Label -> Boolean) -> CSeries))
+(define (cseries-filter-not cseries filter-function)
+  (new-CSeries (vector-filter-not filter-function (cseries-data cseries)) #:index (cseries-index-from-predicate-not cseries filter-function)))

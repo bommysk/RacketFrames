@@ -45,6 +45,11 @@
  [nseries-groupby (NSeries [#:by-value Boolean] -> GroupHash)]
  [apply-agg-nseries (Symbol GroupHash -> GenSeries)]
  [nseries-index (NSeries -> (U False RFIndex))]
+ [nseries-index-from-predicate (NSeries (Flonum -> Boolean) -> RFIndex)]
+ [nseries-index-from-predicate-not (NSeries (Flonum -> Boolean) -> RFIndex)]
+ [nseries-data-idxes-from-predicate (NSeries (Flonum -> Boolean) -> (Listof Index))]
+ [nseries-filter (NSeries (Flonum -> Boolean) -> NSeries)]
+ [nseries-filter-not (NSeries (Flonum -> Boolean) -> NSeries)]
  [map/ns (NSeries (Flonum -> Flonum) -> NSeries)]
  [bop/ns (NSeries NSeries (Flonum Flonum -> Flonum) -> NSeries)]
  [+/ns (NSeries NSeries -> NSeries)]
@@ -933,3 +938,45 @@
                                   [else (error 'apply-agg-data-frame "Unknown aggregate function.")])))))
 
   (agg-value-hash-to-gen-series agg-value-hash))
+
+; ***********************************************************
+(: nseries-index-from-predicate (NSeries (Flonum -> Boolean) -> RFIndex))
+(define (nseries-index-from-predicate nseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (flvector->list (nseries-data nseries))]
+      [n (in-naturals)]
+      #:when (pred (assert val flonum?)))
+     (if (nseries-index nseries)
+         (idx->key (assert (nseries-index nseries)) (assert n index?))
+         (assert n index?)))))
+
+(: nseries-index-from-predicate-not (NSeries (Flonum -> Boolean) -> RFIndex))
+(define (nseries-index-from-predicate-not nseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (flvector->list (nseries-data nseries))]
+      [n (in-naturals)]
+      #:when (not (pred (assert val flonum?))))
+     (if (nseries-index nseries)
+         (idx->key (assert (nseries-index nseries)) (assert n index?))
+         (assert n index?)))))
+
+(: nseries-data-idxes-from-predicate (NSeries (Flonum -> Boolean) -> (Listof Index)))
+(define (nseries-data-idxes-from-predicate nseries pred)    
+   (for/list : (Listof Index)
+     ([val (flvector->list (nseries-data nseries))]
+      [n (in-naturals)]
+      #:when (pred (assert val flonum?)))
+         (assert n index?)))
+
+(: nseries-filter (NSeries (Flonum -> Boolean) -> NSeries))
+(define (nseries-filter nseries filter-function)
+  ; need to use new filtered data to get the new index
+  ; setting #f is naive
+  (new-NSeries (filter filter-function (flvector->list (nseries-data nseries))) #:index (nseries-index-from-predicate nseries filter-function)))
+
+(: nseries-filter-not (NSeries (Flonum -> Boolean) -> NSeries))
+(define (nseries-filter-not nseries filter-function)
+  (new-NSeries (filter-not filter-function (flvector->list (nseries-data nseries))) #:index (nseries-index-from-predicate-not nseries filter-function)))
+; ***********************************************************

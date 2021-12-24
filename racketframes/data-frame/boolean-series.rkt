@@ -39,7 +39,11 @@
  [bseries-iloc (BSeries (U Index (Listof Index)) -> (U Boolean BSeries))]
  [bseries-iloc-range (BSeries Index Index -> BSeries)]
  [bseries-not (BSeries -> BSeries)]
- [bseries-print (BSeries [#:output-port Output-Port] -> Void)])
+ [bseries-print (BSeries [#:output-port Output-Port] -> Void)]
+ [bseries-filter (BSeries (Boolean -> Boolean) -> BSeries)]
+ [bseries-filter-not (BSeries (Boolean -> Boolean) -> BSeries)]
+ [bseries-index-from-predicate (BSeries (Boolean -> Boolean) -> RFIndex)]
+ [bseries-data-idxes-from-predicate (BSeries (Boolean -> Boolean) -> (Listof Index))])
 ; ***********************************************************
 
 ; ***********************************************************
@@ -369,3 +373,45 @@
   (: inverted-boolean-vector (Vectorof Boolean))
   (define inverted-boolean-vector (vector-map (lambda ([b : Boolean]) (if b #f b)) (bseries-data bseries)))
   (new-BSeries inverted-boolean-vector #:index (bseries-index bseries)))
+
+; ***********************************************************
+(: bseries-index-from-predicate (BSeries (Boolean -> Boolean) -> RFIndex))
+(define (bseries-index-from-predicate bseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (bseries-data bseries)]
+      [n (in-naturals)]
+      #:when (pred (assert val date?)))
+     (if (bseries-index bseries)
+         (idx->key (assert (bseries-index bseries)) (assert n index?))
+         (assert n index?)))))
+
+(: bseries-data-idxes-from-predicate (BSeries (Boolean -> Boolean) -> (Listof Index)))
+(define (bseries-data-idxes-from-predicate bseries pred)    
+   (for/list : (Listof Index)
+     ([val (bseries-data bseries)]
+      [n (in-naturals)]
+      #:when (pred (assert val date?)))
+         (assert n index?)))
+
+(: bseries-filter (BSeries (Boolean -> Boolean) -> BSeries))
+(define (bseries-filter bseries filter-function)
+  ; need to use new filtered data to get the new index
+  ; setting #f is naive  
+  (new-BSeries (vector-filter filter-function (bseries-data bseries)) #:index (bseries-index-from-predicate bseries filter-function)))
+
+(: bseries-index-from-predicate-not (BSeries (Boolean -> Boolean) -> RFIndex))
+(define (bseries-index-from-predicate-not bseries pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (bseries-data bseries)]
+      [n (in-naturals)]
+      #:when (not (pred (assert val date?))))
+     (if (bseries-index bseries)
+         (idx->key (assert (bseries-index bseries)) (assert n index?))
+         (assert n index?)))))
+
+(: bseries-filter-not (BSeries (Boolean -> Boolean) -> BSeries))
+(define (bseries-filter-not bseries filter-function)
+  (new-BSeries (vector-filter-not filter-function (bseries-data bseries)) #:index (bseries-index-from-predicate-not bseries filter-function)))
+; ***********************************************************

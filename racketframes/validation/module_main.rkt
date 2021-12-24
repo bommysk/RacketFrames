@@ -330,16 +330,19 @@
 (println "TOTAL EMPLOYMENT DATAFRAME")
 (data-frame-head employment-df)
 
-(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Sex))))
+
+(data-frame-head max-by-country-area-df)
+;(series-filter (series-data (data-frame-series-ref max-by-country-area-df 'Value)))
 
 (show-data-frame-description (data-frame-description max-by-country-area-df))
 
-(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
+;(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
 
-(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
+;(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
 
-(println "HIGHEST VALUE FOR JAMAICA")
-(series-loc (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?) 'Value)
+;(println "HIGHEST VALUE FOR JAMAICA")
+;(series-loc (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?) 'Value)
 
 (data-frame-write-delim data-frame-from-hash)
 (data-frame-groupby data-frame-from-hash (list 'd))
@@ -354,3 +357,17 @@
 (series-loc (new-series (list 1 2 3) #:index (build-multi-index-from-list (list (list 'a 'b 'c) (list ':5 5 5)))) 'a:::5::)
 
 (data-frame-write-delim (data-frame-apply (apply-agg-data-frame 'mean (data-frame-groupby data-frame-from-hash (list 'd))) (lambda ([val : Any]) (add1 (assert val number?)))))
+
+(series-print (series-filter (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?)))))
+
+(series-print (series-filter (new-series (list 1 2 3.2 4 5.8)) (lambda ([x : GenericType]) (> (assert x flonum?) 2))))
+
+(data-frame-write-delim (data-frame-column-filter data-frame-from-hash (lambda ([x : GenericType]) (= (assert x real?) 10)) 'b))
+
+(index-idxes (get-series-index (new-series (list 0 1 2 3) #:index (list 'b 'a 'b 'c))))
+
+(data-frame-series-ref data-frame-from-hash 'b)
+
+(series-data-idxes-from-predicate (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?))))
+
+(get-series-index (series-filter (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?)))))
