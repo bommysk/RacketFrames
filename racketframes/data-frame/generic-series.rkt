@@ -369,7 +369,7 @@
    (for/list : (Listof IndexDataType)
      ([val (gen-series-data gen-series)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred val))
      (if (gen-series-index gen-series)
          (idx->key (assert (gen-series-index gen-series)) (assert n index?))
          (assert n index?)))))
@@ -379,7 +379,7 @@
    (for/list : (Listof Index)
      ([val (gen-series-data gen-series)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred val))
          (assert n index?)))
 
 (: gen-series-data-idxes-from-predicate-not (GenSeries (GenericType -> Boolean) -> (Listof Index)))
@@ -387,7 +387,7 @@
    (for/list : (Listof Index)
      ([val (gen-series-data gen-series)]
       [n (in-naturals)]
-      #:when (not (pred (assert val date?))))
+      #:when (not (pred val)))
          (assert n index?)))
 
 (: gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries))
@@ -402,7 +402,7 @@
    (for/list : (Listof IndexDataType)
      ([val (gen-series-data gen-series)]
       [n (in-naturals)]
-      #:when (not (pred (assert val date?))))
+      #:when (not (pred val)))
      (if (gen-series-index gen-series)
          (idx->key (assert (gen-series-index gen-series)) (assert n index?))
          (assert n index?)))))

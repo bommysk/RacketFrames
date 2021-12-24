@@ -330,6 +330,10 @@
 (println "TOTAL EMPLOYMENT DATAFRAME")
 (data-frame-head employment-df)
 
+(show-data-frame-description (data-frame-description employment-df))
+
+(data-frame-write-delim (data-frame-column-filter-not employment-df (lambda ([sex : Any]) (eq? (assert sex symbol?) '|Total men and women|)) 'Sex))
+
 (define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Sex))))
 
 (data-frame-head max-by-country-area-df)
