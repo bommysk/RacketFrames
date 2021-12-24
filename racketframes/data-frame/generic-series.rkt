@@ -41,9 +41,7 @@
  [gen-series-length (GenSeries -> Index)]
  [gen-series-referencer (GenSeries -> (Index -> GenericType))]
  [gen-series-data (GenSeries -> (Vectorof GenericType))]
- [gen-series-index (GenSeries -> (U False RFIndex))]
- [build-gen-series-index-from-predicate (GenSeries (GenericType -> Boolean) -> RFIndex)]
- [gen-series-data-idxes-from-predicate (GenSeries (GenericType -> Boolean) -> (Listof Index))]
+ [gen-series-index (GenSeries -> (U False RFIndex))] 
  [in-gen-series (GenericType GenSeries -> Boolean)]
  [gen-series-null-value (GenSeries -> GenericType)]
  [gen-series-loc-boolean (GenSeries (Listof Boolean) -> (U GenericType GenSeries))]
@@ -53,6 +51,8 @@
  [gen-series-iloc-range (GenSeries Index Index -> GenSeries)]
  [map/gen-s (GenSeries (GenericType -> GenericType) -> GenSeries)]
  [gen-series-print (GenSeries [#:output-port Output-Port] -> Void)]
+ [gen-series-index-from-predicate (GenSeries (GenericType -> Boolean) -> RFIndex)]
+ [gen-series-data-idxes-from-predicate (GenSeries (GenericType -> Boolean) -> (Listof Index))]
  [gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries)]
  [gen-series-filter-not (GenSeries (GenericType -> Boolean) -> GenSeries)])
 
@@ -361,13 +361,13 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: build-gen-series-index-from-predicate (GenSeries (GenericType -> Boolean) -> RFIndex))
-(define (build-gen-series-index-from-predicate gen-series pred)  
+(: gen-series-index-from-predicate (GenSeries (GenericType -> Boolean) -> RFIndex))
+(define (gen-series-index-from-predicate gen-series pred)  
   (build-index-from-list
    (for/list : (Listof IndexDataType)
-     ([i (gen-series-data gen-series)]
+     ([val (gen-series-data gen-series)]
       [n (in-naturals)]
-      #:when (pred i))
+      #:when (pred (assert val date?)))
      (if (gen-series-index gen-series)
          (idx->key (assert (gen-series-index gen-series)) (assert n index?))
          (assert n index?)))))
@@ -377,17 +377,27 @@
    (for/list : (Listof Index)
      ([val (gen-series-data gen-series)]
       [n (in-naturals)]
-      #:when (pred (assert val flonum?)))
+      #:when (pred (assert val date?)))
          (assert n index?)))
 
 (: gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries))
 (define (gen-series-filter gen-series filter-function)
   ; need to use new filtered data to get the new index
-  ; setting #f is naive
-  ; TODO filter index as well
-  (new-GenSeries (vector-filter filter-function (gen-series-data gen-series)) #:index (build-gen-series-index-from-predicate gen-series filter-function)))
+  ; setting #f is naive  
+  (new-GenSeries (vector-filter filter-function (gen-series-data gen-series)) #:index (gen-series-index-from-predicate gen-series filter-function)))
+
+(: gen-series-index-from-predicate-not (GenSeries (GenericType -> Boolean) -> RFIndex))
+(define (gen-series-index-from-predicate-not gen-series pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (gen-series-data gen-series)]
+      [n (in-naturals)]
+      #:when (not (pred (assert val date?))))
+     (if (gen-series-index gen-series)
+         (idx->key (assert (gen-series-index gen-series)) (assert n index?))
+         (assert n index?)))))
 
 (: gen-series-filter-not (GenSeries (GenericType -> Boolean) -> GenSeries))
 (define (gen-series-filter-not gen-series filter-function)
-  (new-GenSeries (vector-filter-not filter-function (gen-series-data gen-series))))
+  (new-GenSeries (vector-filter-not filter-function (gen-series-data gen-series)) #:index (gen-series-index-from-predicate-not gen-series filter-function)))
 ; ***********************************************************

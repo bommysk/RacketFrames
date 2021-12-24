@@ -368,5 +368,6 @@
 
 (data-frame-series-ref data-frame-from-hash 'b)
 
-
 (series-data-idxes-from-predicate (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?))))
+
+(get-series-index (series-filter (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?)))))

@@ -35,7 +35,8 @@
  (only-in "indexed-series.rkt"
 	  Label Labeling LabelProjection RFIndex index-idxes)
  (only-in "series.rkt"
-	  new-series get-series-index set-series-index series-complete series-data series-filter series-iloc)
+	  new-series get-series-index set-series-index series-complete series-data series-filter series-iloc
+          series-data-idxes-from-predicate)
  (only-in "series-description.rkt"
 	  SeriesType Series Series?
 	  SeriesDescription-type
@@ -496,14 +497,14 @@
 (: data-frame-column-filter (DataFrame (Any -> Boolean) Label -> DataFrame))
 (define (data-frame-column-filter data-frame filter-function name)
   (let* ((series : Series (data-frame-series-ref data-frame name))
-         (series-filtered : Series (series-filter filter-function series))
+         (series-filtered : Series (series-filter series filter-function))
          (filtered-index : RFIndex (get-series-index series-filtered))
-         (filtered-indexes (index-idxes filtered-index)))
+         (filtered-idxes : (Listof Index) (series-data-idxes-from-predicate series filter-function)))
     (new-data-frame 
      (map (λ: ((col : Column))           
             (cons (column-heading col)
                   ; filter to only values in index                    
-                  (assert (series-iloc (column-series col) filtered-indexes) Series?)))
+                  (assert (series-iloc (column-series col) filtered-idxes) Series?)))
           (data-frame-explode data-frame))
      #:index filtered-index)))
 

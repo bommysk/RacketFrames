@@ -20,8 +20,8 @@
  [in-series (GenericType Series -> Boolean)]
  [indexable-series->index (IndexableSeries -> RFIndex)]
  [series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector) -> (Sequenceof IndexDataType))]
- [series-data-idxes-from-predicate (Series (GenericType -> Boolean) -> Series)]
- (series-filter ((GenericType -> Boolean) Series -> Series)))
+ [series-data-idxes-from-predicate (Series (GenericType -> Boolean) -> (Listof Index))]
+ (series-filter (Series (GenericType -> Boolean) -> Series)))
 
 
 (require
@@ -41,7 +41,7 @@
   (only-in "categorical-series.rkt"
            CSeries CSeries? new-CSeries cseries-length cseries-data cseries-index cseries-iref in-cseries set-CSeries-index
            cseries-referencer cseries-loc-boolean cseries-iloc cseries-loc cseries-loc-multi-index cseries-index-ref
-           set-CSeries-null-value cseries-null-value cseries-groupby cseries-grouphash cseries-filter cseries-filter-not)
+           set-CSeries-null-value cseries-null-value cseries-groupby cseries-grouphash cseries-index-from-predicate cseries-data-idxes-from-predicate cseries-filter cseries-filter-not)
   (only-in "series-iter.rkt" cseries-map)
   (only-in "numeric-series.rkt"
            NSeries NSeries? new-NSeries nseries-length nseries-data nseries-index nseries-iref nseries-referencer in-nseries
@@ -430,8 +430,8 @@
 ;define-type does not deliver this level of granularity when it comes to procedures. Even moreover, the brief false hope that we might easily wring such type differentiation for procedures manually using define-predicate is dashed by:
 ;Evaluates to a predicate for the type t, with the type (Any -> Boolean : t). t may not contain function types, or types that may refer to mutable data such as (Vectorof Integer). So we need to do assert checks in filter procedure.
 
-(: series-index-from-predicate (Series (GenericType -> Boolean) -> Series))
-(define (series-index-from-predicate filter-procedure series)
+(: series-index-from-predicate (Series (GenericType -> Boolean) -> RFIndex))
+(define (series-index-from-predicate series filter-procedure)
   (cond
     [(GenSeries? series) (gen-series-index-from-predicate (assert series GenSeries?) filter-procedure)]
     [(NSeries? series) (nseries-index-from-predicate (assert series NSeries?) filter-procedure)]
@@ -442,8 +442,8 @@
     [(DateSeries? series) (date-series-index-from-predicate (assert series DateSeries?) filter-procedure)]
     [else (error "Unknown or unsupported series type.")]))
 
-(: series-data-idxes-from-predicate (Series (GenericType -> Boolean) -> Series))
-(define (series-data-idxes-from-predicate filter-procedure series)
+(: series-data-idxes-from-predicate (Series (GenericType -> Boolean) -> (Listof Index)))
+(define (series-data-idxes-from-predicate series filter-procedure)
   (cond
     [(GenSeries? series) (gen-series-data-idxes-from-predicate (assert series GenSeries?) filter-procedure)]
     [(NSeries? series) (nseries-data-idxes-from-predicate (assert series NSeries?) filter-procedure)]
@@ -457,8 +457,8 @@
 ;(define-type Gen->Bool (GenericType -> Boolean))
 ;(define-type RFFixnum->Bool (RFFixnum -> Boolean))
 ;(define-predicate RFFixnum->Bool? RFFixnum->Bool)
-(: series-filter ((GenericType -> Boolean) Series -> Series))
-(define (series-filter filter-procedure series)
+(: series-filter (Series (GenericType -> Boolean) -> Series))
+(define (series-filter series filter-procedure)
   (cond
     [(GenSeries? series) (gen-series-filter (assert series GenSeries?) filter-procedure)]
     [(NSeries? series) (nseries-filter (assert series NSeries?) filter-procedure)]
@@ -468,11 +468,3 @@
     [(DatetimeSeries? series) (datetime-series-filter (assert series DatetimeSeries?) filter-procedure)]
     [(DateSeries? series) (date-series-filter (assert series DateSeries?) filter-procedure)]
     [else (error "Unknown or not supported series type in DataFrame")]))
-
-(get-series-index (series-filter (lambda ([x : GenericType]) (even? (assert x fixnum?))) (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e))))
-
-; FUTURE WORK ;
-;(: re-align-series-index (Series RFIndex))
-; loop through series and grab positional index and use idx->key function to get the matching index value
-; this is especially useful if series has been modified or filtered and the new index needs to be set
-; accordingly

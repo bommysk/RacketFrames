@@ -387,6 +387,14 @@
       #:when (pred (assert val date?)))
          (assert n index?)))
 
+(: cseries-data-idxes-from-predicate-not (CSeries (Label -> Boolean) -> (Listof Index)))
+(define (cseries-data-idxes-from-predicate-not cseries pred)    
+   (for/list : (Listof Index)
+     ([val (cseries-data cseries)]
+      [n (in-naturals)]
+      #:when (not (pred (assert val date?))))
+         (assert n index?)))
+
 (: cseries-filter (CSeries (Label -> Boolean) -> CSeries))
 (define (cseries-filter cseries filter-function)
   ; need to use new filtered data to get the new index

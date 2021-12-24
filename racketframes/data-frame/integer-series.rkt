@@ -76,7 +76,7 @@
  [iseries-filter (ISeries (RFFixnum -> Boolean) -> ISeries)]
  [iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries)]
  [iseries-data-idxes-from-predicate (ISeries (RFFixnum -> Boolean) -> (Listof Index))]
- [build-iseries-index-from-predicate (ISeries (RFFixnum -> Boolean) -> RFIndex)]
+ [iseries-index-from-predicate (ISeries (RFFixnum -> Boolean) -> RFIndex)]
  [fxvector->list (FxVector Fixnum -> (Listof Fixnum))]
  [list->fxvector ((Listof Fixnum) -> FxVector)]
  [iseries-notna (ISeries -> ISeries)]
@@ -591,8 +591,8 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: build-iseries-index-from-predicate (ISeries (RFFixnum -> Boolean) -> RFIndex))
-(define (build-iseries-index-from-predicate iseries pred)  
+(: iseries-index-from-predicate (ISeries (RFFixnum -> Boolean) -> RFIndex))
+(define (iseries-index-from-predicate iseries pred)  
   (build-index-from-list
    (for/list : (Listof IndexDataType)
      ([val (iseries-data iseries)]
@@ -614,10 +614,10 @@
 (define (iseries-filter iseries filter-function)
   ; need to use new filtered data to get the new index
   ; setting #f is naive  
-  (new-ISeries (vector-filter filter-function (iseries-data iseries)) #:index (build-iseries-index-from-predicate iseries filter-function)))
+  (new-ISeries (vector-filter filter-function (iseries-data iseries)) #:index (iseries-index-from-predicate iseries filter-function)))
 
-(: build-iseries-index-from-predicate-not (ISeries (RFFixnum -> Boolean) -> RFIndex))
-(define (build-iseries-index-from-predicate-not iseries pred)  
+(: iseries-index-from-predicate-not (ISeries (RFFixnum -> Boolean) -> RFIndex))
+(define (iseries-index-from-predicate-not iseries pred)  
   (build-index-from-list
    (for/list : (Listof IndexDataType)
      ([val (iseries-data iseries)]
@@ -629,7 +629,7 @@
 
 (: iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries))
 (define (iseries-filter-not iseries filter-function)
-  (new-ISeries (vector-filter-not filter-function (iseries-data iseries)) #:index (build-iseries-index-from-predicate-not iseries filter-function)))
+  (new-ISeries (vector-filter-not filter-function (iseries-data iseries)) #:index (iseries-index-from-predicate-not iseries filter-function)))
 ; ***********************************************************
 
 ; ***********************************************************
