@@ -48,6 +48,7 @@
  [nseries-index-from-predicate (NSeries (Flonum -> Boolean) -> RFIndex)]
  [nseries-index-from-predicate-not (NSeries (Flonum -> Boolean) -> RFIndex)]
  [nseries-data-idxes-from-predicate (NSeries (Flonum -> Boolean) -> (Listof Index))]
+ [nseries-data-idxes-from-predicate-not (NSeries (Flonum -> Boolean) -> (Listof Index))]
  [nseries-filter (NSeries (Flonum -> Boolean) -> NSeries)]
  [nseries-filter-not (NSeries (Flonum -> Boolean) -> NSeries)]
  [map/ns (NSeries (Flonum -> Flonum) -> NSeries)]
@@ -968,6 +969,14 @@
      ([val (flvector->list (nseries-data nseries))]
       [n (in-naturals)]
       #:when (pred (assert val flonum?)))
+         (assert n index?)))
+
+(: nseries-data-idxes-from-predicate-not (NSeries (Flonum -> Boolean) -> (Listof Index)))
+(define (nseries-data-idxes-from-predicate-not nseries pred)    
+   (for/list : (Listof Index)
+     ([val (flvector->list (nseries-data nseries))]
+      [n (in-naturals)]
+      #:when (not (pred (assert val flonum?))))
          (assert n index?)))
 
 (: nseries-filter (NSeries (Flonum -> Boolean) -> NSeries))

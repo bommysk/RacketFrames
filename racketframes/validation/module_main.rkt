@@ -362,7 +362,9 @@
 
 (series-print (series-filter (new-series (list 1 2 3.2 4 5.8)) (lambda ([x : GenericType]) (> (assert x flonum?) 2))))
 
+(data-frame-write-delim data-frame-from-hash)
 (data-frame-write-delim (data-frame-column-filter data-frame-from-hash (lambda ([x : GenericType]) (= (assert x real?) 10)) 'b))
+(data-frame-write-delim (data-frame-column-filter-not data-frame-from-hash (lambda ([x : GenericType]) (= (assert x real?) 10)) 'b))
 
 (index-idxes (get-series-index (new-series (list 0 1 2 3) #:index (list 'b 'a 'b 'c))))
 
