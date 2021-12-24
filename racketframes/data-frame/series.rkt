@@ -20,9 +20,12 @@
  [in-series (GenericType Series -> Boolean)]
  [indexable-series->index (IndexableSeries -> RFIndex)]
  [series-data->indexable-sequence ((U (Vectorof Any) (Vectorof Boolean) (Vectorof RFDatetime) (Vectorof RFFixnum) (Vectorof Symbol) (Vectorof RFDate) FlVector) -> (Sequenceof IndexDataType))]
+ [series-index-from-predicate (Series (GenericType -> Boolean) -> RFIndex)]
  [series-data-idxes-from-predicate (Series (GenericType -> Boolean) -> (Listof Index))]
- (series-filter (Series (GenericType -> Boolean) -> Series)))
-
+ [series-filter (Series (GenericType -> Boolean) -> Series)]
+ [series-index-from-predicate-not (Series (GenericType -> Boolean) -> RFIndex)]
+ [series-data-idxes-from-predicate-not (Series (GenericType -> Boolean) -> (Listof Index))]
+ [series-filter-not (Series (GenericType -> Boolean) -> Series)])
 
 (require
   racket/fixnum
@@ -37,35 +40,39 @@
            GenericType GenSeries GenSeries? new-GenSeries gen-series-length gen-series-data gen-series-index gen-series-iref in-gen-series
            set-GenSeries-index gen-series-loc-boolean gen-series-loc gen-series-loc-multi-index gen-series-iloc gen-series-index-ref
            set-GenSeries-null-value set-GenSeries-any-null-value-inplace gen-series-null-value gen-series-referencer map/gen-s
-           gen-series-index-from-predicate gen-series-data-idxes-from-predicate gen-series-filter)
+           gen-series-index-from-predicate gen-series-index-from-predicate-not gen-series-data-idxes-from-predicate gen-series-data-idxes-from-predicate-not gen-series-filter gen-series-filter-not)
   (only-in "categorical-series.rkt"
            CSeries CSeries? new-CSeries cseries-length cseries-data cseries-index cseries-iref in-cseries set-CSeries-index
            cseries-referencer cseries-loc-boolean cseries-iloc cseries-loc cseries-loc-multi-index cseries-index-ref
-           set-CSeries-null-value cseries-null-value cseries-groupby cseries-grouphash cseries-index-from-predicate cseries-data-idxes-from-predicate cseries-filter cseries-filter-not)
+           set-CSeries-null-value cseries-null-value cseries-groupby cseries-grouphash cseries-index-from-predicate cseries-index-from-predicate-not cseries-data-idxes-from-predicate
+           cseries-data-idxes-from-predicate-not cseries-filter cseries-filter-not)
   (only-in "series-iter.rkt" cseries-map)
   (only-in "numeric-series.rkt"
            NSeries NSeries? new-NSeries nseries-length nseries-data nseries-index nseries-iref nseries-referencer in-nseries
            set-NSeries-index nseries-loc-boolean nseries-loc nseries-loc-multi-index nseries-iloc nseries-index-ref list->flvector flvector->list
-           set-NSeries-null-value nseries-null-value nseries-groupby nseries-grouphash flvector->vector map/ns nseries-index-from-predicate nseries-data-idxes-from-predicate nseries-filter)
+           set-NSeries-null-value nseries-null-value nseries-groupby nseries-grouphash flvector->vector map/ns nseries-index-from-predicate nseries-index-from-predicate-not
+           nseries-data-idxes-from-predicate nseries-data-idxes-from-predicate-not nseries-filter nseries-filter-not)
   (only-in "integer-series.rkt"
            ISeries ISeries? new-ISeries iseries-length iseries-data iseries-index in-iseries iseries-iref iseries-referencer
            set-ISeries-index iseries-loc-boolean iseries-loc iseries-loc-multi-index iseries-iloc iseries-index-ref RFFixnum RFFixnum?
-           set-ISeries-null-value iseries-null-value iseries-groupby iseries-grouphash map/is iseries-index-from-predicate iseries-data-idxes-from-predicate iseries-filter)
+           set-ISeries-null-value iseries-null-value iseries-groupby iseries-grouphash map/is iseries-index-from-predicate iseries-data-idxes-from-predicate iseries-filter
+           iseries-index-from-predicate-not iseries-data-idxes-from-predicate-not iseries-filter-not)
   (only-in "boolean-series.rkt"
            BSeries BSeries? new-BSeries bseries-length bseries-data bseries-index bseries-iref in-bseries bseries-referencer
            set-BSeries-index bseries-loc-boolean bseries-loc bseries-loc-multi-index bseries-iloc bseries-index-ref
-           set-BSeries-null-value bseries-null-value bseries-groupby bseries-grouphash map/bs bseries-index-from-predicate bseries-data-idxes-from-predicate bseries-filter)
+           set-BSeries-null-value bseries-null-value bseries-groupby bseries-grouphash map/bs bseries-index-from-predicate bseries-data-idxes-from-predicate bseries-filter
+           bseries-index-from-predicate-not bseries-data-idxes-from-predicate-not bseries-filter-not)
   (only-in "datetime-series.rkt"
           DatetimeSeries DatetimeSeries? new-DatetimeSeries DatetimeSeries-index DatetimeSeries-data datetime-series-length datetime-series-data datetime-series-index
           datetime-series-iref datetime-series-referencer in-datetime-series
           set-DatetimeSeries-index datetime-series-loc-boolean datetime-series-loc datetime-series-loc-multi-index datetime-series-iloc datetime-series-index-ref datetime-series-groupby
           set-DatetimeSeries-null-value datetime-series-null-value datetime-series-grouphash RFDatetime RFDatetime? map/datetime-series-data
-          datetime-series-index-from-predicate datetime-series-data-idxes-from-predicate datetime-series-filter)
+          datetime-series-index-from-predicate datetime-series-data-idxes-from-predicate datetime-series-filter datetime-series-index-from-predicate-not datetime-series-data-idxes-from-predicate-not datetime-series-filter-not)
   (only-in "date-series.rkt"
            DateSeries DateSeries? new-DateSeries DateSeries-index DateSeries-data date-series-length date-series-data date-series-index date-series-iref date-series-referencer
            in-date-series date-series-groupby date-series-grouphash
            set-DateSeries-index set-DateSeries-null-value date-series-null-value date-series-loc-boolean date-series-loc date-series-loc-multi-index date-series-iloc date-series-index-ref
-           RFDate RFDate? map/date-series-data date-series-index-from-predicate date-series-data-idxes-from-predicate date-series-filter)
+           RFDate RFDate? map/date-series-data date-series-index-from-predicate date-series-data-idxes-from-predicate date-series-filter date-series-index-from-predicate-not date-series-data-idxes-from-predicate-not date-series-filter-not)
   
   (only-in "series-builder.rkt" SeriesBuilder)
   (only-in "generic-series-builder.rkt"
@@ -454,9 +461,30 @@
     [(DateSeries? series) (date-series-data-idxes-from-predicate (assert series DateSeries?) filter-procedure)]
     [else (error "Unknown or unsupported series type.")]))
 
-;(define-type Gen->Bool (GenericType -> Boolean))
-;(define-type RFFixnum->Bool (RFFixnum -> Boolean))
-;(define-predicate RFFixnum->Bool? RFFixnum->Bool)
+(: series-index-from-predicate-not (Series (GenericType -> Boolean) -> RFIndex))
+(define (series-index-from-predicate-not series filter-procedure)
+  (cond
+    [(GenSeries? series) (gen-series-index-from-predicate-not (assert series GenSeries?) filter-procedure)]
+    [(NSeries? series) (nseries-index-from-predicate-not (assert series NSeries?) filter-procedure)]
+    [(CSeries? series) (cseries-index-from-predicate-not (assert series CSeries?) filter-procedure)]   
+    [(ISeries? series) (iseries-index-from-predicate-not (assert series ISeries?) filter-procedure)]
+    [(BSeries? series) (bseries-index-from-predicate-not (assert series BSeries?) filter-procedure)]
+    [(DatetimeSeries? series) (datetime-series-index-from-predicate-not (assert series DatetimeSeries?) filter-procedure)]
+    [(DateSeries? series) (date-series-index-from-predicate-not (assert series DateSeries?) filter-procedure)]
+    [else (error "Unknown or unsupported series type.")]))
+
+(: series-data-idxes-from-predicate-not (Series (GenericType -> Boolean) -> (Listof Index)))
+(define (series-data-idxes-from-predicate-not series filter-procedure)
+  (cond
+    [(GenSeries? series) (gen-series-data-idxes-from-predicate-not (assert series GenSeries?) filter-procedure)]
+    [(NSeries? series) (nseries-data-idxes-from-predicate-not (assert series NSeries?) filter-procedure)]
+    [(CSeries? series) (cseries-data-idxes-from-predicate-not (assert series CSeries?) filter-procedure)]   
+    [(ISeries? series) (iseries-data-idxes-from-predicate-not (assert series ISeries?) filter-procedure)]
+    [(BSeries? series) (bseries-data-idxes-from-predicate-not (assert series BSeries?) filter-procedure)]
+    [(DatetimeSeries? series) (datetime-series-data-idxes-from-predicate-not (assert series DatetimeSeries?) filter-procedure)]
+    [(DateSeries? series) (date-series-data-idxes-from-predicate-not (assert series DateSeries?) filter-procedure)]
+    [else (error "Unknown or unsupported series type.")]))
+
 (: series-filter (Series (GenericType -> Boolean) -> Series))
 (define (series-filter series filter-procedure)
   (cond
@@ -465,6 +493,18 @@
     [(CSeries? series) (cseries-filter (assert series CSeries?) filter-procedure)]   
     [(ISeries? series) (iseries-filter (assert series ISeries?) filter-procedure)]
     [(BSeries? series) (bseries-filter (assert series BSeries?) filter-procedure)]
+    [(DatetimeSeries? series) (datetime-series-filter (assert series DatetimeSeries?) filter-procedure)]
+    [(DateSeries? series) (date-series-filter (assert series DateSeries?) filter-procedure)]
+    [else (error "Unknown or not supported series type in DataFrame")]))
+
+(: series-filter-not (Series (GenericType -> Boolean) -> Series))
+(define (series-filter-not series filter-procedure)
+  (cond
+    [(GenSeries? series) (gen-series-filter-not (assert series GenSeries?) filter-procedure)]
+    [(NSeries? series) (nseries-filter-not (assert series NSeries?) filter-procedure)]
+    [(CSeries? series) (cseries-filter-not (assert series CSeries?) filter-procedure)]   
+    [(ISeries? series) (iseries-filter-not (assert series ISeries?) filter-procedure)]
+    [(BSeries? series) (bseries-filter-not (assert series BSeries?) filter-procedure)]
     [(DatetimeSeries? series) (datetime-series-filter (assert series DatetimeSeries?) filter-procedure)]
     [(DateSeries? series) (date-series-filter (assert series DateSeries?) filter-procedure)]
     [else (error "Unknown or not supported series type in DataFrame")]))

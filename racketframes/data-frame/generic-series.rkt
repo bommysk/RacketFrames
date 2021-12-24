@@ -52,7 +52,9 @@
  [map/gen-s (GenSeries (GenericType -> GenericType) -> GenSeries)]
  [gen-series-print (GenSeries [#:output-port Output-Port] -> Void)]
  [gen-series-index-from-predicate (GenSeries (GenericType -> Boolean) -> RFIndex)]
+ [gen-series-index-from-predicate-not (GenSeries (GenericType -> Boolean) -> RFIndex)]
  [gen-series-data-idxes-from-predicate (GenSeries (GenericType -> Boolean) -> (Listof Index))]
+ [gen-series-data-idxes-from-predicate-not (GenSeries (GenericType -> Boolean) -> (Listof Index))]
  [gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries)]
  [gen-series-filter-not (GenSeries (GenericType -> Boolean) -> GenSeries)])
 
@@ -378,6 +380,14 @@
      ([val (gen-series-data gen-series)]
       [n (in-naturals)]
       #:when (pred (assert val date?)))
+         (assert n index?)))
+
+(: gen-series-data-idxes-from-predicate-not (GenSeries (GenericType -> Boolean) -> (Listof Index)))
+(define (gen-series-data-idxes-from-predicate-not gen-series pred)    
+   (for/list : (Listof Index)
+     ([val (gen-series-data gen-series)]
+      [n (in-naturals)]
+      #:when (not (pred (assert val date?))))
          (assert n index?)))
 
 (: gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries))

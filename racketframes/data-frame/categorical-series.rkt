@@ -30,7 +30,9 @@
  [cseries-filter (CSeries (Label -> Boolean) -> CSeries)]
  [cseries-filter-not (CSeries (Label -> Boolean) -> CSeries)]
  [cseries-index-from-predicate (CSeries (Label -> Boolean) -> RFIndex)]
- [cseries-data-idxes-from-predicate (CSeries (Label -> Boolean) -> (Listof Index))])
+ [cseries-index-from-predicate-not (CSeries (Label -> Boolean) -> RFIndex)]
+ [cseries-data-idxes-from-predicate (CSeries (Label -> Boolean) -> (Listof Index))]
+ [cseries-data-idxes-from-predicate-not (CSeries (Label -> Boolean) -> (Listof Index))])
 
 (require
  (only-in "indexed-series.rkt"

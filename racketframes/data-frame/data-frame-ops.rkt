@@ -18,7 +18,9 @@
  [data-frame< (DataFrame DataFrame -> DataFrame)]
  [data-frame-abs (DataFrame -> DataFrame)]
  [data-frame-filter (DataFrame BSeries -> DataFrame)]
+ [data-frame-filter-not (DataFrame BSeries -> DataFrame)]
  [data-frame-column-filter (DataFrame (Any -> Boolean) Label -> DataFrame)]
+ [data-frame-column-filter-not (DataFrame (Any -> Boolean) Label -> DataFrame)]
  [data-frame-apply (DataFrame (Any -> Any) -> DataFrame)])
 ; ***********************************************************
 
@@ -35,8 +37,8 @@
  (only-in "indexed-series.rkt"
 	  Label Labeling LabelProjection RFIndex index-idxes)
  (only-in "series.rkt"
-	  new-series get-series-index set-series-index series-complete series-data series-filter series-iloc
-          series-data-idxes-from-predicate)
+	  new-series get-series-index set-series-index series-complete series-data series-filter series-filter-not series-iloc
+          series-data-idxes-from-predicate series-data-idxes-from-predicate-not)
  (only-in "series-description.rkt"
 	  SeriesType Series Series?
 	  SeriesDescription-type
@@ -91,6 +93,7 @@
  (only-in "data-frame-print.rkt"
           data-frame-write-delim))
 
+; ***********************************************************
 
 ;(: data-frame+ (DataFrame DataFrame -> DataFrame))
 (: data-frame+ (DataFrame DataFrame -> DataFrame))
@@ -460,6 +463,17 @@
          (when (vector-ref filter-vec df-row)
 	      (copy-column-row cols builders df-row)))))
 
+(: do-filter-not ((Vectorof Series) (Vectorof SeriesBuilder) (Vectorof Boolean) -> Void))
+(define (do-filter-not cols builders filter-vec)
+
+  (define: col-cnt : Fixnum (vector-length cols))
+  (define: df-len   : Fixnum (series-length (vector-ref cols #{0 : Index} )))
+
+  (for ((df-row (in-range df-len)))
+       (let ((df-row : Index (assert df-row index?)))
+         (when (not (vector-ref filter-vec df-row))
+	      (copy-column-row cols builders df-row)))))
+
 ; ***********************************************************
 
 (: data-frame-filter (DataFrame BSeries -> DataFrame))
@@ -492,6 +506,36 @@
 
   (new-data-frame new-series))
 
+(: data-frame-filter-not (DataFrame BSeries -> DataFrame))
+(define (data-frame-filter-not data-frame bseries)
+
+  ; This function consumes a DataFrame and LabelProjection and
+  ; projects those columns.
+  (: data-frame-cols (DataFrame LabelProjection -> Columns))
+  (define (data-frame-cols data-frame project)
+    (data-frame-explode data-frame #:project project))
+
+  ; This function consumes a Listof Column and returns a Vectorof
+  ; Series contained in those columns.
+  (: src-series (Columns -> (Vectorof Series)))
+  (define (src-series cols)
+    (list->vector (map column-series cols)))
+
+  (define: df-cols : Columns (data-frame-cols data-frame '()))
+  
+  ; Get series builders of default length 10 for all columns in fb.
+  (define: dest-builders : (Vectorof SeriesBuilder)
+    (list->vector (dest-mapping-series-builders (data-frame-description data-frame) 10)))
+
+  (do-filter-not (src-series df-cols) dest-builders (bseries-data bseries))
+
+  (define: new-series : Columns
+    (for/list ([builder (in-vector dest-builders)]
+	       [col     (in-list df-cols)])
+	      (cons (column-heading col) (series-complete builder))))
+
+  (new-data-frame new-series))
+
 ; ***********************************************************
 
 (: data-frame-column-filter (DataFrame (Any -> Boolean) Label -> DataFrame))
@@ -508,4 +552,18 @@
           (data-frame-explode data-frame))
      #:index filtered-index)))
 
-    
+(: data-frame-column-filter-not (DataFrame (Any -> Boolean) Label -> DataFrame))
+(define (data-frame-column-filter-not data-frame filter-function name)
+  (let* ((series : Series (data-frame-series-ref data-frame name))
+         (series-filtered : Series (series-filter-not series filter-function))
+         (filtered-index : RFIndex (get-series-index series-filtered))
+         (filtered-idxes : (Listof Index) (series-data-idxes-from-predicate-not series filter-function)))
+    (new-data-frame 
+     (map (λ: ((col : Column))           
+            (cons (column-heading col)
+                  ; filter to only values in index                    
+                  (assert (series-iloc (column-series col) filtered-idxes) Series?)))
+          (data-frame-explode data-frame))
+     #:index filtered-index)))
+
+; ***********************************************************

@@ -43,7 +43,9 @@
  [bseries-filter (BSeries (Boolean -> Boolean) -> BSeries)]
  [bseries-filter-not (BSeries (Boolean -> Boolean) -> BSeries)]
  [bseries-index-from-predicate (BSeries (Boolean -> Boolean) -> RFIndex)]
- [bseries-data-idxes-from-predicate (BSeries (Boolean -> Boolean) -> (Listof Index))])
+ [bseries-data-idxes-from-predicate (BSeries (Boolean -> Boolean) -> (Listof Index))]
+ [bseries-index-from-predicate-not (BSeries (Boolean -> Boolean) -> RFIndex)]
+ [bseries-data-idxes-from-predicate-not (BSeries (Boolean -> Boolean) -> (Listof Index))])
 ; ***********************************************************
 
 ; ***********************************************************
@@ -388,6 +390,14 @@
 
 (: bseries-data-idxes-from-predicate (BSeries (Boolean -> Boolean) -> (Listof Index)))
 (define (bseries-data-idxes-from-predicate bseries pred)    
+   (for/list : (Listof Index)
+     ([val (bseries-data bseries)]
+      [n (in-naturals)]
+      #:when (pred (assert val date?)))
+         (assert n index?)))
+
+(: bseries-data-idxes-from-predicate-not (BSeries (Boolean -> Boolean) -> (Listof Index)))
+(define (bseries-data-idxes-from-predicate-not bseries pred)    
    (for/list : (Listof Index)
      ([val (bseries-data bseries)]
       [n (in-naturals)]

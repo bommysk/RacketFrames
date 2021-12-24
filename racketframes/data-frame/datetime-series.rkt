@@ -74,7 +74,9 @@
  [set-DatetimeSeries-null-value (DatetimeSeries RFNULL -> DatetimeSeries)]
  [set-DatetimeSeries-datetime-null-value-inplace (DatetimeSeries Datetime -> Void)]
  [datetime-series-index-from-predicate (DatetimeSeries (RFDatetime -> Boolean) -> RFIndex)]
+ [datetime-series-index-from-predicate-not (DatetimeSeries (RFDatetime -> Boolean) -> RFIndex)]
  [datetime-series-data-idxes-from-predicate (DatetimeSeries (RFDatetime -> Boolean) -> (Listof Index))]
+ [datetime-series-data-idxes-from-predicate-not (DatetimeSeries (RFDatetime -> Boolean) -> (Listof Index))]
  [datetime-series-filter (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries)]
  [datetime-series-filter-not (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries)])
 ; ***********************************************************
@@ -637,6 +639,14 @@
 
 (: datetime-series-data-idxes-from-predicate (DatetimeSeries (RFDatetime -> Boolean) -> (Listof Index)))
 (define (datetime-series-data-idxes-from-predicate datetime-series pred)    
+   (for/list : (Listof Index)
+     ([val (datetime-series-data datetime-series)]
+      [n (in-naturals)]
+      #:when (pred (assert val date?)))
+         (assert n index?)))
+
+(: datetime-series-data-idxes-from-predicate-not (DatetimeSeries (RFDatetime -> Boolean) -> (Listof Index)))
+(define (datetime-series-data-idxes-from-predicate-not datetime-series pred)    
    (for/list : (Listof Index)
      ([val (datetime-series-data datetime-series)]
       [n (in-naturals)]
