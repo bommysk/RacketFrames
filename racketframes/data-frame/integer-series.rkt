@@ -75,6 +75,8 @@
  [iseries-print (ISeries [#:output-port Output-Port] -> Void)]
  [iseries-filter (ISeries (RFFixnum -> Boolean) -> ISeries)]
  [iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries)]
+ [iseries-data-idxes-from-predicate (ISeries (RFFixnum -> Boolean) -> (Listof Index))]
+ [build-iseries-index-from-predicate (ISeries (RFFixnum -> Boolean) -> RFIndex)]
  [fxvector->list (FxVector Fixnum -> (Listof Fixnum))]
  [list->fxvector ((Listof Fixnum) -> FxVector)]
  [iseries-notna (ISeries -> ISeries)]
@@ -599,6 +601,14 @@
      (if (iseries-index iseries)
          (idx->key (assert (iseries-index iseries)) (assert n index?))
          (assert n index?)))))
+
+(: iseries-data-idxes-from-predicate (ISeries (RFFixnum -> Boolean) -> (Listof Index)))
+(define (iseries-data-idxes-from-predicate iseries pred)    
+   (for/list : (Listof Index)
+     ([val (iseries-data iseries)]
+      [n (in-naturals)]
+      #:when (pred (assert val RFFixnum?)))
+         (assert n index?)))
 
 (: iseries-filter (ISeries (RFFixnum -> Boolean) -> ISeries))
 (define (iseries-filter iseries filter-function)

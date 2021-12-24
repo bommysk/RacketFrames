@@ -72,6 +72,8 @@
 
  [derive-date-value (DateSeries RFDate -> date)]
 
+ [build-date-series-index-from-predicate (DateSeries (RFDate -> Boolean) -> RFIndex)]
+ [date-series-data-idxes-from-predicate (DateSeries (RFDate -> Boolean) -> (Listof Index))]
  [date-series-filter (DateSeries (RFDate -> Boolean) -> DateSeries)]
  [date-series-filter-not (DateSeries (RFDate -> Boolean) -> DateSeries)])
 ; ***********************************************************
@@ -626,14 +628,43 @@
 ; ***********************************************************
 
 ; ***********************************************************
+(: build-date-series-index-from-predicate (DateSeries (RFDate -> Boolean) -> RFIndex))
+(define (build-date-series-index-from-predicate date-series pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (date-series-data date-series)]
+      [n (in-naturals)]
+      #:when (pred (assert val date?)))
+     (if (date-series-index date-series)
+         (idx->key (assert (date-series-index date-series)) (assert n index?))
+         (assert n index?)))))
+
+(: date-series-data-idxes-from-predicate (DateSeries (RFDate -> Boolean) -> (Listof Index)))
+(define (date-series-data-idxes-from-predicate date-series pred)    
+   (for/list : (Listof Index)
+     ([val (date-series-data date-series)]
+      [n (in-naturals)]
+      #:when (pred (assert val date?)))
+         (assert n index?)))
+
 (: date-series-filter (DateSeries (RFDate -> Boolean) -> DateSeries))
 (define (date-series-filter date-series filter-function)
   ; need to use new filtered data to get the new index
-  ; setting #f is naive
-  ; TODO filter index as well
-  (new-DateSeries (vector-filter filter-function (date-series-data date-series))))
+  ; setting #f is naive  
+  (new-DateSeries (vector-filter filter-function (date-series-data date-series)) #:index (build-date-series-index-from-predicate date-series filter-function)))
+
+(: build-date-series-index-from-predicate-not (DateSeries (RFDate -> Boolean) -> RFIndex))
+(define (build-date-series-index-from-predicate-not date-series pred)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([val (date-series-data date-series)]
+      [n (in-naturals)]
+      #:when (not (pred (assert val date?))))
+     (if (date-series-index date-series)
+         (idx->key (assert (date-series-index date-series)) (assert n index?))
+         (assert n index?)))))
 
 (: date-series-filter-not (DateSeries (RFDate -> Boolean) -> DateSeries))
 (define (date-series-filter-not date-series filter-function)
-  (new-DateSeries (vector-filter-not filter-function (date-series-data date-series))))
+  (new-DateSeries (vector-filter-not filter-function (date-series-data date-series)) #:index (build-date-series-index-from-predicate-not date-series filter-function)))
 ; ***********************************************************

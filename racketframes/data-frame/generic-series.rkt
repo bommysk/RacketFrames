@@ -42,6 +42,8 @@
  [gen-series-referencer (GenSeries -> (Index -> GenericType))]
  [gen-series-data (GenSeries -> (Vectorof GenericType))]
  [gen-series-index (GenSeries -> (U False RFIndex))]
+ [build-gen-series-index-from-predicate (GenSeries (GenericType -> Boolean) -> RFIndex)]
+ [gen-series-data-idxes-from-predicate (GenSeries (GenericType -> Boolean) -> (Listof Index))]
  [in-gen-series (GenericType GenSeries -> Boolean)]
  [gen-series-null-value (GenSeries -> GenericType)]
  [gen-series-loc-boolean (GenSeries (Listof Boolean) -> (U GenericType GenSeries))]
@@ -369,6 +371,14 @@
      (if (gen-series-index gen-series)
          (idx->key (assert (gen-series-index gen-series)) (assert n index?))
          (assert n index?)))))
+
+(: gen-series-data-idxes-from-predicate (GenSeries (GenericType -> Boolean) -> (Listof Index)))
+(define (gen-series-data-idxes-from-predicate gen-series pred)    
+   (for/list : (Listof Index)
+     ([val (gen-series-data gen-series)]
+      [n (in-naturals)]
+      #:when (pred (assert val flonum?)))
+         (assert n index?)))
 
 (: gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries))
 (define (gen-series-filter gen-series filter-function)

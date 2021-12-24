@@ -358,6 +358,15 @@
 
 (data-frame-write-delim (data-frame-apply (apply-agg-data-frame 'mean (data-frame-groupby data-frame-from-hash (list 'd))) (lambda ([val : Any]) (add1 (assert val number?)))))
 
-(series-print (series-filter (lambda ([x : GenericType]) (even? (assert x fixnum?))) (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e))))
+(series-print (series-filter (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?)))))
 
-(series-print (series-filter (lambda ([x : GenericType]) (> (assert x flonum?) 2)) (new-series (list 1 2 3.2 4 5.8))))
+(series-print (series-filter (new-series (list 1 2 3.2 4 5.8)) (lambda ([x : GenericType]) (> (assert x flonum?) 2))))
+
+(data-frame-write-delim (data-frame-column-filter data-frame-from-hash (lambda ([x : GenericType]) (= (assert x real?) 10)) 'b))
+
+(index-idxes (get-series-index (new-series (list 0 1 2 3) #:index (list 'b 'a 'b 'c))))
+
+(data-frame-series-ref data-frame-from-hash 'b)
+
+
+(series-data-idxes-from-predicate (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?))))
