@@ -39,7 +39,7 @@
  [bseries-iloc (BSeries (U Index (Listof Index)) -> (U Boolean BSeries))]
  [bseries-iloc-range (BSeries Index Index -> BSeries)]
  [bseries-not (BSeries -> BSeries)]
- [bseries-print (BSeries [#:output-port Output-Port] -> Void)]
+ [bseries-print (BSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void)]
  [bseries-filter (BSeries (Boolean -> Boolean) -> BSeries)]
  [bseries-filter-not (BSeries (Boolean -> Boolean) -> BSeries)]
  [bseries-index-from-predicate (BSeries (Boolean -> Boolean) -> RFIndex)]
@@ -349,10 +349,10 @@
                             (λ () (list)))))))))
 
 ; ***********************************************************
-(: bseries-print (BSeries [#:output-port Output-Port] -> Void))
-(define (bseries-print bseries #:output-port [port (current-output-port)])
+(: bseries-print (BSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void))
+(define (bseries-print bseries #:output-port [port (current-output-port)] #:count [count #f])
   (define v (bseries-data bseries))
-  (let ((len (vector-length v))
+  (let ((len (if (assert count) count (vector-length v)))
 	(out (current-output-port)))
     (if (zero? len)
 	(displayln "Empty $BSeries" port)
@@ -383,7 +383,7 @@
    (for/list : (Listof IndexDataType)
      ([val (bseries-data bseries)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred val))
      (if (bseries-index bseries)
          (idx->key (assert (bseries-index bseries)) (assert n index?))
          (assert n index?)))))
@@ -393,7 +393,7 @@
    (for/list : (Listof Index)
      ([val (bseries-data bseries)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred val))
          (assert n index?)))
 
 (: bseries-data-idxes-from-predicate-not (BSeries (Boolean -> Boolean) -> (Listof Index)))
@@ -401,7 +401,7 @@
    (for/list : (Listof Index)
      ([val (bseries-data bseries)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred val))
          (assert n index?)))
 
 (: bseries-filter (BSeries (Boolean -> Boolean) -> BSeries))
@@ -416,7 +416,7 @@
    (for/list : (Listof IndexDataType)
      ([val (bseries-data bseries)]
       [n (in-naturals)]
-      #:when (not (pred (assert val date?))))
+      #:when (not (pred val)))
      (if (bseries-index bseries)
          (idx->key (assert (bseries-index bseries)) (assert n index?))
          (assert n index?)))))

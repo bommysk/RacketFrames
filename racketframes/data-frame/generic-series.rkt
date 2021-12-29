@@ -50,13 +50,15 @@
  [gen-series-iloc (GenSeries (U Index (Listof Index)) -> (U GenericType GenSeries))]
  [gen-series-iloc-range (GenSeries Index Index -> GenSeries)]
  [map/gen-s (GenSeries (GenericType -> GenericType) -> GenSeries)]
- [gen-series-print (GenSeries [#:output-port Output-Port] -> Void)]
+ [gen-series-print (GenSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void)]
  [gen-series-index-from-predicate (GenSeries (GenericType -> Boolean) -> RFIndex)]
  [gen-series-index-from-predicate-not (GenSeries (GenericType -> Boolean) -> RFIndex)]
  [gen-series-data-idxes-from-predicate (GenSeries (GenericType -> Boolean) -> (Listof Index))]
  [gen-series-data-idxes-from-predicate-not (GenSeries (GenericType -> Boolean) -> (Listof Index))]
  [gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries)]
- [gen-series-filter-not (GenSeries (GenericType -> Boolean) -> GenSeries)])
+ [gen-series-filter-not (GenSeries (GenericType -> Boolean) -> GenSeries)]
+ [gen-series-sort (GenSeries -> GenSeries)]
+ [gen-series-sort-descending (GenSeries -> GenSeries)])
 
 ; ***********************************************************
 (define DEFAULT_NULL_VALUE : GenericType null)
@@ -279,7 +281,6 @@
       (vector-ref new-data 0)
       (new-GenSeries new-data)))
 
-
 (: gen-series-loc-multi-index (GenSeries (U (Listof String) ListofListofString) -> (U GenericType GenSeries)))
 (define (gen-series-loc-multi-index gen-series label)
   (unless (GenSeries-index gen-series)
@@ -341,10 +342,10 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: gen-series-print (GenSeries [#:output-port Output-Port] -> Void))
-(define (gen-series-print gen-series #:output-port [port (current-output-port)])
+(: gen-series-print (GenSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void))
+(define (gen-series-print gen-series #:output-port [port (current-output-port)] #:count [count #f])
   (define v (gen-series-data gen-series))
-  (let ((len (vector-length v))
+  (let ((len (if (assert count) count (vector-length v)))
 	(out (current-output-port)))
     (if (zero? len)
 	(displayln "Empty $GenSeries" port)
@@ -369,7 +370,7 @@
    (for/list : (Listof IndexDataType)
      ([val (gen-series-data gen-series)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred val))
      (if (gen-series-index gen-series)
          (idx->key (assert (gen-series-index gen-series)) (assert n index?))
          (assert n index?)))))
@@ -379,7 +380,7 @@
    (for/list : (Listof Index)
      ([val (gen-series-data gen-series)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred val))
          (assert n index?)))
 
 (: gen-series-data-idxes-from-predicate-not (GenSeries (GenericType -> Boolean) -> (Listof Index)))
@@ -387,7 +388,7 @@
    (for/list : (Listof Index)
      ([val (gen-series-data gen-series)]
       [n (in-naturals)]
-      #:when (not (pred (assert val date?))))
+      #:when (not (pred val)))
          (assert n index?)))
 
 (: gen-series-filter (GenSeries (GenericType -> Boolean) -> GenSeries))
@@ -402,7 +403,7 @@
    (for/list : (Listof IndexDataType)
      ([val (gen-series-data gen-series)]
       [n (in-naturals)]
-      #:when (not (pred (assert val date?))))
+      #:when (not (pred val)))
      (if (gen-series-index gen-series)
          (idx->key (assert (gen-series-index gen-series)) (assert n index?))
          (assert n index?)))))
@@ -410,4 +411,58 @@
 (: gen-series-filter-not (GenSeries (GenericType -> Boolean) -> GenSeries))
 (define (gen-series-filter-not gen-series filter-function)
   (new-GenSeries (vector-filter-not filter-function (gen-series-data gen-series)) #:index (gen-series-index-from-predicate-not gen-series filter-function)))
+; ***********************************************************
+
+; ***********************************************************
+; GenSeries Sorting
+; ***********************************************************
+;; Note for numeric operation purposes, it's best to set the 
+;; DEFAULT_NULL_VALUE to -inf.0 instead of the default -nan.0
+(: gen-series-data->pair-list (GenSeries -> (Listof (Pair String Index))))
+(define (gen-series-data->pair-list gen-series)
+  (for/list : (Listof (Pair String Index))
+    ([val (map (lambda ([val : GenericType]) (pretty-format val)) (vector->list (gen-series-data gen-series)))]
+     [n (in-naturals)])
+    (cons (assert val string?) (assert n index?))))
+
+(: gen-series-sort-pair-list ((Listof (Pairof String Index)) -> (Listof (Pairof String Index))))
+(define (gen-series-sort-pair-list pair-lst)
+  ((inst sort (Pair String Index) String) pair-lst string<? #:key (λ ((p : (Pair String Index))) (car p)) #:cache-keys? #t))
+
+(: gen-series-sort-pair-list-descending ((Listof (Pairof String Index)) -> (Listof (Pairof String Index))))
+(define (gen-series-sort-pair-list-descending pair-lst)
+  ((inst sort (Pair String Index) String) pair-lst string>? #:key (λ ((p : (Pair String Index))) (car p)) #:cache-keys? #t))
+
+(: gen-series-get-sorted-data ((Listof (Pairof String Index)) -> (Listof String)))
+(define (gen-series-get-sorted-data pair-lst)
+  (map (lambda ((pairing : (Pairof String Index))) (car pairing)) pair-lst))
+
+(: gen-series-get-original-idxes ((Listof (Pairof String Index)) -> (Listof Index)))
+(define (gen-series-get-original-idxes pair-lst)
+  (map (lambda ((pairing : (Pairof String Index))) (cdr pairing)) pair-lst))
+
+(: gen-series-index-from-idxes (GenSeries (Listof Index) -> RFIndex))
+(define (gen-series-index-from-idxes gen-series idx-list)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([idx idx-list])
+     (if (gen-series-index gen-series)
+         (idx->key (assert (gen-series-index gen-series)) (assert idx index?))
+         (assert idx index?)))))
+
+(: gen-series-sort (GenSeries -> GenSeries))
+(define (gen-series-sort gen-series)
+  (let* ([gen-series-sorted-pairs (gen-series-sort-pair-list (gen-series-data->pair-list gen-series))]
+         [gen-series-index (gen-series-index-from-idxes gen-series (gen-series-get-original-idxes gen-series-sorted-pairs))]
+         [gen-series-sorted-data (gen-series-get-sorted-data gen-series-sorted-pairs)])
+    (new-GenSeries gen-series-sorted-data #:index gen-series-index)))
+
+(: gen-series-sort-descending (GenSeries -> GenSeries))
+(define (gen-series-sort-descending gen-series)
+  (let* ([gen-series-sorted-pairs (gen-series-sort-pair-list-descending (gen-series-data->pair-list gen-series))]
+         [gen-series-index (gen-series-index-from-idxes gen-series (gen-series-get-original-idxes gen-series-sorted-pairs))]
+         [gen-series-sorted-data (gen-series-get-sorted-data gen-series-sorted-pairs)])
+    (new-GenSeries gen-series-sorted-data #:index gen-series-index)))
+; ***********************************************************
+; GenSeries Sorting
 ; ***********************************************************

@@ -330,7 +330,24 @@
 (println "TOTAL EMPLOYMENT DATAFRAME")
 (data-frame-head employment-df)
 
-(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Sex))))
+(show-data-frame-description (data-frame-description employment-df))
+
+(define employment-df-filtered (data-frame-column-filter-not employment-df (lambda ([sex : Any]) (eq? (assert sex symbol?) '|Total men and women|)) 'Sex))
+
+(define employment-df-filtered-men (data-frame-column-filter employment-df-filtered (lambda ([sex : Any]) (eq? (assert sex symbol?) 'Men)) 'Sex))
+(define employment-df-filtered-women (data-frame-column-filter employment-df-filtered (lambda ([sex : Any]) (eq? (assert sex symbol?) 'Women)) 'Sex))
+
+(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Sex))))
+
+(define max-by-country-area-df-men (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered-men (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+
+(define max-by-country-area-df-women (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered-women (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+
+(sort (vector->list (series-data (data-frame-series-ref max-by-country-area-df-men 'Value))) <)
+(sort (vector->list (series-data (data-frame-series-ref max-by-country-area-df-women 'Value))) <)
+
+(data-frame-head max-by-country-area-df-men)
+(data-frame-head max-by-country-area-df-women)
 
 (data-frame-head max-by-country-area-df)
 ;(series-filter (series-data (data-frame-series-ref max-by-country-area-df 'Value)))
@@ -373,3 +390,6 @@
 (series-data-idxes-from-predicate (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?))))
 
 (get-series-index (series-filter (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?)))))
+
+(iseries-print (new-ISeries (list 0 3 8 2 3 4 5) #:index (list 'a 'b 'c 'd 'e 'f 'g)))
+(iseries-print (iseries-sort (new-ISeries (list 0 3 8 2 3 4 5) #:index (list 'a 'b 'c 'd 'e 'f 'g))))

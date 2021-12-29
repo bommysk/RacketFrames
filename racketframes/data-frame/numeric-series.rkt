@@ -92,7 +92,9 @@
  [flvector->list (FlVector [#:index Fixnum] -> (Listof Flonum))]
  [flvector->vector (FlVector [#:index Fixnum] -> (Vectorof Flonum))]
  [list->flvector ((Listof Flonum) -> FlVector)]
- [nseries-print (NSeries [#:output-port Output-Port] -> Void)])
+ [nseries-print (NSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void)]
+ [nseries-sort (NSeries -> NSeries)]
+ [nseries-sort-descending (NSeries -> NSeries)])
 
 ; ***********************************************************
 
@@ -128,10 +130,10 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: nseries-print (NSeries [#:output-port Output-Port] -> Void))
-(define (nseries-print nseries #:output-port [port (current-output-port)])
+(: nseries-print (NSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void))
+(define (nseries-print nseries #:output-port [port (current-output-port)] #:count [count #f])
   (define flv (nseries-data nseries))
-  (let ((len (flvector-length flv))
+  (let ((len (if (assert count) count (flvector-length flv)))
 	(out (current-output-port))
 	(decs (Settings-decimals (settings)))
 	(max-output (Settings-max-output (settings))))
@@ -941,6 +943,8 @@
   (agg-value-hash-to-gen-series agg-value-hash))
 
 ; ***********************************************************
+; NSeries Filtering
+; ***********************************************************
 (: nseries-index-from-predicate (NSeries (Flonum -> Boolean) -> RFIndex))
 (define (nseries-index-from-predicate nseries pred)  
   (build-index-from-list
@@ -988,4 +992,60 @@
 (: nseries-filter-not (NSeries (Flonum -> Boolean) -> NSeries))
 (define (nseries-filter-not nseries filter-function)
   (new-NSeries (filter-not filter-function (flvector->list (nseries-data nseries))) #:index (nseries-index-from-predicate-not nseries filter-function)))
+; ***********************************************************
+; NSeries Filtering
+; ***********************************************************
+
+; ***********************************************************
+; NSeries Sorting
+; ***********************************************************
+;; Note for numeric operation purposes, it's best to set the 
+;; DEFAULT_NULL_VALUE to -inf.0 instead of the default -nan.0
+(: nseries-data->pair-list (NSeries -> (Listof (Pair Flonum Index))))
+(define (nseries-data->pair-list nseries)
+  (for/list : (Listof (Pair Flonum Index))
+    ([val (flvector->list (nseries-data nseries))]
+     [n (in-naturals)])
+    (cons (assert val flonum?) (assert n index?))))
+
+(: nseries-sort-pair-list ((Listof (Pairof Flonum Index)) -> (Listof (Pairof Flonum Index))))
+(define (nseries-sort-pair-list pair-lst)
+  ((inst sort (Pair Flonum Index) Flonum) pair-lst < #:key (λ ((p : (Pair Flonum Index))) (car p)) #:cache-keys? #t))
+
+(: nseries-sort-pair-list-descending ((Listof (Pairof Flonum Index)) -> (Listof (Pairof Flonum Index))))
+(define (nseries-sort-pair-list-descending pair-lst)
+  ((inst sort (Pair Flonum Index) Flonum) pair-lst > #:key (λ ((p : (Pair Flonum Index))) (car p)) #:cache-keys? #t))
+
+(: nseries-get-sorted-data ((Listof (Pairof Flonum Index)) -> (Listof Flonum)))
+(define (nseries-get-sorted-data pair-lst)
+  (map (lambda ((pairing : (Pairof Flonum Index))) (car pairing)) pair-lst))
+
+(: nseries-get-original-idxes ((Listof (Pairof Flonum Index)) -> (Listof Index)))
+(define (nseries-get-original-idxes pair-lst)
+  (map (lambda ((pairing : (Pairof Flonum Index))) (cdr pairing)) pair-lst))
+
+(: nseries-index-from-idxes (NSeries (Listof Index) -> RFIndex))
+(define (nseries-index-from-idxes nseries idx-list)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([idx idx-list])
+     (if (nseries-index nseries)
+         (idx->key (assert (nseries-index nseries)) (assert idx index?))
+         (assert idx index?)))))
+
+(: nseries-sort (NSeries -> NSeries))
+(define (nseries-sort nseries)
+  (let* ([nseries-sorted-pairs (nseries-sort-pair-list (nseries-data->pair-list nseries))]
+         [nseries-index (nseries-index-from-idxes nseries (nseries-get-original-idxes nseries-sorted-pairs))]
+         [nseries-sorted-data (nseries-get-sorted-data nseries-sorted-pairs)])
+    (new-NSeries nseries-sorted-data #:index nseries-index)))
+
+(: nseries-sort-descending (NSeries -> NSeries))
+(define (nseries-sort-descending nseries)
+  (let* ([nseries-sorted-pairs (nseries-sort-pair-list-descending (nseries-data->pair-list nseries))]
+         [nseries-index (nseries-index-from-idxes nseries (nseries-get-original-idxes nseries-sorted-pairs))]
+         [nseries-sorted-data (nseries-get-sorted-data nseries-sorted-pairs)])
+    (new-NSeries nseries-sorted-data #:index nseries-index)))
+; ***********************************************************
+; NSeries Sorting
 ; ***********************************************************

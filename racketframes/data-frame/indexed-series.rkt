@@ -697,7 +697,8 @@ N nanoseconds
 (: key-fn-list ((Listof (Listof GenericType)) -> (Index -> String)))
 (define (key-fn-list lsts)
   (λ: ((row-id : Index))
-    (let ((outp (open-output-string)))
+    (let ((outp (open-output-string))
+          (idx-counter : Index 0))
       (for ([lst (in-list lsts)])
         (let*: ((seg : GenericType (list-ref lst row-id))
                 (seg-str : String (cond
@@ -706,7 +707,9 @@ N nanoseconds
                                     ; pretty-format anything else
                                     [else (pretty-format seg)])))
           (display seg-str outp)
-          (display key-delimiter outp)))
+          (set! idx-counter (assert (add1 idx-counter) index?))                     
+          (unless (>= idx-counter (length lsts))
+            (display key-delimiter outp))))
       (get-output-string outp))))
 
 (: build-multi-index-from-sequence ((Sequenceof (Sequenceof GenericType)) -> LabelIndex))

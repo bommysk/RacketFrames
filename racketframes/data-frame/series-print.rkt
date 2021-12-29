@@ -1,8 +1,8 @@
 #lang typed/racket
 
 (provide:
- [series-print (Series [#:output-port Output-Port] -> Void)]
- [column-print (Column [#:output-port Output-Port] -> Void)])
+ [series-print (Series [#:output-port Output-Port] [#:count (Option Index)] -> Void)]
+ [column-print (Column [#:output-port Output-Port] [#:count (Option Index)] -> Void)])
 
 (require
  (only-in "series-description.rkt"
@@ -25,28 +25,28 @@
           Column column-heading column-series))
 
 
-(: series-print (Series [#:output-port Output-Port] -> Void))
-(define (series-print series #:output-port [port (current-output-port)])
+(: series-print (Series [#:output-port Output-Port] [#:count (Option Index)] -> Void))
+(define (series-print series #:output-port [port (current-output-port)] #:count [count #f])
   (cond
     ((GenSeries? series)
-     (gen-series-print series))
+     (gen-series-print series #:output-port port #:count count))
     ((NSeries? series)
-     (nseries-print series))
+     (nseries-print series #:output-port port #:count count))
     ((CSeries? series)
-     (cseries-print series))
+     (cseries-print series #:output-port port #:count count))
     ((ISeries? series)
-     (iseries-print series))
+     (iseries-print series #:output-port port #:count count))
     ((BSeries? series)
-     (bseries-print series))
+     (bseries-print series #:output-port port #:count count))
     ((DatetimeSeries? series)
-     (datetime-series-print series))
+     (datetime-series-print series #:output-port port #:count count))
     ((DateSeries? series)
-     (date-series-print series))
+     (date-series-print series #:output-port port #:count count))
     [else (error "Unknown series type.")]))
 
-(: column-print (Column [#:output-port Output-Port] -> Void))
-(define (column-print column #:output-port [port (current-output-port)])
+(: column-print (Column [#:output-port Output-Port] [#:count (Option Index)] -> Void))
+(define (column-print column #:output-port [port (current-output-port)] #:count [count #f])
   (let ((heading (column-heading column))
         (series (column-series column)))
     (displayln heading)
-    (series-print series #:output-port port)))
+    (series-print series #:output-port port #:count count)))
