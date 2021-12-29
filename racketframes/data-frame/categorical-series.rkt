@@ -376,7 +376,7 @@
    (for/list : (Listof IndexDataType)
      ([val (cseries-data cseries)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred (assert val Label?)))
      (if (cseries-index cseries)
          (idx->key (assert (cseries-index cseries)) (assert n index?))
          (assert n index?)))))
@@ -386,7 +386,7 @@
    (for/list : (Listof Index)
      ([val (cseries-data cseries)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred (assert val Label?)))
          (assert n index?)))
 
 (: cseries-data-idxes-from-predicate-not (CSeries (Label -> Boolean) -> (Listof Index)))
@@ -394,7 +394,7 @@
    (for/list : (Listof Index)
      ([val (cseries-data cseries)]
       [n (in-naturals)]
-      #:when (not (pred (assert val date?))))
+      #:when (not (pred (assert val Label?))))
          (assert n index?)))
 
 (: cseries-filter (CSeries (Label -> Boolean) -> CSeries))
@@ -409,7 +409,7 @@
    (for/list : (Listof IndexDataType)
      ([val (cseries-data cseries)]
       [n (in-naturals)]
-      #:when (not (pred (assert val date?))))
+      #:when (not (pred (assert val Label?))))
      (if (cseries-index cseries)
          (idx->key (assert (cseries-index cseries)) (assert n index?))
          (assert n index?)))))
@@ -417,3 +417,67 @@
 (: cseries-filter-not (CSeries (Label -> Boolean) -> CSeries))
 (define (cseries-filter-not cseries filter-function)
   (new-CSeries (vector-filter-not filter-function (cseries-data cseries)) #:index (cseries-index-from-predicate-not cseries filter-function)))
+
+; ***********************************************************
+; CSeries Sorting
+; ***********************************************************
+;; Note for numeric operation purposes, it's best to set the 
+;; DEFAULT_NULL_VALUE to -inf.0 instead of the default -nan.0
+(: cseries-data->string-list (CSeries -> (Listof String)))
+(define (cseries-data->string-list cseries)
+  (let ((data : (Listof Symbol) (vector->list (cseries-data cseries))))
+    (map symbol->string data)))
+
+(: string-list->cseries-data ((Listof String) -> (Vectorof Label)))
+(define (string-list->cseries-data data)
+  (list->vector (map string->symbol data)))
+
+(: cseries-data->pair-list (CSeries -> (Listof (Pair String Index))))
+(define (cseries-data->pair-list cseries)
+  (for/list : (Listof (Pair String Index))
+    ([val (cseries-data->string-list cseries)]
+     [n (in-naturals)])
+    (cons (assert val string?) (assert n index?))))
+
+(: cseries-sort-pair-list ((Listof (Pairof String Index)) -> (Listof (Pairof String Index))))
+(define (cseries-sort-pair-list pair-lst)
+  ((inst sort (Pair String Index) String) pair-lst string<? #:key (λ ((p : (Pair String Index))) (car p)) #:cache-keys? #t))
+
+(: cseries-sort-pair-list-descending ((Listof (Pairof String Index)) -> (Listof (Pairof String Index))))
+(define (cseries-sort-pair-list-descending pair-lst)
+  ((inst sort (Pair String Index) String) pair-lst string>? #:key (λ ((p : (Pair String Index))) (car p)) #:cache-keys? #t))
+
+(: cseries-get-sorted-data ((Listof (Pairof String Index)) -> (Listof String)))
+(define (cseries-get-sorted-data pair-lst)
+  (map (lambda ((pairing : (Pairof String Index))) (car pairing)) pair-lst))
+
+(: cseries-get-original-idxes ((Listof (Pairof String Index)) -> (Listof Index)))
+(define (cseries-get-original-idxes pair-lst)
+  (map (lambda ((pairing : (Pairof String Index))) (cdr pairing)) pair-lst))
+
+(: cseries-index-from-idxes (CSeries (Listof Index) -> RFIndex))
+(define (cseries-index-from-idxes cseries idx-list)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([idx idx-list])
+     (if (cseries-index cseries)
+         (idx->key (assert (cseries-index cseries)) (assert idx index?))
+         (assert idx index?)))))
+
+(: cseries-sort (CSeries -> CSeries))
+(define (cseries-sort cseries)
+  (let* ([cseries-sorted-pairs (cseries-sort-pair-list (cseries-data->pair-list cseries))]
+         [cseries-index (cseries-index-from-idxes cseries (cseries-get-original-idxes cseries-sorted-pairs))]
+         [cseries-sorted-data (cseries-get-sorted-data cseries-sorted-pairs)])
+    (new-CSeries (string-list->cseries-data cseries-sorted-data) #:index cseries-index)))
+
+(: cseries-sort-descending (CSeries -> CSeries))
+(define (cseries-sort-descending cseries)
+  (let* ([cseries-sorted-pairs (cseries-sort-pair-list-descending (cseries-data->pair-list cseries))]
+         [cseries-index (cseries-index-from-idxes cseries (cseries-get-original-idxes cseries-sorted-pairs))]
+         [cseries-sorted-data (cseries-get-sorted-data cseries-sorted-pairs)])
+    (new-CSeries (string-list->cseries-data cseries-sorted-data) #:index cseries-index)))
+; ***********************************************************
+; CSeries Sorting
+; ***********************************************************
+

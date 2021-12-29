@@ -708,8 +708,8 @@ N nanoseconds
                                     [else (pretty-format seg)])))
           (display seg-str outp)
           (set! idx-counter (assert (add1 idx-counter) index?))                     
-                     (unless (>= idx-counter (length lsts))
-                       (display key-delimiter outp))))
+          (unless (>= idx-counter (length lsts))
+            (display key-delimiter outp))))
       (get-output-string outp))))
 
 (: build-multi-index-from-sequence ((Sequenceof (Sequenceof GenericType)) -> LabelIndex))
