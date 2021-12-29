@@ -72,7 +72,7 @@
  [!=./is (ISeries Fixnum -> BSeries)]
  [apply-agg-is (Symbol ISeries -> GenericType)]
  [apply-stat-is (Symbol ISeries -> Real)]
- [iseries-print (ISeries [#:output-port Output-Port] -> Void)]
+ [iseries-print (ISeries [#:output-port Output-Port] [#:count (Option Index)] -> Void)]
  [iseries-filter (ISeries (RFFixnum -> Boolean) -> ISeries)]
  [iseries-filter-not (ISeries (RFFixnum -> Boolean) -> ISeries)]
  [iseries-data-idxes-from-predicate (ISeries (RFFixnum -> Boolean) -> (Listof Index))]
@@ -85,7 +85,8 @@
  [iseries-isna (ISeries -> ISeries)]
  [make-RFFixnum-vector ((U (Sequenceof Fixnum) (Sequenceof RFFixnum)) -> (Vectorof RFFixnum))]
  [derive-fixnum-value (ISeries RFFixnum -> Fixnum)]
- [iseries-sort (ISeries -> ISeries)])
+ [iseries-sort (ISeries -> ISeries)]
+ [iseries-sort-descending (ISeries -> ISeries)])
 ; ***********************************************************
 
 ; ***********************************************************
@@ -209,10 +210,10 @@
 
 ; ***********************************************************
 
-(: iseries-print (ISeries [#:output-port Output-Port] -> Void))
-(define (iseries-print iseries #:output-port [port (current-output-port)])
+(: iseries-print (ISeries [#:output-port Output-Port] [#:count (Option Index)] -> Void))
+(define (iseries-print iseries #:output-port [port (current-output-port)] #:count [count #f])
   (define v (iseries-data iseries))
-  (let ((len (vector-length v))
+  (let ((len (if (assert count) count (vector-length v)))
         (out (current-output-port)))
     (if (zero? len)
         (displayln "Empty $ISeries" port)

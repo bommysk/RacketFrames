@@ -31,7 +31,7 @@
 
 ;(series-filter (series-data (data-frame-series-ref max-by-country-area-df 'Value)))
 
-(nseries-print (nseries-sort-descending (assert (data-frame-series-ref max-by-country-area-df 'Value) NSeries?))  #:count 10)
+(series-print (nseries-sort-descending (assert (data-frame-series-ref max-by-country-area-df 'Value) NSeries?)) #:count 10)
 
 (show-data-frame-description (data-frame-description max-by-country-area-df))
 

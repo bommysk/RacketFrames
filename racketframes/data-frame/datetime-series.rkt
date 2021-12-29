@@ -67,9 +67,7 @@
  [<=/datetime-series (DatetimeSeries DatetimeSeries -> BSeries)]
  [=/datetime-series (DatetimeSeries DatetimeSeries -> BSeries)]
  [!=/datetime-series (DatetimeSeries DatetimeSeries -> BSeries)]
- 
- [datetime-series-print (DatetimeSeries [#:output-port Output-Port] -> Void)]
-
+ [datetime-series-print (DatetimeSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void)]
  [datetime-series-groupby (DatetimeSeries [#:by-value Boolean] -> GroupHash)]
  [set-DatetimeSeries-null-value (DatetimeSeries RFNULL -> DatetimeSeries)]
  [set-DatetimeSeries-datetime-null-value-inplace (DatetimeSeries Datetime -> Void)]
@@ -78,7 +76,9 @@
  [datetime-series-data-idxes-from-predicate (DatetimeSeries (RFDatetime -> Boolean) -> (Listof Index))]
  [datetime-series-data-idxes-from-predicate-not (DatetimeSeries (RFDatetime -> Boolean) -> (Listof Index))]
  [datetime-series-filter (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries)]
- [datetime-series-filter-not (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries)])
+ [datetime-series-filter-not (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries)]
+ [datetime-series-sort (DatetimeSeries -> DatetimeSeries)]
+ [datetime-series-sort-descending (DatetimeSeries -> DatetimeSeries)])
 ; ***********************************************************
 
 (define-type RFDatetime (U Datetime RFNoData))
@@ -147,11 +147,11 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: datetime-series-print (DatetimeSeries [#:output-port Output-Port] -> Void))
-(define (datetime-series-print datetime-series #:output-port [port (current-output-port)])
+(: datetime-series-print (DatetimeSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void))
+(define (datetime-series-print datetime-series #:output-port [port (current-output-port)] #:count [count #f])
   (define date-v (datetime-series-data datetime-series))
   (define v (datetime-series-data datetime-series))
-  (let ((len (vector-length v))
+  (let ((len (if (assert count) count (vector-length v)))
 	(out (current-output-port)))
     (if (zero? len)
 	(displayln "Empty $DatetimeSeries" port)
@@ -626,6 +626,8 @@
 ; ***********************************************************
 
 ; ***********************************************************
+; DatetimeSeries Filtering
+; ***********************************************************
 (: datetime-series-index-from-predicate (DatetimeSeries (RFDatetime -> Boolean) -> RFIndex))
 (define (datetime-series-index-from-predicate datetime-series pred)  
   (build-index-from-list
@@ -673,4 +675,58 @@
 (: datetime-series-filter-not (DatetimeSeries (RFDatetime -> Boolean) -> DatetimeSeries))
 (define (datetime-series-filter-not datetime-series filter-function)
   (new-DatetimeSeries (vector-filter-not filter-function (datetime-series-data datetime-series)) #:index (datetime-series-index-from-predicate-not datetime-series filter-function)))
+; ***********************************************************
+; DatetimeSeries Filtering
+; ***********************************************************
+
+; ***********************************************************
+; DatetimeSeries Sorting
+; ***********************************************************
+(: datetime-series-data->pair-list (DatetimeSeries -> (Listof (Pair Datetime Index))))
+(define (datetime-series-data->pair-list datetime-series)
+  (for/list : (Listof (Pair Datetime Index))
+    ([val (datetime-series-data datetime-series)]
+     [n (in-naturals)])
+    (cons (assert val Datetime?) (assert n index?))))
+
+(: datetime-series-sort-pair-list ((Listof (Pairof Datetime Index)) -> (Listof (Pairof Datetime Index))))
+(define (datetime-series-sort-pair-list pair-lst)
+  ((inst sort (Pair Datetime Index) Datetime) pair-lst datetime< #:key (λ ((p : (Pair Datetime Index))) (car p)) #:cache-keys? #t))
+
+(: datetime-series-sort-pair-list-descending ((Listof (Pairof Datetime Index)) -> (Listof (Pairof Datetime Index))))
+(define (datetime-series-sort-pair-list-descending pair-lst)
+  ((inst sort (Pair Datetime Index) Datetime) pair-lst datetime> #:key (λ ((p : (Pair Datetime Index))) (car p)) #:cache-keys? #t))
+
+(: datetime-series-get-sorted-data ((Listof (Pairof Datetime Index)) -> (Listof Datetime)))
+(define (datetime-series-get-sorted-data pair-lst)
+  (map (lambda ((pairing : (Pairof Datetime Index))) (car pairing)) pair-lst))
+
+(: datetime-series-get-original-idxes ((Listof (Pairof Datetime Index)) -> (Listof Index)))
+(define (datetime-series-get-original-idxes pair-lst)
+  (map (lambda ((pairing : (Pairof Datetime Index))) (cdr pairing)) pair-lst))
+
+(: datetime-series-index-from-idxes (DatetimeSeries (Listof Index) -> RFIndex))
+(define (datetime-series-index-from-idxes datetime-series idx-list)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([idx idx-list])
+     (if (datetime-series-index datetime-series)
+         (idx->key (assert (datetime-series-index datetime-series)) (assert idx index?))
+         (assert idx index?)))))
+
+(: datetime-series-sort (DatetimeSeries -> DatetimeSeries))
+(define (datetime-series-sort datetime-series)
+  (let* ([datetime-series-sorted-pairs (datetime-series-sort-pair-list (datetime-series-data->pair-list datetime-series))]
+         [datetime-series-index (datetime-series-index-from-idxes datetime-series (datetime-series-get-original-idxes datetime-series-sorted-pairs))]
+         [datetime-series-sorted-data (datetime-series-get-sorted-data datetime-series-sorted-pairs)])
+    (new-DatetimeSeries datetime-series-sorted-data #:index datetime-series-index)))
+
+(: datetime-series-sort-descending (DatetimeSeries -> DatetimeSeries))
+(define (datetime-series-sort-descending datetime-series)
+  (let* ([datetime-series-sorted-pairs (datetime-series-sort-pair-list-descending (datetime-series-data->pair-list datetime-series))]
+         [datetime-series-index (datetime-series-index-from-idxes datetime-series (datetime-series-get-original-idxes datetime-series-sorted-pairs))]
+         [datetime-series-sorted-data (datetime-series-get-sorted-data datetime-series-sorted-pairs)])
+    (new-DatetimeSeries datetime-series-sorted-data #:index datetime-series-index)))
+; ***********************************************************
+; DatetimeSeries Sorting
 ; ***********************************************************

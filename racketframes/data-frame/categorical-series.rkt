@@ -23,7 +23,7 @@
  [cseries-iloc (CSeries (U Index (Listof Index)) -> (U Label CSeries))]
  [cseries-groupby (CSeries [#:by-value Boolean] -> GroupHash)]
  [cseries-index-ref (CSeries IndexDataType -> (Listof Label))]
- [cseries-print (CSeries [#:output-port Output-Port] -> Void)]
+ [cseries-print (CSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void)]
  [cseries-loc-boolean (CSeries (Listof Boolean) -> (U Label CSeries))]
  [cseries-loc (CSeries (U Label (Listof Label) (Listof Boolean)) -> (U Label CSeries))]
  [cseries-loc-multi-index (CSeries (U (Listof String) ListofListofString) -> (U Label CSeries))]
@@ -32,7 +32,9 @@
  [cseries-index-from-predicate (CSeries (Label -> Boolean) -> RFIndex)]
  [cseries-index-from-predicate-not (CSeries (Label -> Boolean) -> RFIndex)]
  [cseries-data-idxes-from-predicate (CSeries (Label -> Boolean) -> (Listof Index))]
- [cseries-data-idxes-from-predicate-not (CSeries (Label -> Boolean) -> (Listof Index))])
+ [cseries-data-idxes-from-predicate-not (CSeries (Label -> Boolean) -> (Listof Index))]
+ [cseries-sort (CSeries -> CSeries)]
+ [cseries-sort-descending (CSeries -> CSeries)])
 
 (require
  (only-in "indexed-series.rkt"
@@ -343,16 +345,17 @@
 				  (append label-list val))
 			      (λ () (list)))))))))
 
-;; #:methods gen:custom-write [(define write-proc writer-CSeries)])
-
+; ***********************************************************
+; CSeries Filtering
+; ***********************************************************
 ;; Categorical Series
 ;; Encoded as an array of integer values with an associated nominal.
 ;; Custom Structure Writer
-(: cseries-print (CSeries [#:output-port Output-Port] -> Void))
-(define (cseries-print cseries #:output-port [port (current-output-port)])
+(: cseries-print (CSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void))
+(define (cseries-print cseries #:output-port [port (current-output-port)] #:count [count #f])
   (let* ([data (CSeries-data cseries)]
 	 [nominals (CSeries-nominals cseries)]
-	 [len (vector-length data)])
+	 [len (if (assert count) count (vector-length data))])
     (if (zero? len)
 	(displayln "Empty $CSeries" port)
 	(begin
@@ -417,6 +420,9 @@
 (: cseries-filter-not (CSeries (Label -> Boolean) -> CSeries))
 (define (cseries-filter-not cseries filter-function)
   (new-CSeries (vector-filter-not filter-function (cseries-data cseries)) #:index (cseries-index-from-predicate-not cseries filter-function)))
+; ***********************************************************
+; CSeries Filtering
+; ***********************************************************
 
 ; ***********************************************************
 ; CSeries Sorting

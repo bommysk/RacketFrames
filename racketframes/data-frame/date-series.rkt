@@ -63,7 +63,7 @@
  [=/date-series (DateSeries DateSeries -> BSeries)]
  [!=/date-series (DateSeries DateSeries -> BSeries)]
  
- [date-series-print (DateSeries [#:output-port Output-Port] -> Void)]
+ [date-series-print (DateSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void)]
 
  [date-series-groupby (DateSeries [#:by-value Boolean] -> GroupHash)]
  ; in Pandas, fillna
@@ -77,7 +77,9 @@
  [date-series-data-idxes-from-predicate (DateSeries (RFDate -> Boolean) -> (Listof Index))]
  [date-series-data-idxes-from-predicate-not (DateSeries (RFDate -> Boolean) -> (Listof Index))]
  [date-series-filter (DateSeries (RFDate -> Boolean) -> DateSeries)]
- [date-series-filter-not (DateSeries (RFDate -> Boolean) -> DateSeries)])
+ [date-series-filter-not (DateSeries (RFDate -> Boolean) -> DateSeries)]
+ [date-series-sort (DateSeries -> DateSeries)]
+ [date-series-sort-descending (DateSeries -> DateSeries)])
 ; ***********************************************************
 
 #|
@@ -171,11 +173,11 @@
 ; ***********************************************************
 
 ; ***********************************************************
-(: date-series-print (DateSeries [#:output-port Output-Port] -> Void))
-(define (date-series-print date-series #:output-port [port (current-output-port)])
+(: date-series-print (DateSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void))
+(define (date-series-print date-series #:output-port [port (current-output-port)] #:count [count #f])
   (define date-v (date-series-data date-series))
   (define v (date-series-data date-series))
-  (let ((len (vector-length v))
+  (let ((len (if (assert count) count (vector-length v)))
 	(out (current-output-port)))
     (if (zero? len)
 	(displayln "Empty $DateSeries" port)
@@ -630,6 +632,8 @@
 ; ***********************************************************
 
 ; ***********************************************************
+; DateSeries Filtering
+; ***********************************************************
 (: date-series-index-from-predicate (DateSeries (RFDate -> Boolean) -> RFIndex))
 (define (date-series-index-from-predicate date-series pred)  
   (build-index-from-list
@@ -677,4 +681,58 @@
 (: date-series-filter-not (DateSeries (RFDate -> Boolean) -> DateSeries))
 (define (date-series-filter-not date-series filter-function)
   (new-DateSeries (vector-filter-not filter-function (date-series-data date-series)) #:index (date-series-index-from-predicate-not date-series filter-function)))
+; ***********************************************************
+; DateSeries Filtering
+; ***********************************************************
+
+; ***********************************************************
+; DateSeries Sorting
+; ***********************************************************
+(: date-series-data->pair-list (DateSeries -> (Listof (Pair date Index))))
+(define (date-series-data->pair-list date-series)
+  (for/list : (Listof (Pair date Index))
+    ([val (date-series-data date-series)]
+     [n (in-naturals)])
+    (cons (assert val date?) (assert n index?))))
+
+(: date-series-sort-pair-list ((Listof (Pairof date Index)) -> (Listof (Pairof date Index))))
+(define (date-series-sort-pair-list pair-lst)
+  ((inst sort (Pair date Index) date) pair-lst date< #:key (λ ((p : (Pair date Index))) (car p)) #:cache-keys? #t))
+
+(: date-series-sort-pair-list-descending ((Listof (Pairof date Index)) -> (Listof (Pairof date Index))))
+(define (date-series-sort-pair-list-descending pair-lst)
+  ((inst sort (Pair date Index) date) pair-lst date> #:key (λ ((p : (Pair date Index))) (car p)) #:cache-keys? #t))
+
+(: date-series-get-sorted-data ((Listof (Pairof date Index)) -> (Listof date)))
+(define (date-series-get-sorted-data pair-lst)
+  (map (lambda ((pairing : (Pairof date Index))) (car pairing)) pair-lst))
+
+(: date-series-get-original-idxes ((Listof (Pairof date Index)) -> (Listof Index)))
+(define (date-series-get-original-idxes pair-lst)
+  (map (lambda ((pairing : (Pairof date Index))) (cdr pairing)) pair-lst))
+
+(: date-series-index-from-idxes (DateSeries (Listof Index) -> RFIndex))
+(define (date-series-index-from-idxes date-series idx-list)  
+  (build-index-from-list
+   (for/list : (Listof IndexDataType)
+     ([idx idx-list])
+     (if (date-series-index date-series)
+         (idx->key (assert (date-series-index date-series)) (assert idx index?))
+         (assert idx index?)))))
+
+(: date-series-sort (DateSeries -> DateSeries))
+(define (date-series-sort date-series)
+  (let* ([date-series-sorted-pairs (date-series-sort-pair-list (date-series-data->pair-list date-series))]
+         [date-series-index (date-series-index-from-idxes date-series (date-series-get-original-idxes date-series-sorted-pairs))]
+         [date-series-sorted-data (date-series-get-sorted-data date-series-sorted-pairs)])
+    (new-DateSeries date-series-sorted-data #:index date-series-index)))
+
+(: date-series-sort-descending (DateSeries -> DateSeries))
+(define (date-series-sort-descending date-series)
+  (let* ([date-series-sorted-pairs (date-series-sort-pair-list-descending (date-series-data->pair-list date-series))]
+         [date-series-index (date-series-index-from-idxes date-series (date-series-get-original-idxes date-series-sorted-pairs))]
+         [date-series-sorted-data (date-series-get-sorted-data date-series-sorted-pairs)])
+    (new-DateSeries date-series-sorted-data #:index date-series-index)))
+; ***********************************************************
+; DateSeries Sorting
 ; ***********************************************************
