@@ -15,7 +15,7 @@
 (define employment-df-filtered-men (data-frame-column-filter employment-df-filtered (lambda ([sex : Any]) (eq? (assert sex symbol?) 'Men)) 'Sex))
 (define employment-df-filtered-women (data-frame-column-filter employment-df-filtered (lambda ([sex : Any]) (eq? (assert sex symbol?) 'Women)) 'Sex))
 
-(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Sex))))
+(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Sex))))
 
 (define max-by-country-area-df-men (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered-men (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
 
@@ -31,11 +31,17 @@
 
 ;(series-filter (series-data (data-frame-series-ref max-by-country-area-df 'Value)))
 
+(nseries-print (nseries-sort-descending (assert (data-frame-series-ref max-by-country-area-df 'Value) NSeries?))  #:count 10)
+
 (show-data-frame-description (data-frame-description max-by-country-area-df))
 
-(data-frame-index employment-df-filtered)
+(series-loc (data-frame-series-ref max-by-country-area-df-men 'Value) 'China)
 
-(series-print (assert (data-frame-loc employment-df-filtered 'Jamaica (list 'Value 'Year)) Series?))
+;(data-frame-index employment-df-filtered)
 
-(println "HIGHEST VALUE FOR JAMAICA")
-(series-loc (assert (data-frame-loc employment-df-filtered 'Jamaica (list 'Value 'Year)) Series?) 'Value)
+;(series-print (assert (data-frame-loc employment-df-filtered 'Jamaica (list 'Value 'Year)) Series?))
+
+;(println "HIGHEST VALUE FOR JAMAICA")
+;(series-loc (assert (data-frame-loc employment-df-filtered 'Jamaica (list 'Value 'Year)) Series?) 'Value)
+
+(build-multi-index-from-list (list (list 'a 'b 'c) (list 8 5 5)))

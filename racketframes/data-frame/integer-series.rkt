@@ -84,7 +84,8 @@
  [iseries-notna (ISeries -> ISeries)]
  [iseries-isna (ISeries -> ISeries)]
  [make-RFFixnum-vector ((U (Sequenceof Fixnum) (Sequenceof RFFixnum)) -> (Vectorof RFFixnum))]
- (derive-fixnum-value (ISeries RFFixnum -> Fixnum)))
+ [derive-fixnum-value (ISeries RFFixnum -> Fixnum)]
+ [iseries-sort (ISeries -> ISeries)])
 ; ***********************************************************
 
 ; ***********************************************************
@@ -1158,6 +1159,9 @@
 ; ISeries Nominals
 ; ***********************************************************
 
+; ***********************************************************
+; ISeries Sorting
+; ***********************************************************
 ;; Note this can only work if the ISeries consists only of Fixnums.
 ;; In other words, the DEFAULT_NULL_VALUE should be 0.
 (: iseries-data->pair-list (ISeries -> (Listof (Pair Fixnum Index))))
@@ -1170,6 +1174,10 @@
 (: iseries-sort-pair-list ((Listof (Pairof Fixnum Index)) -> (Listof (Pairof Fixnum Index))))
 (define (iseries-sort-pair-list pair-lst)
   ((inst sort (Pair Fixnum Index) Fixnum) pair-lst < #:key (λ ((p : (Pair Fixnum Index))) (car p)) #:cache-keys? #t))
+
+(: iseries-sort-pair-list-descending ((Listof (Pairof Fixnum Index)) -> (Listof (Pairof Fixnum Index))))
+(define (iseries-sort-pair-list-descending pair-lst)
+  ((inst sort (Pair Fixnum Index) Fixnum) pair-lst > #:key (λ ((p : (Pair Fixnum Index))) (car p)) #:cache-keys? #t))
 
 (: iseries-get-sorted-data ((Listof (Pairof Fixnum Index)) -> (Listof Fixnum)))
 (define (iseries-get-sorted-data pair-lst)
@@ -1193,4 +1201,14 @@
   (let* ([iseries-sorted-pairs (iseries-sort-pair-list (iseries-data->pair-list iseries))]
          [iseries-index (iseries-index-from-idxes iseries (iseries-get-original-idxes iseries-sorted-pairs))]
          [iseries-sorted-data (iseries-get-sorted-data iseries-sorted-pairs)])
-    (new-ISeries iseries-sorted-data #:index iseries-index)))    
+    (new-ISeries iseries-sorted-data #:index iseries-index)))
+
+(: iseries-sort-descending (ISeries -> ISeries))
+(define (iseries-sort-descending iseries)
+  (let* ([iseries-sorted-pairs (iseries-sort-pair-list-descending (iseries-data->pair-list iseries))]
+         [iseries-index (iseries-index-from-idxes iseries (iseries-get-original-idxes iseries-sorted-pairs))]
+         [iseries-sorted-data (iseries-get-sorted-data iseries-sorted-pairs)])
+    (new-ISeries iseries-sorted-data #:index iseries-index)))
+; ***********************************************************
+; ISeries Sorting
+; ***********************************************************
