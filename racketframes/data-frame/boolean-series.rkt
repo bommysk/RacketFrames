@@ -383,7 +383,7 @@
    (for/list : (Listof IndexDataType)
      ([val (bseries-data bseries)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred val))
      (if (bseries-index bseries)
          (idx->key (assert (bseries-index bseries)) (assert n index?))
          (assert n index?)))))
@@ -393,7 +393,7 @@
    (for/list : (Listof Index)
      ([val (bseries-data bseries)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred val))
          (assert n index?)))
 
 (: bseries-data-idxes-from-predicate-not (BSeries (Boolean -> Boolean) -> (Listof Index)))
@@ -401,7 +401,7 @@
    (for/list : (Listof Index)
      ([val (bseries-data bseries)]
       [n (in-naturals)]
-      #:when (pred (assert val date?)))
+      #:when (pred val))
          (assert n index?)))
 
 (: bseries-filter (BSeries (Boolean -> Boolean) -> BSeries))
@@ -416,7 +416,7 @@
    (for/list : (Listof IndexDataType)
      ([val (bseries-data bseries)]
       [n (in-naturals)]
-      #:when (not (pred (assert val date?))))
+      #:when (not (pred val)))
      (if (bseries-index bseries)
          (idx->key (assert (bseries-index bseries)) (assert n index?))
          (assert n index?)))))
