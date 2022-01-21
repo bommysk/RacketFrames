@@ -274,13 +274,102 @@ DataFrame::(Cols: 1, Rows: 7158)
   - Value: NumericSeries
 74841.0
 "-------------------------"
-"Count by source series"
+"Count by source series for men"
 "-------------------------"
 Index Classification         Year          Country_Area        Footnote            Value       Subclassification        Sex        
-Household survey	            132	Household survey	            132	Household survey	            132	Household survey	            132	Household survey	            132	Household survey	            132	Household survey	            132	
-Labour-related establishment census	            326	Labour-related establishment census	            326	Labour-related establishment census	            326	Labour-related establishment census	            326	Labour-related establishment census	            326	Labour-related establishment census	            326	Labour-related establishment census	            326	
-Population census	           3474	Population census	           3474	Population census	           3474	Population census	           3474	Population census	           3474	Population census	           3474	Population census	           3474	
-Official estimates	          15683	Official estimates	          15683	Official estimates	          15683	Official estimates	          15683	Official estimates	          15683	Official estimates	          15683	Official estimates	          15683	
-Administrative reports	            132	Administrative reports	            132	Administrative reports	            132	Administrative reports	            132	Administrative reports	            132	Administrative reports	            132	Administrative reports	            132	
-Labour-related establishment survey	            916	Labour-related establishment survey	            916	Labour-related establishment survey	            916	Labour-related establishment survey	            916	Labour-related establishment survey	            916	Labour-related establishment survey	            916	Labour-related establishment survey	            916	
-Labour force survey	          79337	Labour force survey	          79337	Labour force survey	          79337	Labour force survey	          79337	Labour force survey	          79337	Labour force survey	          79337	Labour force survey	          79337	
+Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	
+Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	
+Population census	           1147	Population census	           1147	Population census	           1147	Population census	           1147	Population census	           1147	Population census	           1147	Population census	           1147	
+Official estimates	           3920	Official estimates	           3920	Official estimates	           3920	Official estimates	           3920	Official estimates	           3920	Official estimates	           3920	Official estimates	           3920	
+Labour-related establishment survey	            231	Labour-related establishment survey	            231	Labour-related establishment survey	            231	Labour-related establishment survey	            231	Labour-related establishment survey	            231	Labour-related establishment survey	            231	Labour-related establishment survey	            231	
+Labour force survey	          26162	Labour force survey	          26162	Labour force survey	          26162	Labour force survey	          26162	Labour force survey	          26162	Labour force survey	          26162	Labour force survey	          26162	
+DataFrame::(Cols: 7, Rows: 6)
+  - Classification: IntegerSeries
+  - Year: IntegerSeries
+  - Country_Area: IntegerSeries
+  - Footnote: IntegerSeries
+  - Value: IntegerSeries
+  - Subclassification: IntegerSeries
+  - Sex: IntegerSeries
+*********
+$ISeries
+*********
+Labour-related establishment census 105
+Household survey 44
+Population census 1147
+Official estimates 3920
+Labour-related establishment survey 231
+Labour force survey 26162
+"-------------------------"
+"Count by country source series for men"
+"-------------------------"
+Index Classification         Year            Footnote            Value       Subclassification        Sex        
+Kazakhstan::Labour force survey	            143	Kazakhstan::Labour force survey	            143	Kazakhstan::Labour force survey	            143	Kazakhstan::Labour force survey	            143	Kazakhstan::Labour force survey	            143	Kazakhstan::Labour force survey	            143	
+Kyrgyzstan::Official estimates	             96	Kyrgyzstan::Official estimates	             96	Kyrgyzstan::Official estimates	             96	Kyrgyzstan::Official estimates	             96	Kyrgyzstan::Official estimates	             96	Kyrgyzstan::Official estimates	             96	
+Panama::Labour force survey	            482	Panama::Labour force survey	            482	Panama::Labour force survey	            482	Panama::Labour force survey	            482	Panama::Labour force survey	            482	Panama::Labour force survey	            482	
+Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	
+Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	
+Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	
+El Salvador::Labour force survey	            308	El Salvador::Labour force survey	            308	El Salvador::Labour force survey	            308	El Salvador::Labour force survey	            308	El Salvador::Labour force survey	            308	El Salvador::Labour force survey	            308	
+Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	
+Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	
+Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	
+*********
+$ISeries
+*********
+Canada::Labour force survey 676
+Sweden::Labour force survey 664
+Australia::Labour force survey 629
+Finland::Labour force survey 606
+Spain::Labour force survey 547
+Korea, Republic of::Labour force survey 546
+Ireland::Labour force survey 536
+Portugal::Labour force survey 523
+Singapore::Labour force survey 511
+Panama::Labour force survey 482
+"-------------------------"
+"Count by source series women"
+"-------------------------"
+Index Classification         Year          Country_Area        Footnote            Value       Subclassification        Sex        
+Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	
+Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	
+Population census	           1139	Population census	           1139	Population census	           1139	Population census	           1139	Population census	           1139	Population census	           1139	Population census	           1139	
+Official estimates	           3861	Official estimates	           3861	Official estimates	           3861	Official estimates	           3861	Official estimates	           3861	Official estimates	           3861	Official estimates	           3861	
+Labour-related establishment survey	            229	Labour-related establishment survey	            229	Labour-related establishment survey	            229	Labour-related establishment survey	            229	Labour-related establishment survey	            229	Labour-related establishment survey	            229	Labour-related establishment survey	            229	
+Labour force survey	          25812	Labour force survey	          25812	Labour force survey	          25812	Labour force survey	          25812	Labour force survey	          25812	Labour force survey	          25812	Labour force survey	          25812	
+*********
+$ISeries
+*********
+Labour force survey 25812
+Official estimates 3861
+Population census 1139
+Labour-related establishment survey 229
+Labour-related establishment census 105
+Household survey 44
+"-------------------------"
+"Count by country source series women"
+"-------------------------"
+Index Classification         Year            Footnote            Value       Subclassification        Sex        
+Kazakhstan::Labour force survey	            142	Kazakhstan::Labour force survey	            142	Kazakhstan::Labour force survey	            142	Kazakhstan::Labour force survey	            142	Kazakhstan::Labour force survey	            142	Kazakhstan::Labour force survey	            142	
+Kyrgyzstan::Official estimates	             95	Kyrgyzstan::Official estimates	             95	Kyrgyzstan::Official estimates	             95	Kyrgyzstan::Official estimates	             95	Kyrgyzstan::Official estimates	             95	Kyrgyzstan::Official estimates	             95	
+Panama::Labour force survey	            465	Panama::Labour force survey	            465	Panama::Labour force survey	            465	Panama::Labour force survey	            465	Panama::Labour force survey	            465	Panama::Labour force survey	            465	
+Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	
+Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	
+Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	
+El Salvador::Labour force survey	            295	El Salvador::Labour force survey	            295	El Salvador::Labour force survey	            295	El Salvador::Labour force survey	            295	El Salvador::Labour force survey	            295	El Salvador::Labour force survey	            295	
+Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	
+Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	
+Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	
+*********
+$ISeries
+*********
+Canada::Labour force survey 674
+Sweden::Labour force survey 642
+Australia::Labour force survey 629
+Finland::Labour force survey 582
+Spain::Labour force survey 547
+Korea, Republic of::Labour force survey 543
+Ireland::Labour force survey 534
+Portugal::Labour force survey 522
+Singapore::Labour force survey 506
+Israel::Labour force survey 476
