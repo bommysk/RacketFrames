@@ -151,8 +151,7 @@
 (define (datetime-series-print datetime-series #:output-port [port (current-output-port)] #:count [count #f])
   (define date-v (datetime-series-data datetime-series))
   (define v (datetime-series-data datetime-series))
-  (let ((len (if (assert count) count (vector-length v)))
-	(out (current-output-port)))
+  (let ((len (if count count (vector-length v))))
     (if (zero? len)
 	(displayln "Empty $DatetimeSeries" port)
 	(begin

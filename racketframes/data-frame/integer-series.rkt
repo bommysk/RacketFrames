@@ -213,8 +213,7 @@
 (: iseries-print (ISeries [#:output-port Output-Port] [#:count (Option Index)] -> Void))
 (define (iseries-print iseries #:output-port [port (current-output-port)] #:count [count #f])
   (define v (iseries-data iseries))
-  (let ((len (if (assert count) count (vector-length v)))
-        (out (current-output-port)))
+  (let ((len (if count count (vector-length v))))
     (if (zero? len)
         (displayln "Empty $ISeries" port)
         (begin
