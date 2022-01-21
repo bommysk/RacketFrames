@@ -355,7 +355,7 @@
 (define (cseries-print cseries #:output-port [port (current-output-port)] #:count [count #f])
   (let* ([data (CSeries-data cseries)]
 	 [nominals (CSeries-nominals cseries)]
-	 [len (if (assert count) count (vector-length data))])
+	 [len (if count count (vector-length data))])
     (if (zero? len)
 	(displayln "Empty $CSeries" port)
 	(begin

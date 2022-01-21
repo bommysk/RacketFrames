@@ -345,8 +345,7 @@
 (: gen-series-print (GenSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void))
 (define (gen-series-print gen-series #:output-port [port (current-output-port)] #:count [count #f])
   (define v (gen-series-data gen-series))
-  (let ((len (if (assert count) count (vector-length v)))
-	(out (current-output-port)))
+  (let ((len (if count count (vector-length v))))
     (if (zero? len)
 	(displayln "Empty $GenSeries" port)
 	(begin

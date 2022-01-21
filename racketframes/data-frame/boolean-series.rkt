@@ -352,8 +352,7 @@
 (: bseries-print (BSeries [#:output-port Output-Port] [#:count (Option Index)] -> Void))
 (define (bseries-print bseries #:output-port [port (current-output-port)] #:count [count #f])
   (define v (bseries-data bseries))
-  (let ((len (if (assert count) count (vector-length v)))
-	(out (current-output-port)))
+  (let ((len (if count count (vector-length v))))
     (if (zero? len)
 	(displayln "Empty $BSeries" port)
 	(begin
