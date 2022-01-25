@@ -20,6 +20,15 @@ DataFrame::(Cols: 8, Rows: 100000)
   - Value: GenericSeries
   - Footnote: GenericSeries
 "-------------------------"
+column-filter bench: 222.739990234375 ms.
+"-------------------------"
+"-------------------------"
+data-frame-agg-max bench: 915.6298828125 ms.
+"-------------------------"
+"-------------------------"
+data-frame-agg-min bench: 867.949951171875 ms.
+"-------------------------"
+"-------------------------"
 "Max by country area men"
 "-------------------------"
 Index     Year            Value      
@@ -196,6 +205,9 @@ China::1995::Total. 680650.000000
 China::1994::Total. 674550.000000
 China::1993::Total. 668080.000000
 "-------------------------"
+series-sort-descending bench: 61911.751953125 ms.
+"-------------------------"
+"-------------------------"
 "Min by country area series"
 "-------------------------"
 *********
@@ -259,6 +271,9 @@ Kiribati::2000::2. Mining and Quarrying 0.000000
 Mexico::1997::Q. Extra-Territorial Organizations and Bodies 0.000000
 Macau, China::2001::C. Mining and Quarrying 0.000000
 Belgium::2005::B. Fishing 0.000000
+"-------------------------"
+series-sort bench: 62131.56298828125 ms.
+"-------------------------"
 Index     Value      
 Brazil::1996::Women	       26677.00	
 Aruba::2007::Women	          24.40	
@@ -373,3 +388,6 @@ Ireland::Labour force survey 534
 Portugal::Labour force survey 522
 Singapore::Labour force survey 506
 Israel::Labour force survey 476
+"-------------------------"
+data-frame-agg-count bench: 87318.9140625 ms.
+"-------------------------"

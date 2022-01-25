@@ -1,7 +1,9 @@
 #lang typed/racket
 
-;(require RacketFrames)
-(require "../main.rkt")
+(require RacketFrames)
+;(require "../main.rkt")
+
+(define now current-inexact-milliseconds)
 
 ; has empty Footnote column
 (define employment-df (load-csv-file "total_employment_by_economic_activity.csv" #:schema #f))
@@ -11,12 +13,24 @@
 
 (show-data-frame-description (data-frame-description employment-df))
 
+(define column-filter-bench-before (now))
+
 (define employment-df-filtered (data-frame-column-filter-not employment-df (lambda ([sex : Any]) (eq? (assert sex symbol?) '|Total men and women|)) 'Sex))
 
 (define employment-df-filtered-men (data-frame-column-filter employment-df-filtered (lambda ([sex : Any]) (eq? (assert sex symbol?) 'Men)) 'Sex))
+
 (define employment-df-filtered-women (data-frame-column-filter employment-df-filtered (lambda ([sex : Any]) (eq? (assert sex symbol?) 'Women)) 'Sex))
 
+(define column-filter-bench-after (- (now) column-filter-bench-before))
+(println "-------------------------")
+(fprintf (current-output-port)
+         "column-filter bench: ~v ms.\n"
+         column-filter-bench-after)
+(println "-------------------------")
+
 ; max calculations
+(define data-frame-agg-max-bench-before (now))
+
 (define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Year 'Sex))))
 
 (define max-by-country-area-df-subclass (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Subclassification 'Value)) (list 'Country_Area 'Year 'Subclassification))))
@@ -25,7 +39,16 @@
 
 (define max-by-country-area-df-women (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered-women (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
 
+(define data-frame-agg-max-bench-after (- (now) data-frame-agg-max-bench-before))
+(println "-------------------------")
+(fprintf (current-output-port)
+         "data-frame-agg-max bench: ~v ms.\n"
+         data-frame-agg-max-bench-after)
+(println "-------------------------")
+
 ; min calculations
+(define data-frame-agg-min-bench-before (now))
+
 (define min-by-country-area-df (apply-agg-data-frame 'min (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Year 'Sex))))
 
 (define min-by-country-area-df-subclass (apply-agg-data-frame 'min (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Subclassification 'Value)) (list 'Country_Area 'Year 'Subclassification))))
@@ -34,8 +57,12 @@
 
 (define min-by-country-area-df-women (apply-agg-data-frame 'min (data-frame-groupby (data-frame-project employment-df-filtered-women (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
 
-;(sort (vector->list (series-data (data-frame-series-ref max-by-country-area-df-men 'Value))) <)
-;(sort (vector->list (series-data (data-frame-series-ref max-by-country-area-df-women 'Value))) <)
+(define data-frame-agg-min-bench-after (- (now) data-frame-agg-min-bench-before))
+(println "-------------------------")
+(fprintf (current-output-port)
+         "data-frame-agg-min bench: ~v ms.\n"
+         data-frame-agg-min-bench-after)
+(println "-------------------------")
 
 (println "-------------------------")
 (println "Max by country area men")
@@ -77,17 +104,19 @@
 (println "-------------------------")
 (data-frame-head min-by-country-area-df-subclass)
 
-;(series-filter (series-data (data-frame-series-ref max-by-country-area-df 'Value)))
+(define series-sort-descending-bench-before (now))
 
 (println "-------------------------")
 (println "Max by country area series")
 (println "-------------------------")
-(series-print (series-sort-descending (data-frame-series-ref max-by-country-area-df 'Value)) #:count 10)
+(define max-by-country-area-series : Series (series-sort-descending (data-frame-series-ref max-by-country-area-df 'Value)))
+(series-print max-by-country-area-series #:count 10)
 
 (println "-------------------------")
 (println "Max by country area men series")
 (println "-------------------------")
-(series-print (series-sort-descending (data-frame-series-ref max-by-country-area-df-men 'Value)) #:count 10)
+(define max-by-country-area-men-series : Series (series-sort-descending (data-frame-series-ref max-by-country-area-df-men 'Value)))
+(series-print max-by-country-area-men-series #:count 10)
 
 (println "-------------------------")
 (println "Max by country area women series")
@@ -97,8 +126,17 @@
 (println "-------------------------")
 (println "Max by country area subclass series")
 (println "-------------------------")
-(series-print (series-sort-descending (data-frame-series-ref max-by-country-area-df-subclass 'Value)) #:count 10)
+(define max-by-country-area-subclass-series : Series (series-sort-descending (data-frame-series-ref max-by-country-area-df-subclass 'Value)))
+(series-print max-by-country-area-subclass-series #:count 10)
 
+(define series-sort-descending-bench-after (- (now) series-sort-descending-bench-before))
+(println "-------------------------")
+(fprintf (current-output-port)
+         "series-sort-descending bench: ~v ms.\n"
+         series-sort-descending-bench-after)
+(println "-------------------------")
+
+(define series-sort-bench-before (now))
 (println "-------------------------")
 (println "Min by country area series")
 (println "-------------------------")
@@ -118,6 +156,12 @@
 (println "Min by country area subclass series")
 (println "-------------------------")
 (series-print (series-sort (data-frame-series-ref max-by-country-area-df-subclass 'Value)) #:count 10)
+(define series-sort-bench-after (- (now) series-sort-bench-before))
+(println "-------------------------")
+(fprintf (current-output-port)
+         "series-sort bench: ~v ms.\n"
+         series-sort-bench-after)
+(println "-------------------------")
 
 (data-frame-head max-by-country-area-df)
 
@@ -125,8 +169,7 @@
 
 (series-loc (data-frame-series-ref max-by-country-area-df-men 'Value) 'China)
 
-; (build-multi-index-from-list (list (list 'a 'b 'c 'a) (list 8 5 5 8)))
-
+(define data-frame-agg-count-bench-before (now))
 (println "-------------------------")
 (println "Count by source series for men")
 (println "-------------------------")
@@ -167,3 +210,10 @@
 (data-frame-head count-by-country-source-df-women)
 
 (series-print (series-sort-descending (data-frame-series-ref count-by-country-source-df-women 'Value)) #:count 10)
+
+(define data-frame-agg-count-bench-after (- (now) data-frame-agg-count-bench-before))
+(println "-------------------------")
+(fprintf (current-output-port)
+         "data-frame-agg-count bench: ~v ms.\n"
+         data-frame-agg-count-bench-after)
+(println "-------------------------")
