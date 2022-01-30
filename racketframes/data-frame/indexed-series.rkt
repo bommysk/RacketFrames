@@ -131,7 +131,6 @@
 
 (define-type IndexType (U SIndex IIndex FIndex DTIndex DIndex))
 
-; add RangeIndex later
 (define-type RFIndex (U LabelIndex FixnumIndex FlonumIndex DatetimeIndex DateIndex))
 
 (define-predicate RFIndex? RFIndex)

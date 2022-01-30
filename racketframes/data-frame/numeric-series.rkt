@@ -116,7 +116,7 @@
           idx->key is-indexed?
           key->lst-idx
           is-labeled? ListofIndexDataType? ListofIndex?
-          ListofListofString ListofListofString?)
+          ListofListofString ListofListofString? key-delimiter)
  (only-in "boolean-series.rkt"
           new-BSeries BSeries BSeries-data)
  (only-in "integer-series.rkt"
@@ -174,7 +174,6 @@
                   [nans : Natural]))
 
 (define DEFAULT_NULL_VALUE : Flonum +nan.0)
-
 ;; An NSeries is an optimized Series for computation over vectors of Flonum
 ;; i.e., NSeries should be faster then (Series Flonum)
 (struct: NSeries ([index : (Option RFIndex)]
@@ -815,7 +814,10 @@
 
   (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "\t") "\t")))
+    (let* [(key-str : String (string-append (string-join label key-delimiter) key-delimiter))
+           (key-str-length : Index (string-length key-str))]
+      ; remove extra delimiter at end of string ::
+      (string->symbol (substring key-str 0 (- key-str-length 2)))))
   
   (if (ListofListofString? label)
       (nseries-loc nseries (map get-index-val label))
