@@ -687,6 +687,25 @@
        #:index (for/list: : (Listof Label) ([col cols])
                  (column-heading col)))))
 
+#|
+(: data-frame-loc-multi-index (ISeries (U (Listof String) ListofListofString) -> (U Series DataFrame)))
+(define (data-frame-loc-multi-index  data-frame label projection)
+  (unless (ISeries-index iseries)
+    (let ((k (current-continuation-marks)))
+      (raise (make-exn:fail:contract "iseries must have a label index." k))))
+
+  (: get-index-val ((Listof String) -> Symbol))
+  (define (get-index-val label)
+    (let* [(key-str : String (string-append (string-join label key-delimiter) key-delimiter))
+           (key-str-length : Index (string-length key-str))]
+      ; remove extra delimiter at end of string ::
+      (string->symbol (substring key-str 0 (- key-str-length 2)))))
+  
+  (if (ListofListofString? label)
+      (iseries-loc iseries (map get-index-val label))
+      (iseries-loc iseries (get-index-val label))))
+|#
+
 ; doesn't preserve index currently, just gives new Range index
 (: data-frame-iloc (DataFrame (U Index (Listof Index)) (U Index (Listof Index)) -> (U Series DataFrame)))
 (define (data-frame-iloc data-frame idx-row idx-col)

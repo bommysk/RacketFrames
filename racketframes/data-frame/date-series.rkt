@@ -16,7 +16,7 @@
           LabelIndex label-index label->lst-idx key->lst-idx
           idx->key is-indexed? ListofIndexDataType? ListofIndex?
           ListofListofString ListofListofString?
-          ListofBoolean? ListofFixnum?)
+          ListofBoolean? ListofFixnum? key-delimiter)
  (only-in "boolean-series.rkt"
           new-BSeries BSeries))
 
@@ -288,10 +288,13 @@
   (unless (DateSeries-index date-series)
     (let ((k (current-continuation-marks)))
       (raise (make-exn:fail:contract "date-series must have a label index." k))))
-
+  
   (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "::") "::")))
+    (let* [(key-str : String (string-append (string-join label key-delimiter) key-delimiter))
+           (key-str-length : Index (string-length key-str))]
+      ; remove extra delimiter at end of string ::
+      (string->symbol (substring key-str 0 (- key-str-length 2)))))
   
   (if (ListofListofString? label)
       (date-series-loc date-series (map get-index-val label))

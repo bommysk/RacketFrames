@@ -40,7 +40,7 @@
  (only-in "indexed-series.rkt"
 	  RFIndex RFIndex? RFNULL Label Label? idx->key key->lst-idx extract-index build-index-from-list
           build-multi-index-from-list LabelIndex LabelIndex-index is-labeled? IndexDataType
-          ListofIndex? ListofListofString ListofListofString? ListofIndexDataType?))
+          ListofIndex? ListofListofString ListofListofString? ListofIndexDataType? key-delimiter))
 
 (define DEFAULT_NULL_VALUE : Label '||)
 (struct: CSeries ([index : (Option RFIndex)]
@@ -222,11 +222,14 @@
 (define (cseries-loc-multi-index cseries label)
   (unless (CSeries-index cseries)
     (let ((k (current-continuation-marks)))
-      (raise (make-exn:fail:contract "cseries must have a label index." k))))
+      (raise (make-exn:fail:contract "cseries must have a label index." k))))  
 
-  (: get-index-val ((Listof String) -> Label))
+  (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "::") "::")))
+    (let* [(key-str : String (string-append (string-join label key-delimiter) key-delimiter))
+           (key-str-length : Index (string-length key-str))]
+      ; remove extra delimiter at end of string ::
+      (string->symbol (substring key-str 0 (- key-str-length 2)))))
   
   (if (ListofListofString? label)
       (cseries-loc cseries (map get-index-val label))

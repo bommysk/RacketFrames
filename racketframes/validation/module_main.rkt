@@ -343,9 +343,6 @@
 
 (define max-by-country-area-df-women (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered-women (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
 
-(sort (vector->list (series-data (data-frame-series-ref max-by-country-area-df-men 'Value))) <)
-(sort (vector->list (series-data (data-frame-series-ref max-by-country-area-df-women 'Value))) <)
-
 (data-frame-head max-by-country-area-df-men)
 (data-frame-head max-by-country-area-df-women)
 

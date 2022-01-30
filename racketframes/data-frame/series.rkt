@@ -14,6 +14,7 @@
  [series-referencer (Series -> (-> Index Any))]
  [series-loc-boolean (Series (Listof Boolean) -> (U Any Series))]
  [series-loc (Series (U Label (Listof Label) (Listof Boolean)) -> (U Any Series))]
+ [series-loc-multi-index (Series (U (Listof String) ListofListofString) -> (U Any Series))]
  [series-iloc (Series (U Index (Listof Index)) -> (U Any Series))]
  [get-series-index (Series -> RFIndex)]
  [has-series-index? (Series -> Boolean)]

@@ -21,7 +21,7 @@
           LabelIndex label-index label->lst-idx key->lst-idx
           idx->key is-indexed? ListofIndexDataType? ListofIndex?
           ListofBoolean? ListofFixnum?
-          ListofListofString ListofListofString? RFNoData RFNULL)
+          ListofListofString ListofListofString? RFNoData RFNULL key-delimiter)
  (only-in "boolean-series.rkt"
           new-BSeries BSeries))
 
@@ -265,7 +265,10 @@
 
   (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "\t") "\t")))
+    (let* [(key-str : String (string-append (string-join label key-delimiter) key-delimiter))
+           (key-str-length : Index (string-length key-str))]
+      ; remove extra delimiter at end of string ::
+      (string->symbol (substring key-str 0 (- key-str-length 2)))))
   
   (if (ListofListofString? label)
       (datetime-series-loc datetime-series (map get-index-val label))

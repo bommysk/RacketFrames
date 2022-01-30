@@ -10,7 +10,7 @@
           Label LabelIndex-index
           LabelIndex label-index label->lst-idx key->lst-idx
           idx->key is-indexed? ListofIndexDataType? ListofIndex?
-          ListofListofString ListofListofString?)
+          ListofListofString ListofListofString? key-delimiter)
  (only-in "../load/types.rkt"
           ListofString?))
 
@@ -285,11 +285,14 @@
 (define (gen-series-loc-multi-index gen-series label)
   (unless (GenSeries-index gen-series)
     (let ((k (current-continuation-marks)))
-      (raise (make-exn:fail:contract "gen-series must have a label index." k))))
+      (raise (make-exn:fail:contract "gen-series must have a label index." k))))  
 
   (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "::") "::")))
+    (let* [(key-str : String (string-append (string-join label key-delimiter) key-delimiter))
+           (key-str-length : Index (string-length key-str))]
+      ; remove extra delimiter at end of string ::
+      (string->symbol (substring key-str 0 (- key-str-length 2)))))
   
   (if (ListofListofString? label)
       (gen-series-loc gen-series (map get-index-val label))

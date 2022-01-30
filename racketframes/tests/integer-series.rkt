@@ -147,6 +147,8 @@
 
 (define multi-index-iseries-3 : ISeries (assert (new-ISeries (list 100 200 300 400 500) #:index (build-multi-index-from-list (list (list 'a 'b 'c 'a 'c) (list 1 2 3 4 3)))) ISeries?))
 
+(iseries-print multi-index-iseries)
+
 (check-equal? (iseries-loc-multi-index multi-index-iseries (list "a" "1")) 1)
 
 (check-equal? (iseries-loc-multi-index multi-index-iseries-2 (list "c" "3" "9")) 100)

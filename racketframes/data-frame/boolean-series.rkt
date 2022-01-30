@@ -59,7 +59,7 @@
           Label LabelIndex-index
           LabelIndex label-index label->lst-idx key->lst-idx
           idx->key ListofIndexDataType? ListofIndex?
-          ListofListofString ListofListofString?))
+          ListofListofString ListofListofString? key-delimiter))
 ; ***********************************************************
 
 ; ***********************************************************
@@ -254,7 +254,9 @@
 
   (: get-index-val ((Listof String) -> Symbol))
   (define (get-index-val label)
-    (string->symbol (string-append (string-join label "\t") "\t")))
+    (let* [(key-str : String (string-append (string-join label key-delimiter) key-delimiter))
+           (key-str-length : Index (string-length key-str))]
+      (string->symbol (substring key-str 0 (- key-str-length 2)))))
   
   (if (ListofListofString? label)
       (bseries-loc bseries (map get-index-val label))
