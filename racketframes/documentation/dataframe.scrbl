@@ -5745,4 +5745,577 @@ DataFrame::(Cols: 3, Rows: 3)
   6 baz                           3            6.70 
             }|
 
+@section[#:style 'toc]{Employee Data Case Study}
+@codeblock|{
+#lang typed/racket
+
+(require RacketFrames)
+(define now current-inexact-milliseconds)
+
+; has empty Footnote column
+(define employment-df (load-csv-file "total_employment_by_economic_activity.csv" #:schema #f))
+
+(println "TOTAL EMPLOYMENT DATAFRAME")
+(data-frame-head employment-df)
+
+(show-data-frame-description (data-frame-description employment-df))
+
+(define column-filter-bench-before (now))
+
+(define employment-df-filtered (data-frame-column-filter-not employment-df (lambda ([sex : Any]) (eq? (assert sex symbol?) '|Total men and women|)) 'Sex))
+
+(define employment-df-filtered-men (data-frame-column-filter employment-df-filtered (lambda ([sex : Any]) (eq? (assert sex symbol?) 'Men)) 'Sex))
+
+(define employment-df-filtered-women (data-frame-column-filter employment-df-filtered (lambda ([sex : Any]) (eq? (assert sex symbol?) 'Women)) 'Sex))
+
+; max calculations
+(define data-frame-agg-max-bench-before (now))
+
+(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Year 'Sex))))
+
+(define max-by-country-area-df-subclass (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Subclassification 'Value)) (list 'Country_Area 'Year 'Subclassification))))
+
+(define max-by-country-area-df-men (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered-men (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+
+(define max-by-country-area-df-women (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered-women (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+
+(define data-frame-agg-max-bench-after (- (now) data-frame-agg-max-bench-before))
+(println "-------------------------")
+(fprintf (current-output-port)
+         "data-frame-agg-max bench: ~v ms.\n"
+         data-frame-agg-max-bench-after)
+(println "-------------------------")
+
+; min calculations
+(define data-frame-agg-min-bench-before (now))
+
+(define min-by-country-area-df (apply-agg-data-frame 'min (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Year 'Sex))))
+
+(define min-by-country-area-df-subclass (apply-agg-data-frame 'min (data-frame-groupby (data-frame-project employment-df (list 'Country_Area 'Year 'Subclassification 'Value)) (list 'Country_Area 'Year 'Subclassification))))
+
+(define min-by-country-area-df-men (apply-agg-data-frame 'min (data-frame-groupby (data-frame-project employment-df-filtered-men (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+
+(define min-by-country-area-df-women (apply-agg-data-frame 'min (data-frame-groupby (data-frame-project employment-df-filtered-women (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+
+(println "-------------------------")
+(println "Max by country area men")
+(println "-------------------------")
+(data-frame-head max-by-country-area-df-men)
+
+(println "-------------------------")
+(println "Max by country area women")
+(println "-------------------------")
+(data-frame-head max-by-country-area-df-women)
+
+(println "-------------------------")
+(println "Max by country area")
+(println "-------------------------")
+(data-frame-head max-by-country-area-df)
+
+(println "-------------------------")
+(println "Max by country area subclass")
+(println "-------------------------")
+(data-frame-head max-by-country-area-df-subclass)
+
+(println "-------------------------")
+(println "Min by country area men")
+(println "-------------------------")
+(data-frame-head min-by-country-area-df-men)
+
+(println "-------------------------")
+(println "Min by country area women")
+(println "-------------------------")
+(data-frame-head min-by-country-area-df-women)
+
+(println "-------------------------")
+(println "Min by country area")
+(println "-------------------------")
+(data-frame-head min-by-country-area-df)
+
+(println "-------------------------")
+(println "Min by country area subclass")
+(println "-------------------------")
+(data-frame-head min-by-country-area-df-subclass)
+
+(define series-sort-descending-bench-before (now))
+
+(println "-------------------------")
+(println "Max by country area series")
+(println "-------------------------")
+(define max-by-country-area-series : Series (series-sort-descending (data-frame-series-ref max-by-country-area-df 'Value)))
+(series-print max-by-country-area-series #:count 10)
+
+(println "-------------------------")
+(println "Max by country area men series")
+(println "-------------------------")
+(define max-by-country-area-men-series : Series (series-sort-descending (data-frame-series-ref max-by-country-area-df-men 'Value)))
+(series-print max-by-country-area-men-series #:count 10)
+
+(println "-------------------------")
+(println "Max by country area women series")
+(println "-------------------------")
+(series-print (series-sort-descending (data-frame-series-ref max-by-country-area-df-women 'Value)) #:count 10)
+
+(println "-------------------------")
+(println "Max by country area subclass series")
+(println "-------------------------")
+(define max-by-country-area-subclass-series : Series (series-sort-descending (data-frame-series-ref max-by-country-area-df-subclass 'Value)))
+(series-print max-by-country-area-subclass-series #:count 10)
+
+(define series-sort-descending-bench-after (- (now) series-sort-descending-bench-before))
+(println "-------------------------")
+(fprintf (current-output-port)
+         "series-sort-descending bench: ~v ms.\n"
+         series-sort-descending-bench-after)
+(println "-------------------------")
+
+(define series-sort-bench-before (now))
+(println "-------------------------")
+(println "Min by country area series")
+(println "-------------------------")
+(series-print (series-sort (data-frame-series-ref max-by-country-area-df 'Value)) #:count 10)
+
+(println "-------------------------")
+(println "Min by country area men series")
+(println "-------------------------")
+(series-print (series-sort (data-frame-series-ref max-by-country-area-df-men 'Value)) #:count 10)
+
+(println "-------------------------")
+(println "Min by country area women series")
+(println "-------------------------")
+(series-print (series-sort (data-frame-series-ref max-by-country-area-df-women 'Value)) #:count 10)
+
+(println "-------------------------")
+(println "Min by country area subclass series")
+(println "-------------------------")
+(series-print (series-sort (data-frame-series-ref max-by-country-area-df-subclass 'Value)) #:count 10)
+
+(data-frame-head max-by-country-area-df)
+
+(show-data-frame-description (data-frame-description max-by-country-area-df))
+
+(series-loc (data-frame-series-ref max-by-country-area-df-men 'Value) 'China)
+
+(define data-frame-agg-count-bench-before (now))
+(println "-------------------------")
+(println "Count by source series for men")
+(println "-------------------------")
+
+(define count-by-source-df-men (apply-agg-data-frame 'count (data-frame-groupby employment-df-filtered-men (list 'Source))))
+
+(data-frame-head count-by-source-df-men)
+
+(show-data-frame-description (data-frame-description count-by-source-df-men))
+
+(series-print (data-frame-series-ref count-by-source-df-men 'Value))
+
+(println "-------------------------")
+(println "Count by country source series for men")
+(println "-------------------------")
+(define count-by-country-source-df-men (apply-agg-data-frame 'count (data-frame-groupby employment-df-filtered-men (list 'Country_Area 'Source))))
+
+(data-frame-head count-by-country-source-df-men)
+
+(series-print (series-sort-descending (data-frame-series-ref count-by-country-source-df-men 'Value)) #:count 10)
+
+(println "-------------------------")
+(println "Count by source series women")
+(println "-------------------------")
+
+(define count-by-source-df-women (apply-agg-data-frame 'count (data-frame-groupby employment-df-filtered-women (list 'Source))))
+
+(data-frame-head count-by-source-df-women)
+
+(series-print (series-sort-descending (data-frame-series-ref count-by-source-df-women 'Value)))
+
+(println "-------------------------")
+(println "Count by country source series women")
+(println "-------------------------")
+
+(define count-by-country-source-df-women (apply-agg-data-frame 'count (data-frame-groupby employment-df-filtered-women (list 'Country_Area 'Source))))
+
+(data-frame-head count-by-country-source-df-women)
+
+(series-print (series-sort-descending (data-frame-series-ref count-by-country-source-df-women 'Value)) #:count 10)
+ }|
+
+@section[#:style 'toc]{Example Case Study Output}
+@verbatim|{
+"TOTAL EMPLOYMENT DATAFRAME"
+Index  Country_Area          Year               Sex         Classification   Subclassification      Source             Value           Footnote      
+0	'(Albania)	0	'(2006)	0	'(|Total men and women|)	0	'(ISIC-Rev.3)	0	'(Total.)	0	'(|Official estimates|)	0	'(935)	0	'(||)	
+1	'(Albania)	1	'(2006)	1	'(|Total men and women|)	1	'(ISIC-Rev.3)	1	'(A-B.)	1	'(|Official estimates|)	1	'(542)	1	'(||)	
+2	'(Albania)	2	'(2006)	2	'(|Total men and women|)	2	'(ISIC-Rev.3)	2	'(|C. Mining and Quarrying|)	2	'(|Official estimates|)	2	'(5)	2	'(||)	
+3	'(Albania)	3	'(2006)	3	'(|Total men and women|)	3	'(ISIC-Rev.3)	3	'(|D. Manufacturing|)	3	'(|Official estimates|)	3	'(58)	3	'(||)	
+4	'(Albania)	4	'(2006)	4	'(|Total men and women|)	4	'(ISIC-Rev.3)	4	'(|E. Electricity, Gas and Water Supply|)	4	'(|Official estimates|)	4	'(10)	4	'(||)	
+5	'(Albania)	5	'(2006)	5	'(|Total men and women|)	5	'(ISIC-Rev.3)	5	'(|F. Construction|)	5	'(|Official estimates|)	5	'(53)	5	'(||)	
+6	'(Albania)	6	'(2006)	6	'(|Total men and women|)	6	'(ISIC-Rev.3)	6	'(|G. Wholesale and Retail Trade; Repair of Motor Vehicles, Motorcycles and Personal and Household Goods|)	6	'(|Official estimates|)	6	'(68)	6	'(||)	
+7	'(Albania)	7	'(2006)	7	'(|Total men and women|)	7	'(ISIC-Rev.3)	7	'(|H. Hotels and Restaurants|)	7	'(|Official estimates|)	7	'(16)	7	'(||)	
+8	'(Albania)	8	'(2006)	8	'(|Total men and women|)	8	'(ISIC-Rev.3)	8	'(|I. Transport, Storage and Communications|)	8	'(|Official estimates|)	8	'(19)	8	'(||)	
+9	'(Albania)	9	'(2006)	9	'(|Total men and women|)	9	'(ISIC-Rev.3)	9	'(|J-L,O-Q.|)	9	'(|Official estimates|)	9	'(90)	9	'(||)	
+DataFrame::(Cols: 8, Rows: 100000)
+  - Country_Area: GenericSeries
+  - Year: GenericSeries
+  - Sex: GenericSeries
+  - Classification: GenericSeries
+  - Subclassification: GenericSeries
+  - Source: GenericSeries
+  - Value: GenericSeries
+  - Footnote: GenericSeries
+"-------------------------"
+"Max by country area men"
+"-------------------------"
+Index     Year            Value      
+Australia	           2008	Australia	        5879.21	
+Nicaragua	           2006	Nicaragua	        1303.46	
+Thailand	           2008	Thailand	       20405.00	
+Sweden	           2008	Sweden	        2422.00	
+Malta	           2008	Malta	         107.47	
+Gabon	           1993	Gabon	         168.25	
+Bolivia	           2007	Bolivia	        2576.95	
+Namibia	           2004	Namibia	         226.83	
+Philippines	           2008	Philippines	       20959.00	
+Tonga	           2003	Tonga	          24.40	
+"-------------------------"
+"Max by country area women"
+"-------------------------"
+Index     Year            Value      
+Australia	           2008	Australia	        4861.29	
+Nicaragua	           2006	Nicaragua	         786.31	
+Thailand	           2008	Thailand	       17431.60	
+Sweden	           2008	Sweden	        2171.00	
+Malta	           2008	Malta	          53.51	
+Gabon	           1993	Gabon	         140.08	
+Bolivia	           2007	Bolivia	        2095.41	
+Namibia	           2004	Namibia	         205.02	
+Philippines	           2008	Philippines	       13129.00	
+Tonga	           2003	Tonga	          14.14	
+"-------------------------"
+"Max by country area"
+"-------------------------"
+Index     Value      
+Brazil::1996::Women	       26677.00	
+Aruba::2007::Women	          24.40	
+Hong Kong, China::2000::Men	        1854.50	
+Barbados::2000::Women	          61.00	
+Czech Republic::1993::Men	        2735.00	
+Chile::1988::Men	        2979.70	
+Qatar::2001::Total men and women	         310.29	
+Qatar::2004::Total men and women	         437.56	
+Qatar::2006::Total men and women	         529.30	
+Qatar::2007::Total men and women	         827.58	
+"-------------------------"
+"Max by country area subclass"
+"-------------------------"
+Index     Value      
+Peru::1971::5. Construction	         134.20	
+Bulgaria::2004::C. Mining and Quarrying	          38.90	
+Dominican Republic::2004::N. Health and Social Work	         233.07	
+Cyprus::2006::K. Real Estate, Renting and Business Activities	          26.67	
+Peru::2008::M. Education	         641.47	
+Spain::1979::5. Construction	        1109.00	
+France::2005::J. Financial Intermediation	         753.20	
+Sri Lanka::1994::9. Community, Social and Personal Services	         825.39	
+Costa Rica::1998::L,O.	         157.79	
+Jamaica::1999::1. Agriculture, Hunting, Forestry and Fishing	         192.50	
+"-------------------------"
+"Min by country area men"
+"-------------------------"
+Index     Year            Value      
+Australia	           1969	Australia	           0.06	
+Nicaragua	           2003	Nicaragua	           2.07	
+Thailand	           1971	Thailand	           0.10	
+Sweden	           1969	Sweden	           1.00	
+Malta	           2000	Malta	           0.00	
+Gabon	           1993	Gabon	           1.05	
+Bolivia	           1976	Bolivia	           0.04	
+Namibia	           2000	Namibia	           0.07	
+Philippines	           1971	Philippines	           1.00	
+Tonga	           1984	Tonga	           0.06	
+"-------------------------"
+"Min by country area women"
+"-------------------------"
+Index     Year            Value      
+Australia	           1969	Australia	           0.26	
+Nicaragua	           2003	Nicaragua	           0.64	
+Thailand	           1971	Thailand	           0.10	
+Sweden	           1969	Sweden	           1.00	
+Malta	           2000	Malta	           0.01	
+Gabon	           1993	Gabon	           0.47	
+Bolivia	           1976	Bolivia	           0.02	
+Namibia	           2000	Namibia	           0.00	
+Philippines	           1971	Philippines	           0.74	
+Tonga	           1984	Tonga	           0.03	
+"-------------------------"
+"Min by country area"
+"-------------------------"
+Index     Value      
+Brazil::1996::Women	         104.00	
+Aruba::2007::Women	           0.02	
+Hong Kong, China::2000::Men	           6.30	
+Barbados::2000::Women	           0.60	
+Czech Republic::1993::Men	           1.00	
+Chile::1988::Men	           0.20	
+Qatar::2001::Total men and women	           0.48	
+Qatar::2004::Total men and women	           1.17	
+Qatar::2006::Total men and women	           1.63	
+Qatar::2007::Total men and women	           1.52	
+"-------------------------"
+"Min by country area subclass"
+"-------------------------"
+Index     Value      
+Peru::1971::5. Construction	         134.20	
+Bulgaria::2004::C. Mining and Quarrying	           6.80	
+Dominican Republic::2004::N. Health and Social Work	         108.93	
+Cyprus::2006::K. Real Estate, Renting and Business Activities	          11.86	
+Peru::2008::M. Education	          85.52	
+Spain::1979::5. Construction	          23.60	
+France::2005::J. Financial Intermediation	         331.20	
+Sri Lanka::1994::9. Community, Social and Personal Services	         278.99	
+Costa Rica::1998::L,O.	          42.95	
+Jamaica::1999::1. Agriculture, Hunting, Forestry and Fishing	          34.20	
+"-------------------------"
+"Max by country area series"
+"-------------------------"
+*********
+$NSeries
+*********
+China::2002::Total men and women 737400.000000
+China::2001::Total men and women 730250.000000
+China::2000::Total men and women 720850.000000
+China::1999::Total men and women 713940.000000
+China::1998::Total men and women 706370.000000
+China::1997::Total men and women 698200.000000
+China::1996::Total men and women 689500.000000
+China::1995::Total men and women 680650.000000
+China::1994::Total men and women 674550.000000
+China::1993::Total men and women 668080.000000
+"-------------------------"
+"Max by country area men series"
+"-------------------------"
+*********
+$NSeries
+*********
+China 74841.000000
+Indonesia 63899.000000
+Brazil 52363.199000
+Japan 38920.000000
+Pakistan 38118.000000
+Russian Federation 36139.000000
+Bangladesh 36080.000000
+Mexico 27401.679000
+Germany 21875.000000
+Philippines 20959.000000
+"-------------------------"
+"Max by country area women series"
+"-------------------------"
+*********
+$NSeries
+*********
+China 45403.000000
+Indonesia 38653.000000
+Brazil 38422.820000
+Russian Federation 34920.000000
+Japan 26650.000000
+Bangladesh 20832.000000
+Germany 17546.000000
+Thailand 17431.600000
+Mexico 16465.017000
+Ethiopia 14711.880000
+"-------------------------"
+"Max by country area subclass series"
+"-------------------------"
+*********
+$NSeries
+*********
+China::2002::Total. 737400.000000
+China::2001::Total. 730250.000000
+China::2000::Total. 720850.000000
+China::1999::Total. 713940.000000
+China::1998::Total. 706370.000000
+China::1997::Total. 698200.000000
+China::1996::Total. 689500.000000
+China::1995::Total. 680650.000000
+China::1994::Total. 674550.000000
+China::1993::Total. 668080.000000
+"-------------------------"
+"Min by country area series"
+"-------------------------"
+*********
+$NSeries
+*********
+Niue::2001::Women 0.276000
+Sao Tome and Principe::1983::Women 0.367000
+Niue::2001::Men 0.387000
+Sao Tome and Principe::1984::Women 0.469000
+Sao Tome and Principe::1979::Women 0.473000
+Sao Tome and Principe::1982::Women 0.534000
+Saint Pierre and Miquelon::1974::Women 0.551000
+Sao Tome and Principe::1983::Total men and women 0.629000
+Niue::2001::Total men and women 0.663000
+Sao Tome and Principe::1983::Men 0.671000
+"-------------------------"
+"Min by country area men series"
+"-------------------------"
+*********
+$NSeries
+*********
+Niue 0.387000
+Saint Helena 1.174000
+Saint Pierre and Miquelon 1.604000
+Montserrat 2.620000
+Anguilla 3.285000
+Kiribati 5.810000
+Palau 5.827000
+Marshall Islands 7.008000
+American Samoa 7.901000
+Saint Kitts and Nevis 8.922000
+"-------------------------"
+"Min by country area women series"
+"-------------------------"
+*********
+$NSeries
+*********
+Niue 0.276000
+Saint Pierre and Miquelon 0.551000
+Saint Helena 0.956000
+Montserrat 1.900000
+Anguilla 2.890000
+Marshall Islands 3.133000
+Kiribati 3.390000
+Palau 3.556000
+American Samoa 5.560000
+Saint Kitts and Nevis 5.881000
+"-------------------------"
+"Min by country area subclass series"
+"-------------------------"
+*********
+$NSeries
+*********
+Indonesia::2000::X. Not classifiable by economic activity 0.000000
+Macau, China::2007::C. Mining and Quarrying 0.000000
+Indonesia::2000::Q. Extra-Territorial Organizations and Bodies 0.000000
+Macau, China::1998::C. Mining and Quarrying 0.000000
+Mexico::1999::Q. Extra-Territorial Organizations and Bodies 0.000000
+Mexico::1996::Q. Extra-Territorial Organizations and Bodies 0.000000
+Kiribati::2000::2. Mining and Quarrying 0.000000
+Mexico::1997::Q. Extra-Territorial Organizations and Bodies 0.000000
+Macau, China::2001::C. Mining and Quarrying 0.000000
+Belgium::2005::B. Fishing 0.000000
+Index     Value      
+Brazil::1996::Women	       26677.00	
+Aruba::2007::Women	          24.40	
+Hong Kong, China::2000::Men	        1854.50	
+Barbados::2000::Women	          61.00	
+Czech Republic::1993::Men	        2735.00	
+Chile::1988::Men	        2979.70	
+Qatar::2001::Total men and women	         310.29	
+Qatar::2004::Total men and women	         437.56	
+Qatar::2006::Total men and women	         529.30	
+Qatar::2007::Total men and women	         827.58	
+DataFrame::(Cols: 1, Rows: 7158)
+  - Value: NumericSeries
+74841.0
+"-------------------------"
+"Count by source series for men"
+"-------------------------"
+Index Classification         Year          Country_Area        Footnote            Value       Subclassification        Sex        
+Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	
+Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	
+Population census	           1147	Population census	           1147	Population census	           1147	Population census	           1147	Population census	           1147	Population census	           1147	Population census	           1147	
+Official estimates	           3920	Official estimates	           3920	Official estimates	           3920	Official estimates	           3920	Official estimates	           3920	Official estimates	           3920	Official estimates	           3920	
+Labour-related establishment survey	            231	Labour-related establishment survey	            231	Labour-related establishment survey	            231	Labour-related establishment survey	            231	Labour-related establishment survey	            231	Labour-related establishment survey	            231	Labour-related establishment survey	            231	
+Labour force survey	          26162	Labour force survey	          26162	Labour force survey	          26162	Labour force survey	          26162	Labour force survey	          26162	Labour force survey	          26162	Labour force survey	          26162	
+DataFrame::(Cols: 7, Rows: 6)
+  - Classification: IntegerSeries
+  - Year: IntegerSeries
+  - Country_Area: IntegerSeries
+  - Footnote: IntegerSeries
+  - Value: IntegerSeries
+  - Subclassification: IntegerSeries
+  - Sex: IntegerSeries
+*********
+$ISeries
+*********
+Labour-related establishment census 105
+Household survey 44
+Population census 1147
+Official estimates 3920
+Labour-related establishment survey 231
+Labour force survey 26162
+"-------------------------"
+"Count by country source series for men"
+"-------------------------"
+Index Classification         Year            Footnote            Value       Subclassification        Sex        
+Kazakhstan::Labour force survey	            143	Kazakhstan::Labour force survey	            143	Kazakhstan::Labour force survey	            143	Kazakhstan::Labour force survey	            143	Kazakhstan::Labour force survey	            143	Kazakhstan::Labour force survey	            143	
+Kyrgyzstan::Official estimates	             96	Kyrgyzstan::Official estimates	             96	Kyrgyzstan::Official estimates	             96	Kyrgyzstan::Official estimates	             96	Kyrgyzstan::Official estimates	             96	Kyrgyzstan::Official estimates	             96	
+Panama::Labour force survey	            482	Panama::Labour force survey	            482	Panama::Labour force survey	            482	Panama::Labour force survey	            482	Panama::Labour force survey	            482	Panama::Labour force survey	            482	
+Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	
+Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	
+Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	
+El Salvador::Labour force survey	            308	El Salvador::Labour force survey	            308	El Salvador::Labour force survey	            308	El Salvador::Labour force survey	            308	El Salvador::Labour force survey	            308	El Salvador::Labour force survey	            308	
+Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	
+Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	
+Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	
+*********
+$ISeries
+*********
+Canada::Labour force survey 676
+Sweden::Labour force survey 664
+Australia::Labour force survey 629
+Finland::Labour force survey 606
+Spain::Labour force survey 547
+Korea, Republic of::Labour force survey 546
+Ireland::Labour force survey 536
+Portugal::Labour force survey 523
+Singapore::Labour force survey 511
+Panama::Labour force survey 482
+"-------------------------"
+"Count by source series women"
+"-------------------------"
+Index Classification         Year          Country_Area        Footnote            Value       Subclassification        Sex        
+Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	Labour-related establishment census	            105	
+Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	Household survey	             44	
+Population census	           1139	Population census	           1139	Population census	           1139	Population census	           1139	Population census	           1139	Population census	           1139	Population census	           1139	
+Official estimates	           3861	Official estimates	           3861	Official estimates	           3861	Official estimates	           3861	Official estimates	           3861	Official estimates	           3861	Official estimates	           3861	
+Labour-related establishment survey	            229	Labour-related establishment survey	            229	Labour-related establishment survey	            229	Labour-related establishment survey	            229	Labour-related establishment survey	            229	Labour-related establishment survey	            229	Labour-related establishment survey	            229	
+Labour force survey	          25812	Labour force survey	          25812	Labour force survey	          25812	Labour force survey	          25812	Labour force survey	          25812	Labour force survey	          25812	Labour force survey	          25812	
+*********
+$ISeries
+*********
+Labour force survey 25812
+Official estimates 3861
+Population census 1139
+Labour-related establishment survey 229
+Labour-related establishment census 105
+Household survey 44
+"-------------------------"
+"Count by country source series women"
+"-------------------------"
+Index Classification         Year            Footnote            Value       Subclassification        Sex        
+Kazakhstan::Labour force survey	            142	Kazakhstan::Labour force survey	            142	Kazakhstan::Labour force survey	            142	Kazakhstan::Labour force survey	            142	Kazakhstan::Labour force survey	            142	Kazakhstan::Labour force survey	            142	
+Kyrgyzstan::Official estimates	             95	Kyrgyzstan::Official estimates	             95	Kyrgyzstan::Official estimates	             95	Kyrgyzstan::Official estimates	             95	Kyrgyzstan::Official estimates	             95	Kyrgyzstan::Official estimates	             95	
+Panama::Labour force survey	            465	Panama::Labour force survey	            465	Panama::Labour force survey	            465	Panama::Labour force survey	            465	Panama::Labour force survey	            465	Panama::Labour force survey	            465	
+Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	Isle of Man::Population census	             37	
+Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	Brunei Darussalam::Population census	             23	
+Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	Macau, China::Labour force survey	            274	
+El Salvador::Labour force survey	            295	El Salvador::Labour force survey	            295	El Salvador::Labour force survey	            295	El Salvador::Labour force survey	            295	El Salvador::Labour force survey	            295	El Salvador::Labour force survey	            295	
+Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	Antigua and Barbuda::Population census	             19	
+Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	Anguilla::Labour force survey	             14	
+Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	Bermuda::Population census	             19	
+*********
+$ISeries
+*********
+Canada::Labour force survey 674
+Sweden::Labour force survey 642
+Australia::Labour force survey 629
+Finland::Labour force survey 582
+Spain::Labour force survey 547
+Korea, Republic of::Labour force survey 543
+Ireland::Labour force survey 534
+Portugal::Labour force survey 522
+Singapore::Labour force survey 506
+Israel::Labour force survey 476
+
+}|
 @index-section[]
