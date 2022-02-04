@@ -32,7 +32,7 @@
 (: data (Vectorof Symbol))
 (define data (make-vector N 'a))
 
-(define series-categorical (new-CSeries data #f))
+(define series-categorical (new-CSeries data))
 
 (define c-iloc-bench-before (now))
 (define cseries-iloc-result (cseries-iloc series-categorical 80000))
