@@ -16,8 +16,11 @@
 
 (define series-integer (new-ISeries data))
 
-#| def time_getitem_scalar(self, index):
-      self.data[800000] |#
+#| data = np.random.randint(0,100000,size=1000000)
+s = pd.Series(data)
+s.loc[lambda x: x % 2 == 0]
+CPU times: user 2 μs, sys: 1 μs, total: 3 μs
+Wall time: 5.01 μs|#
 (define iseries-even-filter-bench-before (now))
 (define iseries-even-filter (iseries-filter series-integer (lambda ([x : RFFixnum]) (even? (assert x integer?)))))
 (define iseries-even-filter-bench-after (- (now) iseries-even-filter-bench-before))
@@ -26,8 +29,12 @@
          "Integer Series even? filter Bench: ~v ms.\n"
          iseries-even-filter-bench-after)
 
-#| def time_getitem_slice(self, index):
-        self.data[:800000] |#
+#| data = np.random.randint(0,100000,size=1000000)
+s = pd.Series(data)
+s.loc[lambda x: x % 2 != 0]
+CPU times: user 2 μs, sys: 1 μs, total: 3 μs
+Wall time: 5.01 μs
+|#
 (define iseries-odd-filter-bench-before (now))
 (define iseries-odd-filter (iseries-filter series-integer (lambda ([x : RFFixnum]) (odd? (assert x integer?)))))
 (define iseries-odd-filter-bench-after (- (now) iseries-odd-filter-bench-before))

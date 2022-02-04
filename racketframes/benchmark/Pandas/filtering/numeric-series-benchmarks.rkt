@@ -19,8 +19,13 @@
 
 (define series-float (new-NSeries data))
 
-#| def time_getitem_scalar(self, index):
-      self.data[800000] |#
+#| import random as random
+data = np.random.random(1000000)
+s = pd.Series(data)
+s.loc[lambda x: random.random() > x]
+CPU times: user 2 μs, sys: 1 μs, total: 3 μs
+Wall time: 5.01 μs
+|#
 (define nseries-greater-than-filter-bench-before (now))
 (define nseries-greater-than-filter (nseries-filter series-float (lambda ([x : Flonum]) (> (random N) x))))
 (define nseries-greater-than-filter-bench-after (- (now) nseries-greater-than-filter-bench-before))
@@ -29,8 +34,11 @@
          "Integer Series greater-than? filter Bench: ~v ms.\n"
          nseries-greater-than-filter-bench-after)
 
-#| def time_getitem_slice(self, index):
-        self.data[:800000] |#
+#| data = np.random.random(1000000)
+s = pd.Series(data)
+s.loc[lambda x: random.random() < x]
+ CPU times: user 3 μs, sys: 1 μs, total: 4 μs
+Wall time: 3.81 μs|#
 (define nseries-less-than-filter-bench-before (now))
 (define nseries-less-than-filter (nseries-filter series-float (lambda ([x : Flonum]) (< (random N) x))))
 (define nseries-less-than-filter-bench-after (- (now) nseries-less-than-filter-bench-before))
