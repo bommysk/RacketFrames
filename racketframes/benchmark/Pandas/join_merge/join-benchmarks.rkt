@@ -6,12 +6,6 @@
 
 (define now current-inexact-milliseconds)
 
-(define level1 (build-index-from-list (list 'a 'b 'c 'd 'e 'f 'g 'h 'i 'j)))
-
-;(random-number-list 10000 200)
-
-;(random-symbol-list 50 10 "" '())
-
 (define-predicate ListofFixnum? (Listof Fixnum))
 
 (define integer-col-1 (cons 'col1 (new-ISeries (assert (random-number-list 10000 200) ListofFixnum?))))

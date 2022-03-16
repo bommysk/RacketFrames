@@ -153,7 +153,8 @@ Benchmarks are located in the benchmark directory and separated into different d
 
 Example:
 ```
-sh benchmark/join_merge/join_merge.sh
+cd racketframes/benchmark/Pandas/join_merge
+sh join_merge.sh
 ```
 
 ## Authors
