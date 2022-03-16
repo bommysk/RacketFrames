@@ -39,30 +39,73 @@ The documentation is a work in progress.
                             #:index (list 'a 'b 'c 'd)))
    (cons 'categorical-col (new-CSeries (list 'hello 'world 'fizz 'buzz)))))
 
+; Let RacketFrames determine the Series type
+(define columns-mix-2
+  (list
+   (cons 'integer-col (new-series (list 1 2 3 4)
+                            #:index (list 'a 'b 'c 'd)))
+   (cons 'categorical-col (new-series (list 'hello 'world 'fizz 'buzz)))))
+
 ; create new data-frame-mix
 (define data-frame-mix (new-data-frame columns-mix))
 
-(frame-write-tab data-frame-mix)
+(data-frame-write-delim data-frame-mix)
+
+(show-data-frame-description (data-frame-description data-frame-mix))
+
+; create new data-frame-mix-2
+(define data-frame-mix-2 (new-data-frame columns-mix))
+
+(data-frame-write-delim data-frame-mix-2)
+
+(data-frame-write-delim data-frame-mix)
+
+(show-data-frame-description (data-frame-description data-frame-mix-2))
+
+;; Output ;;
+Index integer-col categorical-col
+0 1 0 hello
+1 2 1 world
+2 3 2 fizz
+3 4 3 buzz
+DataFrame::(Cols: 2, Rows: 4)
+  - integer-col: IntegerSeries
+  - categorical-col: CategoricalSeries
+Index integer-col categorical-col
+0 1 0 hello
+1 2 1 world
+2 3 2 fizz
+3 4 3 buzz
+Index integer-col categorical-col
+0 1 0 hello
+1 2 1 world
+2 3 2 fizz
+3 4 3 buzz
+DataFrame::(Cols: 2, Rows: 4)
+  - integer-col: IntegerSeries
+  - categorical-col: CategoricalSeries
+;; Output ;;
 ```
 
 ```
 ; no schema
-(define salary-data-frame-csv-no-schema (load-csv-file "sample-csv/salary.csv" #:schema #f #:delim ","))
+; from root of repository
+(define salary-data-frame-csv-no-schema (load-csv-file "racketframes/sample-csv/salary.csv"))
 
 (data-frame-head salary-data-frame-csv-no-schema)
 
 ;; Output ;;
-     first           last             age           dollar           phone      
-  Evan            Lloyd             19           $3839.78        (771) 255-1133  
-  Etta            Griffith          50           $8158.60        (523) 731-6388  
-  William         Conner            50           $9966.70        (759) 504-6619  
-  Rhoda           Guerrero          20           $6480.10        (467) 431-4273  
-  Kyle            Klein             59           $6106.13        (760) 829-2093  
-  Benjamin        Patton            59           $3925.51        (488) 673-5745  
-  Georgie         Hansen            51           $8809.92        (579) 706-4402  
-  Gregory         Bowen             36           $5176.21        (533) 506-3845  
-  Cornelia        Peterson          46           $3626.31        (861) 316-5672  
-  Samuel          Cole              37           $7677.20        (760) 406-6331 
+Index     first           last             age           dollar           phone         join_date    
+0 '(Evan) 0 '(Lloyd)  0 '(19) 0 '($3839.78) 0 '(|(771) 255-1133|) 0 '(2018-05-19) 
+1 '(Etta) 1 '(Griffith) 1 '(50) 1 '($8158.60) 1 '(|(523) 731-6388|) 1 '(2018-05-19) 
+2 '(William)  2 '(Conner) 2 '(50) 2 '($9966.70) 2 '(|(759) 504-6619|) 2 '(2018-05-19) 
+3 '(Rhoda)  3 '(Guerrero) 3 '(20) 3 '($6480.10) 3 '(|(467) 431-4273|) 3 '(2018-05-19) 
+4 '(Kyle) 4 '(Klein)  4 '(59) 4 '($6106.13) 4 '(|(760) 829-2093|) 4 '(2018-05-19) 
+5 '(Benjamin) 5 '(Patton) 5 '(59) 5 '($3925.51) 5 '(|(488) 673-5745|) 5 '(2018-05-19) 
+6 '(Georgie)  6 '(Hansen) 6 '(51) 6 '($8809.92) 6 '(|(579) 706-4402|) 6 '(2018-05-19) 
+7 '(Gregory)  7 '(Bowen)  7 '(36) 7 '($5176.21) 7 '(|(533) 506-3845|) 7 '(2018-05-19) 
+8 '(Cornelia) 8 '(Peterson) 8 '(46) 8 '($3626.31) 8 '(|(861) 316-5672|) 8 '(2018-05-19) 
+9 '(Samuel) 9 '(Cole) 9 '(37) 9 '($7677.20) 9 '(|(760) 406-6331|) 9 '(2018-05-19) 
 ;; Output ;;
 ```
 
@@ -88,12 +131,13 @@ DataFrame Dimensions
 
 ;; Output ;;
 DataFrame Description
-DataFrame::(Cols: 5, Rows: 200)
-  - first: CategoricalSeries
-  - last: CategoricalSeries
-  - age: IntegerSeries
-  - dollar: CategoricalSeries
-  - phone: CategoricalSeries
+DataFrame::(Cols: 6, Rows: 200)
+  - first: GenericSeries
+  - last: GenericSeries
+  - age: GenericSeries
+  - dollar: GenericSeries
+  - phone: GenericSeries
+  - join_date: GenericSeries
 ;; Output ;;
 ```
 

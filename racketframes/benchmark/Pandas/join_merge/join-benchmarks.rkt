@@ -14,13 +14,13 @@
 
 (define-predicate ListofFixnum? (Listof Fixnum))
 
-(define integer-col-1 (cons 'col1 (new-ISeries (list->vector (assert (random-number-list 10000 200) ListofFixnum?)) #f)))
+(define integer-col-1 (cons 'col1 (new-ISeries (assert (random-number-list 10000 200) ListofFixnum?))))
 
-(define integer-col-2 (cons 'col2 (new-ISeries (list->vector (assert (random-number-list 10000 200) ListofFixnum?)) #f)))
+(define integer-col-2 (cons 'col2 (new-ISeries (assert (random-number-list 10000 200) ListofFixnum?))))
 
-(define integer-col-3 (cons 'col3 (new-ISeries (list->vector (assert (random-number-list 10000 200) ListofFixnum?)) #f)))
+(define integer-col-3 (cons 'col3 (new-ISeries (assert (random-number-list 10000 200) ListofFixnum?))))
 
-(define integer-col-4 (cons 'col4 (new-ISeries (list->vector (assert (random-number-list 10000 200) ListofFixnum?)) #f)))
+(define integer-col-4 (cons 'col4 (new-ISeries (assert (random-number-list 10000 200) ListofFixnum?))))
 
 
 (define columns-integer
@@ -28,13 +28,13 @@
 
 (define data-frame-integer (new-data-frame columns-integer))
 
-(define integer-col-5 (cons 'col1 (new-ISeries (list->vector (assert (random-number-list 10000 200) ListofFixnum?)) #f)))
+(define integer-col-5 (cons 'col1 (new-ISeries (assert (random-number-list 10000 200) ListofFixnum?))))
 
-(define integer-col-6 (cons 'col2 (new-ISeries (list->vector (assert (random-number-list 10000 200) ListofFixnum?)) #f)))
+(define integer-col-6 (cons 'col2 (new-ISeries (assert (random-number-list 10000 200) ListofFixnum?))))
 
-(define integer-col-7 (cons 'col3 (new-ISeries (list->vector (assert (random-number-list 10000 200) ListofFixnum?)) #f)))
+(define integer-col-7 (cons 'col3 (new-ISeries (assert (random-number-list 10000 200) ListofFixnum?))))
 
-(define integer-col-8 (cons 'col4 (new-ISeries (list->vector (assert (random-number-list 10000 200) ListofFixnum?)) #f)))
+(define integer-col-8 (cons 'col4 (new-ISeries (assert (random-number-list 10000 200) ListofFixnum?))))
 
 
 ;(define float-col-1 (cons 'float-col-1 (new-NSeries (flvector 1.5 2.5 3.5 4.5 5.5) #f)))
