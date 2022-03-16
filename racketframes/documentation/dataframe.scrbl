@@ -4394,7 +4394,9 @@ data-frame-groupby aggregate count
 ;; output ;;
   }|
 
-@section[#:style 'toc]{Loading}
+@section[#:style 'toc]{Writing}
+
+@subsection[#:style 'toc]{Methods}
 
 @subsubsection[#:tag "data-frame-write-delim"]{data-frame-write-delim}
 @defproc[(data-frame-write-delim (arg0 DataFrame) (arg1 (#:output-port Output-Port)) (arg2 (#:heading Boolean)) (arg3 (#:delim String))) Void]{
