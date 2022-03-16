@@ -82,9 +82,7 @@
  (only-in "boolean-series-builder.rkt"
 	  BSeriesBuilder BSeriesBuilder?
 	  append-BSeriesBuilder complete-BSeriesBuilder
-	  new-BSeriesBuilder)
- (only-in "data-frame-print.rkt"
-          data-frame-write-delim))
+	  new-BSeriesBuilder))
 
 ; This functions consumes a Vectorof Series and Vectorof SeriesBuilder
 ; and an Index and does not return any value. It copies an entire row

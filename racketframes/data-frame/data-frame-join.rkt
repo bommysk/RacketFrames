@@ -111,9 +111,7 @@
  (only-in "date-series-builder.rkt"
 	  DateSeriesBuilder DateSeriesBuilder?
 	  append-DateSeriesBuilder complete-DateSeriesBuilder
-	  new-DateSeriesBuilder)
- (only-in "data-frame-print.rkt"
-          data-frame-write-delim)
+	  new-DateSeriesBuilder) 
  (only-in "groupby-util.rkt"
           make-agg-value-hash-sindex agg-value-hash-to-gen-series GroupHash
           AggValueHash make-agg-value-hash do-agg))

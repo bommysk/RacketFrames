@@ -80,7 +80,7 @@
 (define iseries-append-bench-before (now))
 (define iseries-appended (iseries-append (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0)) (new-ISeries (for/vector: : (Vectorof Fixnum) ([i N]) 0))))
 (define iseries-append-bench-after (- (now) iseries-append-bench-before))
-(series-print iseries-appended)
+;(series-print iseries-appended)
 (fprintf (current-output-port)
          "iseries append bench ~v ms.\n"
          iseries-append-bench-after)
@@ -88,7 +88,7 @@
 (define cseries-append-bench-before (now))
 (define cseries-appended (cseries-append (new-CSeries (for/vector: : (Vectorof Symbol) ([i N]) 'a)) (new-CSeries (for/vector: : (Vectorof Symbol) ([i N]) 'b))))
 (define cseries-append-bench-after (- (now) cseries-append-bench-before))
-(series-print cseries-appended)
+;(series-print cseries-appended)
 (fprintf (current-output-port)
          "cseries append bench ~v ms.\n"
          cseries-append-bench-after)
