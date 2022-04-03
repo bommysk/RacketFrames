@@ -289,3 +289,8 @@
 (check-equal? (data-frame-row-count data-frame-integer) 4)
 
 (check-equal? (data-frame-column-count data-frame-integer) 2)
+
+(define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3 7 8) 'b (list 3 5 6 10 10) 'c (list 3.4 5.5 6.7 4.0 95.6) 'd (list 'fizz 'buzz 'baz 'fizz 'fizz))))
+
+(data-frame-head data-frame-from-hash)
+

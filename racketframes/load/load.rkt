@@ -2,8 +2,8 @@
 
 (provide:
  [determine-schema (Path-String Index String -> Schema)]
- [load-csv-file (Path-String [#:schema (Option Schema)] -> DataFrame)]
- [load-delimited-file (Path-String String [#:schema (Option Schema)] -> DataFrame)]
+ [load-csv-file (Path-String [#:schema (Option Schema)]  [#:sample Boolean] -> DataFrame)]
+ [load-delimited-file (Path-String String [#:schema (Option Schema)]  [#:sample Boolean] -> DataFrame)]
  [data-frame-from-sql (Connection Boolean String (Listof Any) -> DataFrame)]
  [get-schema (Path-String (Option String) -> Schema)])
 
@@ -154,9 +154,9 @@
                                            (Schema-has-headers schema)
                                            (new-DataFrameBuilder-from-Schema schema)))))
 
-(: load-delimited-file (Path-String String [#:schema (Option Schema)] -> DataFrame))
-(define (load-delimited-file path delim #:schema [schema #f])
-  (let* ((schema (schema-if-needed schema path delim)))
+(: load-delimited-file (Path-String String [#:schema (Option Schema)] [#:sample Boolean] -> DataFrame))
+(define (load-delimited-file path delim #:schema [schema #f] #:sample [sample #f])
+  (let* ((schema (if sample (schema-if-needed schema path #f) (generate-generic-schema path delim))))
     (make-data-frame schema (read-delimited-file path
                                                  (Schema-has-headers schema)
                                                  (new-DataFrameBuilder-from-Schema schema)
