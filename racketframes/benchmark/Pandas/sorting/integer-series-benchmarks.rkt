@@ -7,12 +7,14 @@
 
 (require racket/format)
 
+(require "../../../util/list.rkt")
+
 (define now current-inexact-milliseconds)
 
-(define N (expt 10 6))
+(define N (expt 10 4))
 
-(: data (Vectorof Fixnum))
-(define data (make-vector N (random N)))
+(: data (Listof Fixnum))
+(define data (assert (random-number-list (assert N index?) (assert N index?)) ListofFixnum?))
 
 (define series-integer (new-ISeries data))
 
@@ -39,3 +41,27 @@ Wall time: 4.29 μs |#
 (fprintf (current-output-port)
          "Integer Series Sort Descending Bench: ~v ms.\n"
          iseries-sort-descending-bench-after)
+
+(define iseries-unique-bench-before (now))
+(define iseries-unique-result (iseries-unique series-integer))
+(define iseries-unique-bench-after (- (now) iseries-sort-descending-bench-before))
+
+(fprintf (current-output-port)
+         "Integer Series Unique Bench: ~v ms.\n"
+         iseries-unique-bench-after)
+
+(define iseries-isna-bench-before (now))
+(define iseries-isna-result (iseries-isna series-integer))
+(define iseries-isna-bench-after (- (now) iseries-sort-descending-bench-before))
+
+(fprintf (current-output-port)
+         "Integer Series isna Bench: ~v ms.\n"
+         iseries-isna-bench-after)
+
+(define iseries-notna-bench-before (now))
+(define iseries-notna-result (iseries-isna series-integer))
+(define iseries-notna-bench-after (- (now) iseries-sort-descending-bench-before))
+
+(fprintf (current-output-port)
+         "Integer Series notna Bench: ~v ms.\n"
+         iseries-notna-bench-after)

@@ -6,6 +6,8 @@
 (require RacketFrames)
 
 (require racket/format)
+
+(require "../../../util/list.rkt")
 ; ***********************************************************
 
  #| def setup(self, index):
@@ -70,8 +72,10 @@
 
 (define N (expt 10 6))
 
-(: data (Vectorof Fixnum))
-(define data (make-vector N (random N)))
+(: data (Listof Fixnum))
+(define data (assert (random-number-list (assert N index?) (assert N index?)) ListofFixnum?))
+
+;(iseries-head (new-ISeries (assert (random-number-list N 200) ListofFixnum?)))
 
 (define series-integer (new-ISeries data))
 
@@ -80,8 +84,6 @@
 (define i-ref-bench-before (now))
 (define iseries-iref-value (iseries-iloc series-integer 80000))
 (define i-ref-bench-after (- (now) i-ref-bench-before))
-
-(iseries-iloc series-integer 80000)
 
 (fprintf (current-output-port)
          "Integer Series i-loc Bench: ~v ms.\n"
@@ -143,3 +145,11 @@
 (fprintf (current-output-port)
          "Integer Series loc bench: ~v ms.\n"
          i-ref-label-bench-after)
+
+(define set-index-bench-before (now))
+(define set-index-result (set-ISeries-index series-integer (build-index-from-list (assert (random-number-list (assert N index?) (assert N index?)) ListofIndexDataType?))))
+(define set-index-bench-after (- (now) set-index-bench-before))
+
+(fprintf (current-output-port)
+         "Integer Series set index bench: ~v ms.\n"
+         set-index-bench-after)

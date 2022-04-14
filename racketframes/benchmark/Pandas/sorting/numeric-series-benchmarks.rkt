@@ -44,3 +44,14 @@ Wall time: 4.77 μs
 (fprintf (current-output-port)
          "Numeric Series Sort Descending Bench: ~v ms.\n"
          nseries-sort-descending-bench-after)
+
+(define nseries-unique-bench-before (now))
+(define nseries-unique-result (nseries-unique series-float))
+(define nseries-unique-bench-after (- (now) nseries-sort-descending-bench-before))
+
+(fprintf (current-output-port)
+         "Numeric Series Unique Descending Bench: ~v ms.\n"
+         nseries-unique-bench-after)
+
+
+

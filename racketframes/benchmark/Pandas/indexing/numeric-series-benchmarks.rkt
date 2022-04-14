@@ -8,6 +8,8 @@
 (require racket/format
          racket/flonum)
 
+(require "../../../util/list.rkt")
+
 ; ***********************************************************
 
  #| def setup(self, index):
@@ -129,3 +131,11 @@
          n-ref-label-list-bench-after)
 
 (printf "Pandas Compare* NumericSeriesIndexing.time_ix_scalar 80.14μs. \n")
+
+(define set-index-bench-before (now))
+(define set-index-result (set-NSeries-index series-float (build-index-from-list (assert (random-number-list (assert N index?) (assert N index?)) ListofIndexDataType?))))
+(define set-index-bench-after (- (now) set-index-bench-before))
+
+(fprintf (current-output-port)
+         "Numeric Series set index bench: ~v ms.\n"
+         set-index-bench-after)

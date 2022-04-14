@@ -10,9 +10,9 @@
 ; create integer series
 (define series-integer (new-ISeries (fxvector 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20)))
 
-(iseries-data (iseries-unique series-integer))
+(check-equal? (iseries-data (iseries-unique series-integer)) #(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20))
 
-(iseries-data (iseries-head series-integer))
+(check-equal? (iseries-data (iseries-head series-integer)) #(1 2 3 4 5 6 7 8 9 10))
 
 (define series-integer-duplicates (new-ISeries (fxvector 5 5 5 5 5)))
 

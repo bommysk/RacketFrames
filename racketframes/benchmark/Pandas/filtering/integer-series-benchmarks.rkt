@@ -16,6 +16,8 @@
 
 (define series-integer (new-ISeries data))
 
+(iseries-head series-integer)
+
 #| data = np.random.randint(0,100000,size=1000000)
 s = pd.Series(data)
 s.loc[lambda x: x % 2 == 0]
