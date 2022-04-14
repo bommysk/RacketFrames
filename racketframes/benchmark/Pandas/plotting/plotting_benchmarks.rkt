@@ -58,7 +58,7 @@ class TimeseriesPlotting(object):
     ([n : Real (range N)])
   (random (add1 (assert n fixnum?)))))
 
-(define integer-series (new-ISeries data #f))
+(define integer-series (new-ISeries data))
 
 (define columns-integer (list (cons 'col integer-series)))
 
@@ -75,7 +75,7 @@ class TimeseriesPlotting(object):
     ([n : Real (range HISTOGRAM-N)])
   (random (add1 (assert n fixnum?)))))
 
-(define histogram-integer-series (new-ISeries histogram-data #f))
+(define histogram-integer-series (new-ISeries histogram-data))
 
 (define histogram-columns-integer (list (cons 'col histogram-integer-series)))
 
@@ -156,7 +156,7 @@ class TimeseriesPlotting(object):
 
 ; datetime range generation
 (define date-range-bench-before (now))
-(build-index-from-list (datetime-range (Datetime (Date 1975 1 1) (Time 0 0 0 0 0)) 'D 2000 #f))
+;(build-index-from-list (datetime-range (Datetime (Date 1975 1 1) (Time 0 0 0 0 0)) 'D 2000 #f))
 (define date-range-bench-after (- (now) date-range-bench-before))
 
 (fprintf (current-output-port)

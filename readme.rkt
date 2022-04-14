@@ -41,3 +41,5 @@
 (displayln "DataFrame List of Column Names")
 (data-frame-names salary-data-frame-csv-no-schema)
 (show-data-frame-description (data-frame-description salary-data-frame-csv-no-schema))
+
+(build-multi-index-from-list (list (list 'a 'b 'c 'd 'e) (list 1 2 3 4 5) (list 'aa 'bb 'cc 'dd 'ee)))
