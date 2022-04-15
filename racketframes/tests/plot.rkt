@@ -146,3 +146,10 @@
 ;(get-discrete-hist-data (vector 1 2 3 4 5))
 
 ;(list-of-vec-from-hist-bin (get-discrete-hist-data (vector 1 2 3 4 5)))
+
+
+;******************
+
+(displayln "plotting float data-frame")
+
+(make-scatter-plot data-frame-float)

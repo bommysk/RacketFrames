@@ -28,6 +28,8 @@
  [set-NSeries-index (NSeries (U (Listof IndexDataType) RFIndex) -> NSeries)]
  [set-NSeries-null-value (NSeries RFNULL -> NSeries)]
  [nseries-custom-null-value (NSeries -> RFNULL)]
+ [nseries-isna (NSeries -> NSeries)]
+ [nseries-notna (NSeries -> NSeries)]
  [nseries-null-value (NSeries -> Flonum)]
  [set-NSeries-flonum-null-value-inplace (NSeries Flonum -> Void)]
  [nseries-iref (NSeries (Listof Index) -> (Listof Flonum))]
@@ -321,6 +323,15 @@
 (: nseries-value-is-null? (NSeries Flonum -> Boolean))
 (define (nseries-value-is-null? series value)
   (or (nan? value) (eq? (nseries-null-value series) value)))
+
+(: nseries-notna (NSeries -> NSeries))
+(define (nseries-notna nseries)
+  (nseries-filter nseries (lambda ((x : Flonum)) (not (nan? x)))))
+
+(: nseries-isna (NSeries -> NSeries))
+(define (nseries-isna nseries)
+  (nseries-filter nseries (lambda ((x : Flonum)) (nan? x))))
+
 
 (: nseries-length (NSeries -> Index))
 (define (nseries-length nseries)

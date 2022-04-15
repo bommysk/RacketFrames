@@ -92,7 +92,7 @@
 
 (check-equal?
  ((key-fn (key-cols-series (list integer-col-2 integer-col-1 float-col-1 categorical-col-1))) 2)
- "8\t3\t3.5\tc\t")
+ "8::3::3.5::c")
 
 ; build hash join
 ;(check-equal?

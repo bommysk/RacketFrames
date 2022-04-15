@@ -39,11 +39,11 @@
 
 
 (displayln "data-frame-groupby")
-(data-frame-groupby data-frame-integer (list 'col1))
+;(data-frame-groupby data-frame-integer (list 'col1))
 
-(data-frame-groupby data-frame-integer (list 'col2))
+;(data-frame-groupby data-frame-integer (list 'col2))
 
-(data-frame-groupby data-frame-integer (list 'col1 'col2))
+;(data-frame-groupby data-frame-integer (list 'col1 'col2))
 
 ;(displayln "data-frame-groupby aggregate mean")
 ;(series-print (apply-agg-data-frame 'mean (data-frame-groupby data-frame-integer (list 'col1 'col2))) (current-output-port))
@@ -82,7 +82,7 @@
 
 (displayln "data-frame outer join")
 (define data-frame-join-outer-bench-before (now))
-(data-frame-join-outer data-frame-integer data-frame-integer-2 #:on (list 'col2))
+(define data-frame-outer-join-result (data-frame-join-outer data-frame-integer data-frame-integer-2 #:on (list 'col2)))
 (define data-frame-join-outer-bench-after (- (now) data-frame-join-outer-bench-before))
 (fprintf (current-output-port)
          "data-frame outer join bench ~v ms.\n"
@@ -91,7 +91,7 @@
 
 (displayln "data-frame multi-column left join")
 (define data-frame-multi-column-join-left-bench-before (now))
-(data-frame-join-left data-frame-integer data-frame-integer-2 #:on (list 'col2 'col3))
+(define data-frame-left-multi-join-result (data-frame-join-left data-frame-integer data-frame-integer-2 #:on (list 'col2 'col3)))
 (define data-frame-multi-column-join-left-bench-after (- (now) data-frame-multi-column-join-left-bench-before))
 (fprintf (current-output-port)
          "data-frame multi-column left join bench ~v ms.\n"
@@ -99,7 +99,7 @@
 
 (displayln "data-frame multi-column inner join")
 (define data-frame-multi-column-join-inner-bench-before (now))
-(data-frame-join-inner data-frame-integer data-frame-integer-2 #:on (list 'col2 'col3))
+(define data-frame-inner-multi-join-result (data-frame-join-inner data-frame-integer data-frame-integer-2 #:on (list 'col2 'col3)))
 (define data-frame-multi-column-join-inner-bench-after (- (now) data-frame-multi-column-join-inner-bench-before))
 (fprintf (current-output-port)
          "data-frame multi-column inner join bench ~v ms.\n"
@@ -107,7 +107,7 @@
 
 (displayln "data-frame multi-column right join")
 (define data-frame-multi-column-join-right-bench-before (now))
-(data-frame-join-right data-frame-integer data-frame-integer-2 #:on (list 'col2 'col3))
+(define data-frame-right-multi-join-result (data-frame-join-right data-frame-integer data-frame-integer-2 #:on (list 'col2 'col3)))
 (define data-frame-multi-column-join-right-bench-after (- (now) data-frame-multi-column-join-right-bench-before))
 (fprintf (current-output-port)
          "data-frame multi-column right join bench ~v ms.\n"
@@ -115,8 +115,24 @@
 
 (displayln "data-frame multi-column outer join")
 (define data-frame-multi-column-join-outer-bench-before (now))
-(data-frame-join-outer data-frame-integer data-frame-integer-2 #:on (list 'col2 'col3))
+(define data-frame-outer-multi-join-result (data-frame-join-outer data-frame-integer data-frame-integer-2 #:on (list 'col2 'col3)))
 (define data-frame-multi-column-join-outer-bench-after (- (now) data-frame-multi-column-join-outer-bench-before))
 (fprintf (current-output-port)
          "data-frame multi-column outer join bench ~v ms.\n"
          data-frame-multi-column-join-outer-bench-after)
+
+(displayln "data-frame even filter")
+(define data-frame-column-filter-even-bench-before (now))
+(data-frame-head (data-frame-column-filter data-frame-integer (lambda ([x : Any]) (even? (assert x index?))) 'col1))
+(define data-frame-column-filter-even-bench-after (- (now) data-frame-column-filter-even-bench-before))
+(fprintf (current-output-port)
+         "data-frame even filter bench ~v ms.\n"
+         data-frame-column-filter-even-bench-after)
+
+(displayln "data-frame odd filter")
+(define data-frame-column-filter-odd-bench-before (now))
+(data-frame-head (data-frame-column-filter data-frame-integer (lambda ([x : Any]) (odd? (assert x index?))) 'col1))
+(define data-frame-column-filter-odd-bench-after (- (now) data-frame-column-filter-odd-bench-before))
+(fprintf (current-output-port)
+         "data-frame odd filter bench ~v ms.\n"
+         data-frame-column-filter-odd-bench-after)

@@ -133,6 +133,31 @@
          "series comp /. bench ~v ms.\n"
          series-comp-/.-bench-after)
 
+(define iseries-unique-bench-before (now))
+(define iseries-unique-result (iseries-unique integer-series-1))
+(define iseries-unique-bench-after (- (now) iseries-unique-bench-before))
+(fprintf (current-output-port)
+         "iseries-unique bench ~v ms.\n"
+         iseries-unique-bench-after)
+
+
+(define iseries-is-na-bench-before (now))
+;(define iseries-is-na-result (set-ISeries-index integer-series-1 (assert (random-number-list 2000000 200) ListofIndexDataType?)))
+(define iseries-isna-result (iseries-isna integer-series-1))
+(define iseries-is-na-bench-after (- (now) iseries-is-na-bench-before))
+(fprintf (current-output-port)
+         "iseries-is-na bench ~v ms.\n"
+         iseries-is-na-bench-after)
+
+(define iseries-notna-bench-before (now))
+;(define iseries-notna-result (set-ISeries-index integer-series-1 (assert (random-number-list 2000000 200) ListofIndexDataType?)))
+(define iseries-notna-result (iseries-notna integer-series-1))
+(define iseries-notna-bench-after (- (now) iseries-notna-bench-before))
+(fprintf (current-output-port)
+         "iseries-notna bench ~v ms.\n"
+         iseries-notna-bench-after)
+
+
 ; SCALAR ;
 
 
