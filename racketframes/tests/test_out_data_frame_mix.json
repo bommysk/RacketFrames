@@ -1,0 +1,4 @@
+[{"integer-col":"1","float-col":"1.5","categorical-col":"hello"},
+{"integer-col":"2","float-col":"2.5","categorical-col":"world"},
+{"integer-col":"3","float-col":"3.5","categorical-col":"fizz"},
+{"integer-col":"4","float-col":"4.5","categorical-col":"buzz"}]

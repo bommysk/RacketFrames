@@ -1,0 +1,83 @@
+· Creating environments
+· Discovering benchmarks
+· Running 14 total benchmarks (2 commits * 1 environments * 7 benchmarks)
+[  0.00%] · For pandas commit ea2e26ae <master> (round 1/2):
+[  0.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[  3.57%] ··· Running (plotting.FramePlotting.time_frame_plot--)...
+[ 14.29%] ··· Running (plotting.TimeseriesPlotting.time_plot_irregular--)....
+[ 25.00%] · For pandas commit ea2e26ae <master> (round 1/2):
+[ 25.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 28.57%] ··· Running (plotting.FramePlotting.time_frame_plot--)...
+[ 39.29%] ··· Running (plotting.TimeseriesPlotting.time_plot_irregular--)....
+[ 50.00%] · For pandas commit ea2e26ae <master> (round 2/2):
+[ 50.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 53.57%] ··· plotting.FramePlotting.time_frame_plot                          ok
+[ 53.57%] ··· ========= ============
+                 kind               
+              --------- ------------
+                 line     99.5±3ms  
+                 bar      134±5ms   
+                 area     218±10ms  
+                 barh     130±1ms   
+                 hist     187±10ms  
+                 kde      466±20ms  
+                 pie      103±10ms  
+               scatter    36.6±1ms  
+                hexbin   43.8±0.5ms 
+              ========= ============
+
+[ 57.14%] ··· plotting.Misc.time_plot_andrews_curves                   980±200ms
+[ 60.71%] ··· plotting.SeriesPlotting.time_series_plot                        ok
+[ 60.71%] ··· ====== ==========
+               kind            
+              ------ ----------
+               line   73.8±1ms 
+               bar    59.5±6ms 
+               area   190±7ms  
+               barh   60.9±2ms 
+               hist   159±9ms  
+               kde    395±7ms  
+               pie    66.8±2ms 
+              ====== ==========
+
+[ 64.29%] ··· plotting.TimeseriesPlotting.time_plot_irregular           35.4±2ms
+[ 67.86%] ··· plotting.TimeseriesPlotting.time_plot_regular           57.5±0.9ms
+[ 71.43%] ··· ....TimeseriesPlotting.time_plot_regular_compat           32.4±1ms
+[ 75.00%] ··· plotting.TimeseriesPlotting.time_plot_table             1.21±0.02s
+[ 75.00%] · For pandas commit ea2e26ae <master> (round 2/2):
+[ 75.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 78.57%] ··· plotting.FramePlotting.time_frame_plot                          ok
+[ 78.57%] ··· ========= ==========
+                 kind             
+              --------- ----------
+                 line    98.8±3ms 
+                 bar     132±3ms  
+                 area    209±10ms 
+                 barh    130±1ms  
+                 hist    181±10ms 
+                 kde     460±10ms 
+                 pie     95.2±9ms 
+               scatter   36.7±1ms 
+                hexbin   43.7±1ms 
+              ========= ==========
+
+[ 82.14%] ··· plotting.Misc.time_plot_andrews_curves                   961±200ms
+[ 85.71%] ··· plotting.SeriesPlotting.time_series_plot                        ok
+[ 85.71%] ··· ====== ==========
+               kind            
+              ------ ----------
+               line   74.9±2ms 
+               bar    58.9±2ms 
+               area   185±7ms  
+               barh   60.4±2ms 
+               hist   156±7ms  
+               kde    393±7ms  
+               pie    64.5±2ms 
+              ====== ==========
+
+[ 89.29%] ··· plotting.TimeseriesPlotting.time_plot_irregular           34.3±1ms
+[ 92.86%] ··· plotting.TimeseriesPlotting.time_plot_regular             57.7±1ms
+[ 96.43%] ··· ....TimeseriesPlotting.time_plot_regular_compat           32.8±1ms
+[100.00%] ··· plotting.TimeseriesPlotting.time_plot_table             1.19±0.02s
+
+BENCHMARKS NOT SIGNIFICANTLY CHANGED.

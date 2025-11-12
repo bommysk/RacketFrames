@@ -1,0 +1,465 @@
+· Creating environments
+· Discovering benchmarks
+· Running 44 total benchmarks (2 commits * 1 environments * 22 benchmarks)
+[  0.00%] · For pandas commit ea2e26ae <master> (round 1/2):
+[  0.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[  1.14%] ··· Running (series_methods.All.time_all--).................
+[ 20.45%] ··· Running (series_methods.NanOps.time_func--).
+[ 21.59%] ··· Running (series_methods.SearchSorted.time_searchsorted--)....
+[ 25.00%] · For pandas commit ea2e26ae <master> (round 1/2):
+[ 25.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 26.14%] ··· Running (series_methods.All.time_all--).................
+[ 45.45%] ··· Running (series_methods.NanOps.time_func--).
+[ 46.59%] ··· Running (series_methods.SearchSorted.time_searchsorted--)....
+[ 50.00%] · For pandas commit ea2e26ae <master> (round 2/2):
+[ 50.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 51.14%] ··· series_methods.All.time_all                                     ok
+[ 51.14%] ··· ========= ========== ==========
+              --                 case        
+              --------- ---------------------
+                  N        fast       slow   
+              ========= ========== ==========
+                 1000    39.0±6μs   50.2±5μs 
+               1000000   48.6±5μs   101±9μs  
+              ========= ========== ==========
+
+[ 52.27%] ··· series_methods.Any.time_any                                     ok
+[ 52.27%] ··· ========= =========== ===========
+              --                  case         
+              --------- -----------------------
+                  N         fast        slow   
+              ========= =========== ===========
+                 1000    42.6±20μs   46.7±20μs 
+               1000000    45.1±3μs   92.9±20μs 
+              ========= =========== ===========
+
+[ 53.41%] ··· series_methods.Clip.time_clip                                   ok
+[ 53.41%] ··· ======== =============
+                 n                  
+              -------- -------------
+                 50       787±70μs  
+                1000      1.13±1ms  
+               100000   1.35±0.02ms 
+              ======== =============
+
+[ 54.55%] ··· series_methods.Dir.time_dir_strings                     3.84±0.5ms
+[ 55.68%] ··· series_methods.Dropna.time_dropna                               ok
+[ 55.68%] ··· ========== ============
+                dtype                
+              ---------- ------------
+                 int      1.60±0.1ms 
+               datetime   7.75±0.5ms 
+              ========== ============
+
+[ 56.82%] ··· series_methods.IsIn.time_isin                                   ok
+[ 56.82%] ··· ======== =============
+               dtype                
+              -------- -------------
+               int64     1.60±0.1ms 
+               uint64   1.63±0.04ms 
+               object    2.82±0.1ms 
+              ======== =============
+
+[ 57.95%] ··· ..._methods.IsInFloat64.time_isin_few_different           63.1±4ms
+[ 59.09%] ··· ...methods.IsInFloat64.time_isin_many_different           60.5±3ms
+[ 60.23%] ··· series_methods.IsInFloat64.time_isin_nan_values           60.9±3ms
+[ 61.36%] ··· ...ForObjects.time_isin_long_series_long_values        3.21±0.08ms
+[ 62.50%] ··· ...cts.time_isin_long_series_long_values_floats         5.08±0.2ms
+[ 63.64%] ··· ...orObjects.time_isin_long_series_short_values        1.89±0.02ms
+[ 64.77%] ··· series_methods.IsInForObjects.time_isin_nans             711±100μs
+[ 65.91%] ··· ...orObjects.time_isin_short_series_long_values           1.48±2ms
+[ 67.05%] ··· series_methods.Map.time_map                                     ok
+[ 67.05%] ··· ======== ============= ============ ============
+              --                          a                   
+              -------- ---------------------------------------
+                 m         object      category       int     
+              ======== ============= ============ ============
+                dict    1.67±0.03ms   1.21±0.3ms   1.06±0.2ms 
+               Series    1.15±0.1ms    470±30μs     316±10μs  
+               lambda    3.34±0.6ms    647±50μs    3.54±0.1ms 
+              ======== ============= ============ ============
+
+[ 68.18%] ··· series_methods.NSort.time_nlargest                              ok
+[ 68.18%] ··· ======= ============
+                keep              
+              ------- ------------
+               first    2.86±2ms  
+                last   1.89±0.2ms 
+                all    1.93±0.4ms 
+              ======= ============
+
+[ 69.32%] ··· series_methods.NSort.time_nsmallest                             ok
+[ 69.32%] ··· ======= ============
+                keep              
+              ------- ------------
+               first   1.48±0.2ms 
+                last   1.68±0.6ms 
+                all    1.54±0.1ms 
+              ======= ============
+
+[ 70.45%] ··· series_methods.NanOps.time_func                                 ok
+[ 70.45%] ··· ======== ========= ========= =============
+                func       N       dtype                
+              -------- --------- --------- -------------
+                var       1000      int8     283±200μs  
+                var       1000     int32     389±300μs  
+                var       1000     int64     442±400μs  
+                var       1000    float64     134±50μs  
+                var     1000000     int8      5.50±2ms  
+                var     1000000    int32     5.33±0.2ms 
+                var     1000000    int64     7.00±0.9ms 
+                var     1000000   float64    8.79±0.3ms 
+                mean      1000      int8      93.4±6μs  
+                mean      1000     int32      175±90μs  
+                mean      1000     int64     99.0±20μs  
+                mean      1000    float64     118±20μs  
+                mean    1000000     int8      796±40μs  
+                mean    1000000    int32      815±40μs  
+                mean    1000000    int64     1.16±0.1ms 
+                mean    1000000   float64    4.85±0.2ms 
+               median     1000      int8      157±10μs  
+               median     1000     int32      158±2μs   
+               median     1000     int64      157±8μs   
+               median     1000    float64     188±5μs   
+               median   1000000     int8     10.4±0.5ms 
+               median   1000000    int32     10.5±0.7ms 
+               median   1000000    int64     11.5±0.7ms 
+               median   1000000   float64    12.1±0.7ms 
+                max       1000      int8     82.0±20μs  
+                max       1000     int32     51.7±0.9μs 
+                max       1000     int64      56.0±4μs  
+                max       1000    float64     81.1±4μs  
+                max     1000000     int8      637±20μs  
+                max     1000000    int32      746±10μs  
+                max     1000000    int64      843±10μs  
+                max     1000000   float64    4.87±0.5ms 
+                min       1000      int8      53.7±3μs  
+                min       1000     int32     53.7±0.7μs 
+                min       1000     int64      67.1±6μs  
+                min       1000    float64     85.8±8μs  
+                min     1000000     int8      749±20μs  
+                min     1000000    int32      698±20μs  
+                min     1000000    int64      806±40μs  
+                min     1000000   float64    5.04±0.1ms 
+                sum       1000      int8      66.9±4μs  
+                sum       1000     int32      65.3±5μs  
+                sum       1000     int64      63.5±2μs  
+                sum       1000    float64     89.0±1μs  
+                sum     1000000     int8    1.07±0.02ms 
+                sum     1000000    int32     924±200μs  
+                sum     1000000    int64     872±200μs  
+                sum     1000000   float64    4.95±0.2ms 
+                std       1000      int8      176±30μs  
+                std       1000     int32      154±20μs  
+                std       1000     int64      173±20μs  
+                std       1000    float64     266±10μs  
+                std     1000000     int8     5.25±0.4ms 
+                std     1000000    int32     5.55±0.4ms 
+                std     1000000    int64      6.05±1ms  
+                std     1000000   float64    10.4±0.3ms 
+                sem       1000      int8      222±10μs  
+                sem       1000     int32      227±7μs   
+                sem       1000     int64      216±10μs  
+                sem       1000    float64     256±3μs   
+                sem     1000000     int8     14.8±0.5ms 
+                sem     1000000    int32     16.1±0.8ms 
+                sem     1000000    int64      17.2±2ms  
+                sem     1000000   float64    17.8±0.6ms 
+               argmax     1000      int8      33.9±2μs  
+               argmax     1000     int32      35.0±2μs  
+               argmax     1000     int64     35.3±0.8μs 
+               argmax     1000    float64     70.9±1μs  
+               argmax   1000000     int8      501±8μs   
+               argmax   1000000    int32      665±30μs  
+               argmax   1000000    int64      615±40μs  
+               argmax   1000000   float64    4.25±0.1ms 
+                skew      1000      int8      85.7±1μs  
+                skew      1000     int32      83.7±2μs  
+                skew      1000     int64      83.3±4μs  
+                skew      1000    float64     107±2μs   
+                skew    1000000     int8     8.61±0.4ms 
+                skew    1000000    int32     8.57±0.4ms 
+                skew    1000000    int64     9.00±0.2ms 
+                skew    1000000   float64    11.5±0.4ms 
+                kurt      1000      int8      84.0±1μs  
+                kurt      1000     int32      86.4±4μs  
+                kurt      1000     int64      82.0±2μs  
+                kurt      1000    float64     109±5μs   
+                kurt    1000000     int8     7.92±0.2ms 
+                kurt    1000000    int32     8.71±0.2ms 
+                kurt    1000000    int64      9.87±1ms  
+                kurt    1000000   float64     13.5±4ms  
+                prod      1000      int8     59.2±20μs  
+                prod      1000     int32      48.1±8μs  
+                prod      1000     int64     56.0±20μs  
+                prod      1000    float64     69.0±3μs  
+                prod    1000000     int8     1.73±0.2ms 
+                prod    1000000    int32      1.56±1ms  
+                prod    1000000    int64     1.21±0.3ms 
+                prod    1000000   float64    4.52±0.2ms 
+              ======== ========= ========= =============
+
+[ 71.59%] ··· series_methods.SearchSorted.time_searchsorted                   ok
+[ 71.59%] ··· ========= ============
+                dtype               
+              --------- ------------
+                 int8     20.7±3μs  
+                int16     20.1±2μs  
+                int32     25.1±2μs  
+                int64     27.8±1μs  
+                uint8     23.3±4μs  
+                uint16   23.6±0.7μs 
+                uint32    24.4±4μs  
+                uint64    21.7±5μs  
+               float16    661±20μs  
+               float32    128±9μs   
+               float64    8.86±1μs  
+                 str     7.07±0.5μs 
+              ========= ============
+
+[ 72.73%] ··· ...s_methods.SeriesConstructor.time_constructor                 ok
+[ 72.73%] ··· ====== ==========
+               data            
+              ------ ----------
+               None   154±5μs  
+               dict   96.6±4ms 
+              ====== ==========
+
+[ 73.86%] ··· ...SeriesGetattr.time_series_datetimeindex_repr           5.04±2μs
+[ 75.00%] ··· series_methods.ValueCounts.time_value_counts                    ok
+[ 75.00%] ··· ======== =============
+               dtype                
+              -------- -------------
+                int       2.29±1ms  
+                uint    1.58±0.08ms 
+               float     3.15±0.1ms 
+               object    9.01±0.5ms 
+              ======== =============
+
+[ 75.00%] · For pandas commit ea2e26ae <master> (round 2/2):
+[ 75.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 76.14%] ··· series_methods.All.time_all                                     ok
+[ 76.14%] ··· ========= ========== ==========
+              --                 case        
+              --------- ---------------------
+                  N        fast       slow   
+              ========= ========== ==========
+                 1000    36.3±5μs   41.7±7μs 
+               1000000   48.1±6μs   100±10μs 
+              ========= ========== ==========
+
+[ 77.27%] ··· series_methods.Any.time_any                                     ok
+[ 77.27%] ··· ========= =========== ===========
+              --                  case         
+              --------- -----------------------
+                  N         fast        slow   
+              ========= =========== ===========
+                 1000    33.9±10μs   40.0±10μs 
+               1000000    46.5±3μs   93.7±10μs 
+              ========= =========== ===========
+
+[ 78.41%] ··· series_methods.Clip.time_clip                                   ok
+[ 78.41%] ··· ======== =============
+                 n                  
+              -------- -------------
+                 50       769±70μs  
+                1000     1.22±0.3ms 
+               100000   1.37±0.07ms 
+              ======== =============
+
+[ 79.55%] ··· series_methods.Dir.time_dir_strings                     3.82±0.3ms
+[ 80.68%] ··· series_methods.Dropna.time_dropna                               ok
+[ 80.68%] ··· ========== ============
+                dtype                
+              ---------- ------------
+                 int      1.78±0.2ms 
+               datetime   7.79±0.5ms 
+              ========== ============
+
+[ 81.82%] ··· series_methods.IsIn.time_isin                                   ok
+[ 81.82%] ··· ======== ============
+               dtype               
+              -------- ------------
+               int64    1.55±0.1ms 
+               uint64   1.68±0.1ms 
+               object   2.99±0.8ms 
+              ======== ============
+
+[ 82.95%] ··· ..._methods.IsInFloat64.time_isin_few_different           64.0±7ms
+[ 84.09%] ··· ...methods.IsInFloat64.time_isin_many_different           61.7±5ms
+[ 85.23%] ··· series_methods.IsInFloat64.time_isin_nan_values           62.1±4ms
+[ 86.36%] ··· ...ForObjects.time_isin_long_series_long_values         3.27±0.4ms
+[ 87.50%] ··· ...cts.time_isin_long_series_long_values_floats         5.27±0.3ms
+[ 88.64%] ··· ...orObjects.time_isin_long_series_short_values        1.90±0.04ms
+[ 89.77%] ··· series_methods.IsInForObjects.time_isin_nans             768±100μs
+[ 90.91%] ··· ...orObjects.time_isin_short_series_long_values         1.21±0.4ms
+[ 92.05%] ··· series_methods.Map.time_map                                     ok
+[ 92.05%] ··· ======== ============ ============ =============
+              --                          a                   
+              -------- ---------------------------------------
+                 m        object      category        int     
+              ======== ============ ============ =============
+                dict    1.71±0.3ms   1.31±0.4ms   1.08±0.07ms 
+               Series   1.42±0.3ms    470±30μs      348±50μs  
+               lambda   3.39±0.2ms   697±100μs     3.70±0.4ms 
+              ======== ============ ============ =============
+
+[ 93.18%] ··· series_methods.NSort.time_nlargest                              ok
+[ 93.18%] ··· ======= ============
+                keep              
+              ------- ------------
+               first    1.86±1ms  
+                last   2.13±0.9ms 
+                all    1.93±0.4ms 
+              ======= ============
+
+[ 94.32%] ··· series_methods.NSort.time_nsmallest                             ok
+[ 94.32%] ··· ======= ============
+                keep              
+              ------- ------------
+               first   1.41±0.1ms 
+                last   1.37±0.3ms 
+                all    1.45±0.1ms 
+              ======= ============
+
+[ 95.45%] ··· series_methods.NanOps.time_func                                 ok
+[ 95.45%] ··· ======== ========= ========= =============
+                func       N       dtype                
+              -------- --------- --------- -------------
+                var       1000      int8     97.9±200μs 
+                var       1000     int32     145±300μs  
+                var       1000     int64     113±400μs  
+                var       1000    float64     139±30μs  
+                var     1000000     int8      5.56±1ms  
+                var     1000000    int32     5.55±0.7ms 
+                var     1000000    int64     6.77±0.7ms 
+                var     1000000   float64    8.63±0.6ms 
+                mean      1000      int8      94.5±7μs  
+                mean      1000     int32     90.9±70μs  
+                mean      1000     int64     97.9±10μs  
+                mean      1000    float64     130±20μs  
+                mean    1000000     int8      825±30μs  
+                mean    1000000    int32     867±200μs  
+                mean    1000000    int64    1.11±0.09ms 
+                mean    1000000   float64    5.13±0.4ms 
+               median     1000      int8      164±10μs  
+               median     1000     int32      161±9μs   
+               median     1000     int64      163±10μs  
+               median     1000    float64     193±7μs   
+               median   1000000     int8     10.5±0.9ms 
+               median   1000000    int32     10.7±0.7ms 
+               median   1000000    int64     11.3±0.5ms 
+               median   1000000   float64     12.6±1ms  
+                max       1000      int8     57.5±20μs  
+                max       1000     int32     53.5±10μs  
+                max       1000     int64      53.8±3μs  
+                max       1000    float64    84.4±20μs  
+                max     1000000     int8      651±40μs  
+                max     1000000    int32      758±20μs  
+                max     1000000    int64      848±50μs  
+                max     1000000   float64    4.98±0.6ms 
+                min       1000      int8      56.0±2μs  
+                min       1000     int32      54.0±1μs  
+                min       1000     int64     68.3±20μs  
+                min       1000    float64     83.0±7μs  
+                min     1000000     int8      773±80μs  
+                min     1000000    int32      713±20μs  
+                min     1000000    int64      839±40μs  
+                min     1000000   float64    5.02±0.2ms 
+                sum       1000      int8      66.7±5μs  
+                sum       1000     int32      65.0±4μs  
+                sum       1000     int64      64.4±1μs  
+                sum       1000    float64    90.5±30μs  
+                sum     1000000     int8    1.10±0.05ms 
+                sum     1000000    int32      910±90μs  
+                sum     1000000    int64     754±100μs  
+                sum     1000000   float64    5.31±0.5ms 
+                std       1000      int8      139±30μs  
+                std       1000     int32      132±20μs  
+                std       1000     int64      154±20μs  
+                std       1000    float64     259±50μs  
+                std     1000000     int8      6.02±2ms  
+                std     1000000    int32     5.72±0.8ms 
+                std     1000000    int64      6.13±1ms  
+                std     1000000   float64    10.5±0.3ms 
+                sem       1000      int8      249±70μs  
+                sem       1000     int32      232±20μs  
+                sem       1000     int64      232±20μs  
+                sem       1000    float64     257±10μs  
+                sem     1000000     int8     15.2±0.9ms 
+                sem     1000000    int32      16.6±1ms  
+                sem     1000000    int64     19.7±10ms  
+                sem     1000000   float64    18.1±0.7ms 
+               argmax     1000      int8      38.2±5μs  
+               argmax     1000     int32      36.7±4μs  
+               argmax     1000     int64      36.7±7μs  
+               argmax     1000    float64    72.1±30μs  
+               argmax   1000000     int8      507±60μs  
+               argmax   1000000    int32     707±200μs  
+               argmax   1000000    int64      635±70μs  
+               argmax   1000000   float64    4.32±0.2ms 
+                skew      1000      int8     87.1±20μs  
+                skew      1000     int32     86.6±80μs  
+                skew      1000     int64     92.2±60μs  
+                skew      1000    float64     110±30μs  
+                skew    1000000     int8     8.67±0.5ms 
+                skew    1000000    int32     8.97±0.6ms 
+                skew    1000000    int64     9.07±0.2ms 
+                skew    1000000   float64    11.6±0.4ms 
+                kurt      1000      int8      84.0±1μs  
+                kurt      1000     int32     92.6±100μs 
+                kurt      1000     int64     84.8±200μs 
+                kurt      1000    float64    116±300μs  
+                kurt    1000000     int8     8.16±20ms  
+                kurt    1000000    int32     8.83±10ms  
+                kurt    1000000    int64     11.1±10ms  
+                kurt    1000000   float64    20.9±10ms  
+                prod      1000      int8     77.7±80μs  
+                prod      1000     int32     64.6±80μs  
+                prod      1000     int64     89.2±100μs 
+                prod      1000    float64    74.3±200μs 
+                prod    1000000     int8     1.65±0.1ms 
+                prod    1000000    int32      3.86±1ms  
+                prod    1000000    int64     1.18±0.1ms 
+                prod    1000000   float64     4.78±3ms  
+              ======== ========= ========= =============
+
+[ 96.59%] ··· series_methods.SearchSorted.time_searchsorted                   ok
+[ 96.59%] ··· ========= ===========
+                dtype              
+              --------- -----------
+                 int8     24.9±7μs 
+                int16    21.2±30μs 
+                int32    27.9±30μs 
+                int64    29.5±20μs 
+                uint8    26.5±40μs 
+                uint16   24.1±30μs 
+                uint32   26.0±30μs 
+                uint64   29.0±30μs 
+               float16    655±20μs 
+               float32    125±8μs  
+               float64    8.21±1μs 
+                 str     7.64±10μs 
+              ========= ===========
+
+[ 97.73%] ··· ...s_methods.SeriesConstructor.time_constructor                 ok
+[ 97.73%] ··· ====== ==========
+               data            
+              ------ ----------
+               None   152±7μs  
+               dict   97.0±6ms 
+              ====== ==========
+
+[ 98.86%] ··· ...SeriesGetattr.time_series_datetimeindex_repr           5.88±2μs
+[100.00%] ··· series_methods.ValueCounts.time_value_counts                    ok
+[100.00%] ··· ======== ==========
+               dtype             
+              -------- ----------
+                int     3.37±3ms 
+                uint    1.63±5ms 
+               float    3.28±5ms 
+               object   9.20±5ms 
+              ======== ==========
+
+
+BENCHMARKS NOT SIGNIFICANTLY CHANGED.

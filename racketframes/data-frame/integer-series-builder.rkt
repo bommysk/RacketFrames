@@ -1,0 +1,72 @@
+#lang typed/racket
+
+(provide
+ (struct-out ISeriesBuilder))
+
+(provide:
+ [new-ISeriesBuilder (case-> 
+		      (-> ISeriesBuilder)
+		      (Index -> ISeriesBuilder))]
+ [append-ISeriesBuilder   (ISeriesBuilder (U RFFixnum String) -> Void)]
+ [complete-ISeriesBuilder (ISeriesBuilder -> ISeries)])
+
+(require
+ racket/fixnum
+ (only-in racket/vector
+	  vector-copy)
+ (only-in "integer-series.rkt"
+          new-ISeries ISeries RFFixnum ISERIES_DEFAULT_NULL_VALUE))
+
+(struct: ISeriesBuilder ([index  : Index]
+			 [data : (Vectorof RFFixnum)]) #:mutable)
+
+(define base-len 512)
+
+(: new-ISeriesBuilder (case-> 
+		       (-> ISeriesBuilder)
+		       (Index -> ISeriesBuilder)))
+(define (new-ISeriesBuilder [len base-len])
+  (ISeriesBuilder 0 (make-vector len ISERIES_DEFAULT_NULL_VALUE)))
+
+(: append-ISeriesBuilder (ISeriesBuilder (U RFFixnum String) -> Void))
+(define (append-ISeriesBuilder builder int/str-value)
+  
+  (define-syntax bump
+    (syntax-rules ()
+      [(bump x)
+       (assert (add1 x) index?)]))
+  
+  (define (bump-index)
+    (let ((idx (ISeriesBuilder-index builder)))
+      (set-ISeriesBuilder-index! builder (bump idx))
+      idx))
+  
+  (: extend-data (-> Void))
+  (define (extend-data)
+    (let* ((data (ISeriesBuilder-data builder))
+	   (curr-len (vector-length data))
+	   (new-len  (assert (inexact->exact (round (* 1.5 curr-len))) exact-integer?)))
+      (let: ((new-data : (Vectorof RFFixnum) ((inst make-vector RFFixnum) new-len ISERIES_DEFAULT_NULL_VALUE)))
+	    (do ([idx 0 (add1 idx)])
+		([>= idx curr-len] (set-ISeriesBuilder-data! builder new-data))
+	      (vector-set! new-data idx (vector-ref data idx))))))
+  
+  (if (< (ISeriesBuilder-index builder)         
+         (vector-length (ISeriesBuilder-data builder)))
+      (let ((num (if (string? int/str-value)
+                     ; if the string is not a valid number, we fill NAN, 0 in this case
+		     (let ((num (string->number (string-trim int/str-value))))                      
+                       (if num (assert num fixnum?) ISERIES_DEFAULT_NULL_VALUE))
+		     int/str-value)))
+        (vector-set! (ISeriesBuilder-data builder)
+		     (bump-index)
+		     num))
+      (begin
+        (extend-data)       
+        (append-ISeriesBuilder builder int/str-value))))
+
+(: complete-ISeriesBuilder (ISeriesBuilder -> ISeries))
+(define (complete-ISeriesBuilder builder)  
+  (let* ((data (ISeriesBuilder-data builder))
+         (len (ISeriesBuilder-index builder)))
+    (new-ISeries (vector-copy data 0 len))))

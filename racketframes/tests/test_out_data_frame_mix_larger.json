@@ -1,0 +1,4 @@
+[{"integer-col":"1","float-col":"1.5","categorical-col":"hello","col1":"1.5","col2":"5.5","col3":"9.5"},
+{"integer-col":"2","float-col":"2.5","categorical-col":"world","col1":"2.5","col2":"6.5","col3":"10.5"},
+{"integer-col":"3","float-col":"3.5","categorical-col":"fizz","col1":"3.5","col2":"7.5","col3":"11.5"},
+{"integer-col":"4","float-col":"4.5","categorical-col":"buzz","col1":"4.5","col2":"8.5","col3":"12.5"}]

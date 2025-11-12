@@ -1,0 +1,873 @@
+· Creating environments
+· Discovering benchmarks
+· Running 114 total benchmarks (2 commits * 1 environments * 57 benchmarks)
+[  0.00%] · For pandas commit ea2e26ae <master> (round 1/2):
+[  0.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[  0.44%] ··· Running (indexing.AssignTimeseriesIndex.time_frame_assign_timeseries_index--).......
+[  3.51%] ··· Running (indexing.CategoricalIndexIndexing.time_getitem_slice--)....................
+[ 12.28%] ··· Running (indexing.NonNumericSeriesIndexing.time_getitem_list_like--).
+[ 12.72%] ··· Running (indexing.NonNumericSeriesIndexing.time_getitem_pos_slice--).
+[ 13.16%] ··· Running (indexing.NonNumericSeriesIndexing.time_getitem_scalar--).
+[ 13.60%] ··· Running (indexing.NumericSeriesIndexing.time_getitem_array--)..
+[ 14.47%] ··· Running (indexing.NumericSeriesIndexing.time_getitem_lists--)..
+[ 15.35%] ··· Running (indexing.NumericSeriesIndexing.time_getitem_slice--)...
+[ 16.67%] ··· Running (indexing.NumericSeriesIndexing.time_iloc_scalar--)...
+[ 17.98%] ··· Running (indexing.NumericSeriesIndexing.time_ix_list_like--)...
+[ 19.30%] ··· Running (indexing.NumericSeriesIndexing.time_loc_array--)..
+[ 20.18%] ··· Running (indexing.NumericSeriesIndexing.time_loc_scalar--)...
+[ 21.49%] ··· Running (indexing_engines.NumericEngineIndexing.time_get_loc--)..
+[ 22.37%] ··· Setting up indexing:306                                         ok
+[ 22.37%] ··· Running (indexing.MethodLookup.time_lookup_iloc--)...
+[ 23.68%] ··· Setting up indexing:244                                         ok
+[ 23.68%] ··· Running (indexing.IntervalIndexing.time_getitem_list--)....
+[ 25.00%] · For pandas commit ea2e26ae <master> (round 1/2):
+[ 25.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 25.44%] ··· Running (indexing.AssignTimeseriesIndex.time_frame_assign_timeseries_index--).......
+[ 28.51%] ··· Running (indexing.CategoricalIndexIndexing.time_getitem_slice--)....................
+[ 37.28%] ··· Running (indexing.NonNumericSeriesIndexing.time_getitem_list_like--).
+[ 37.72%] ··· Running (indexing.NonNumericSeriesIndexing.time_getitem_pos_slice--).
+[ 38.16%] ··· Running (indexing.NonNumericSeriesIndexing.time_getitem_scalar--).
+[ 38.60%] ··· Running (indexing.NumericSeriesIndexing.time_getitem_array--)..
+[ 39.47%] ··· Running (indexing.NumericSeriesIndexing.time_getitem_lists--)..
+[ 40.35%] ··· Running (indexing.NumericSeriesIndexing.time_getitem_slice--)..
+[ 41.23%] ··· Running (indexing.NumericSeriesIndexing.time_iloc_list_like--).
+[ 41.67%] ··· Running (indexing.NumericSeriesIndexing.time_iloc_scalar--)..
+[ 42.54%] ··· Running (indexing.NumericSeriesIndexing.time_ix_array--)..
+[ 43.42%] ··· Running (indexing.NumericSeriesIndexing.time_ix_scalar--)..
+[ 44.30%] ··· Running (indexing.NumericSeriesIndexing.time_loc_array--)..
+[ 45.18%] ··· Running (indexing.NumericSeriesIndexing.time_loc_scalar--)....
+[ 46.93%] ··· Running (indexing_engines.ObjectEngineIndexing.time_get_loc--).
+[ 47.37%] ··· Setting up indexing:306                                         ok
+[ 47.37%] ··· Running (indexing.MethodLookup.time_lookup_iloc--)...
+[ 48.68%] ··· Setting up indexing:244                                         ok
+[ 48.68%] ··· Running (indexing.IntervalIndexing.time_getitem_list--)....
+[ 50.00%] · For pandas commit ea2e26ae <master> (round 2/2):
+[ 50.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 50.44%] ··· ...riesIndex.time_frame_assign_timeseries_index           297±80μs
+[ 50.88%] ··· ...tegoricalIndexIndexing.time_get_indexer_list                 ok
+[ 50.88%] ··· ================ ===========
+                   index                  
+              ---------------- -----------
+               monotonic_incr    20.8±1ms 
+               monotonic_decr   84.2±20ms 
+               non_monotonic     114±10ms 
+              ================ ===========
+
+[ 51.32%] ··· ...CategoricalIndexIndexing.time_get_loc_scalar                 ok
+[ 51.32%] ··· ================ ============
+                   index                   
+              ---------------- ------------
+               monotonic_incr   9.10±0.7μs 
+               monotonic_decr    283±10μs  
+               non_monotonic     247±5μs   
+              ================ ============
+
+[ 51.75%] ··· ...goricalIndexIndexing.time_getitem_bool_array                 ok
+[ 51.75%] ··· ================ =============
+                   index                    
+              ---------------- -------------
+               monotonic_incr     185±4μs   
+               monotonic_decr     182±3μs   
+               non_monotonic    1.17±0.02ms 
+              ================ =============
+
+[ 52.19%] ··· ...g.CategoricalIndexIndexing.time_getitem_list                 ok
+[ 52.19%] ··· ================ =============
+                   index                    
+              ---------------- -------------
+               monotonic_incr    1.35±0.2ms 
+               monotonic_decr    1.37±0.2ms 
+               non_monotonic    1.14±0.02ms 
+              ================ =============
+
+[ 52.63%] ··· ...egoricalIndexIndexing.time_getitem_list_like                 ok
+[ 52.63%] ··· ================ ==========
+                   index                 
+              ---------------- ----------
+               monotonic_incr   44.1±7μs 
+               monotonic_decr   40.3±9μs 
+               non_monotonic    41.5±5μs 
+              ================ ==========
+
+[ 53.07%] ··· ...CategoricalIndexIndexing.time_getitem_scalar                 ok
+[ 53.07%] ··· ================ =============
+                   index                    
+              ---------------- -------------
+               monotonic_incr     4.26±1μs  
+               monotonic_decr   4.29±0.07μs 
+               non_monotonic     4.61±0.3μs 
+              ================ =============
+
+[ 53.51%] ··· ....CategoricalIndexIndexing.time_getitem_slice                 ok
+[ 53.51%] ··· ================ ===========
+                   index                  
+              ---------------- -----------
+               monotonic_incr    29.6±3μs 
+               monotonic_decr    28.5±7μs 
+               non_monotonic    30.2±10μs 
+              ================ ===========
+
+[ 53.95%] ··· indexing.ChainIndexing.time_chained_indexing                    ok
+[ 53.95%] ··· ====== ===========
+               mode             
+              ------ -----------
+               None   71.5±10ms 
+               warn   73.0±10ms 
+              ====== ===========
+
+[ 54.39%] ··· ...g.DataFrameNumericIndexing.time_bool_indexer         1.25±0.5ms
+[ 54.82%] ··· indexing.DataFrameNumericIndexing.time_iloc               109±20μs
+[ 55.26%] ··· ...xing.DataFrameNumericIndexing.time_iloc_dups          432±500μs
+[ 55.70%] ··· indexing.DataFrameNumericIndexing.time_loc               255±200μs
+[ 56.14%] ··· indexing.DataFrameNumericIndexing.time_loc_dups           6.53±3ms
+[ 56.58%] ··· ...ng.DataFrameStringIndexing.time_boolean_rows          277±100μs
+[ 57.02%] ··· ...FrameStringIndexing.time_boolean_rows_object          431±600μs
+[ 57.46%] ··· ....DataFrameStringIndexing.time_getitem_scalar          23.1±10μs
+[ 57.89%] ··· indexing.DataFrameStringIndexing.time_ix                  18.5±1μs
+[ 58.33%] ··· indexing.DataFrameStringIndexing.time_loc               7.68±0.2μs
+[ 58.77%] ··· ...eColumn.time_frame_getitem_single_column_int         2.56±0.5μs
+[ 59.21%] ··· ...olumn.time_frame_getitem_single_column_label        2.00±0.04μs
+[ 59.65%] ··· indexing.InsertColumns.time_assign_with_setitem           45.3±7ms
+[ 60.09%] ··· indexing.InsertColumns.time_insert                        53.6±3ms
+[ 60.53%] ··· indexing.MultiIndexing.time_frame_ix                   1.54±0.04ms
+[ 60.96%] ··· indexing.MultiIndexing.time_index_slice                 6.26±0.6ms
+[ 61.40%] ··· indexing.MultiIndexing.time_series_ix                  1.25±0.05ms
+[ 61.84%] ··· ...mericSeriesIndexing.time_getitem_label_slice                 ok
+[ 61.84%] ··· ============= ========================= ===========
+               index_dtype       index_structure                 
+              ------------- ------------------------- -----------
+                  string       unique_monotonic_inc    562±100μs 
+                  string     nonunique_monotonic_inc    713±30μs 
+                  string          non_monotonic         751±80μs 
+                 datetime      unique_monotonic_inc     250±50μs 
+                 datetime    nonunique_monotonic_inc   266±200μs 
+                 datetime         non_monotonic        435±600μs 
+                  period       unique_monotonic_inc     404±40μs 
+                  period     nonunique_monotonic_inc    365±40μs 
+                  period          non_monotonic         310±40μs 
+              ============= ========================= ===========
+
+[ 62.28%] ··· ...NumericSeriesIndexing.time_getitem_list_like                 ok
+[ 62.28%] ··· ============= ========================= ============
+               index_dtype       index_structure                  
+              ------------- ------------------------- ------------
+                  string       unique_monotonic_inc    3.95±0.9ms 
+                  string     nonunique_monotonic_inc   4.24±0.2ms 
+                  string          non_monotonic        3.04±0.7ms 
+                 datetime      unique_monotonic_inc     734±40μs  
+                 datetime    nonunique_monotonic_inc    747±30μs  
+                 datetime         non_monotonic         589±40μs  
+                  period       unique_monotonic_inc    6.05±0.2ms 
+                  period     nonunique_monotonic_inc   5.67±0.2ms 
+                  period          non_monotonic         840±90μs  
+              ============= ========================= ============
+
+[ 62.72%] ··· ...NumericSeriesIndexing.time_getitem_pos_slice                 ok
+[ 62.72%] ··· ============= ========================= ===========
+               index_dtype       index_structure                 
+              ------------- ------------------------- -----------
+                  string       unique_monotonic_inc    513±100μs 
+                  string     nonunique_monotonic_inc   772±100μs 
+                  string          non_monotonic        685±100μs 
+                 datetime      unique_monotonic_inc     232±20μs 
+                 datetime    nonunique_monotonic_inc    194±30μs 
+                 datetime         non_monotonic         145±4μs  
+                  period       unique_monotonic_inc     266±30μs 
+                  period     nonunique_monotonic_inc    256±40μs 
+                  period          non_monotonic         183±9μs  
+              ============= ========================= ===========
+
+[ 63.16%] ··· ...NonNumericSeriesIndexing.time_getitem_scalar                 ok
+[ 63.16%] ··· ============= ========================= ============
+               index_dtype       index_structure                  
+              ------------- ------------------------- ------------
+                  string       unique_monotonic_inc    8.30±0.8μs 
+                  string     nonunique_monotonic_inc    15.9±3μs  
+                  string          non_monotonic         8.63±2μs  
+                 datetime      unique_monotonic_inc     13.7±3μs  
+                 datetime    nonunique_monotonic_inc    15.7±2μs  
+                 datetime         non_monotonic         6.42±1μs  
+                  period       unique_monotonic_inc     67.4±4μs  
+                  period     nonunique_monotonic_inc    89.1±8μs  
+                  period          non_monotonic         33.1±2μs  
+              ============= ========================= ============
+
+[ 63.60%] ··· ...ing.NumericSeriesIndexing.time_getitem_array                 ok
+[ 63.60%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    3.78±0.4ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    172±10ms  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     142±20ms  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    168±20ms  
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     344±20ms  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    208±20ms  
+              ========================================== ========================= ============
+
+[ 64.04%] ··· ...NumericSeriesIndexing.time_getitem_list_like                 ok
+[ 64.04%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    4.49±0.3ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc   2.34±0.3ms 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     154±50ms  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   2.31±0.4ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     321±60ms  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   2.30±0.2ms 
+              ========================================== ========================= ============
+
+[ 64.47%] ··· ...ing.NumericSeriesIndexing.time_getitem_lists                 ok
+[ 64.47%] ··· ========================================== ========================= ===========
+                             index_dtype                      index_structure                 
+              ------------------------------------------ ------------------------- -----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc     27.5±1ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    164±10ms 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     146±7ms  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    167±7ms  
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    369±100ms 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    195±20ms 
+              ========================================== ========================= ===========
+
+[ 64.91%] ··· ...ng.NumericSeriesIndexing.time_getitem_scalar                 ok
+[ 64.91%] ··· ========================================== ========================= ===========
+                             index_dtype                      index_structure                 
+              ------------------------------------------ ------------------------- -----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc     19.0±2μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    56.4±5μs 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     104±30μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   25.5±20ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     27.4±3μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    119±20μs 
+              ========================================== ========================= ===========
+
+[ 65.35%] ··· ...ing.NumericSeriesIndexing.time_getitem_slice                 ok
+[ 65.35%] ··· ========================================== ========================= ===========
+                             index_dtype                      index_structure                 
+              ------------------------------------------ ------------------------- -----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc     142±30μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    123±20μs 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     115±8μs  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   247±200μs 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    196±200μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   673±100μs 
+              ========================================== ========================= ===========
+
+[ 65.79%] ··· indexing.NumericSeriesIndexing.time_iloc_array                  ok
+[ 65.79%] ··· ========================================== ========================= ===========
+                             index_dtype                      index_structure                 
+              ------------------------------------------ ------------------------- -----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc     145±20μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    145±6μs  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    273±300μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   325±300μs 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    301±200μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   123±200μs 
+              ========================================== ========================= ===========
+
+[ 66.23%] ··· ...ng.NumericSeriesIndexing.time_iloc_list_like                 ok
+[ 66.23%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    276±400μs  
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    127±30μs  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    135±100μs  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    102±3μs   
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    72.3±200μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   201±200μs  
+              ========================================== ========================= ============
+
+[ 66.67%] ··· indexing.NumericSeriesIndexing.time_iloc_scalar                 ok
+[ 66.67%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    27.3±20μs  
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc   21.6±20μs  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    10.4±0.4μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   14.3±10μs  
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     9.64±1μs  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    12.8±4μs  
+              ========================================== ========================= ============
+
+[ 67.11%] ··· indexing.NumericSeriesIndexing.time_iloc_slice                  ok
+[ 67.11%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    225±400μs  
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    107±20μs  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    100.0±60μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   92.9±50μs  
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    62.9±30μs  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    57.7±3μs  
+              ========================================== ========================= ============
+
+[ 67.54%] ··· indexing.NumericSeriesIndexing.time_ix_array                    ok
+[ 67.54%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    3.06±0.3ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    176±90ms  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    3.12±0.3ms 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    155±10ms  
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     167±4ms   
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    179±6ms   
+              ========================================== ========================= ============
+
+[ 67.98%] ··· ...xing.NumericSeriesIndexing.time_ix_list_like                 ok
+[ 67.98%] ··· ========================================== ========================= =============
+                             index_dtype                      index_structure                   
+              ------------------------------------------ ------------------------- -------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    1.59±0.07ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    1.75±0.3ms 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     2.14±0.1ms 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    1.81±0.1ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc      161±4ms   
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    1.98±0.1ms 
+              ========================================== ========================= =============
+
+[ 68.42%] ··· indexing.NumericSeriesIndexing.time_ix_scalar                   ok
+[ 68.42%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc     57.4±3μs  
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    256±20μs  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     136±20μs  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   13.4±0.5ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     86.1±5μs  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    461±20μs  
+              ========================================== ========================= ============
+
+[ 68.86%] ··· indexing.NumericSeriesIndexing.time_ix_slice                    ok
+[ 68.86%] ··· ========================================== ========================= ===========
+                             index_dtype                      index_structure                 
+              ------------------------------------------ ------------------------- -----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc     178±60μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    746±50μs 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     240±20μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   32.5±20ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     144±10μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    703±30μs 
+              ========================================== ========================= ===========
+
+[ 69.30%] ··· indexing.NumericSeriesIndexing.time_loc_array                   ok
+[ 69.30%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    2.70±0.1ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    160±10ms  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     127±1ms   
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    158±7ms   
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     304±6ms   
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    182±6ms   
+              ========================================== ========================= ============
+
+[ 69.74%] ··· ...ing.NumericSeriesIndexing.time_loc_list_like                 ok
+[ 69.74%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    1.74±0.1ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc   1.63±0.4ms 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     128±20ms  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   1.73±0.1ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     277±6ms   
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   1.87±0.3ms 
+              ========================================== ========================= ============
+
+[ 70.18%] ··· indexing.NumericSeriesIndexing.time_loc_scalar                  ok
+[ 70.18%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    38.3±0.6μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    133±2μs   
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     102±8μs   
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   15.3±0.6ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     50.2±1μs  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    250±20μs  
+              ========================================== ========================= ============
+
+[ 70.61%] ··· indexing.NumericSeriesIndexing.time_loc_slice                   ok
+[ 70.61%] ··· ========================================== ========================= ==========
+                             index_dtype                      index_structure                
+              ------------------------------------------ ------------------------- ----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    125±10μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc   523±10μs 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    194±10μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   28.9±4ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    104±3μs  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   479±20μs 
+              ========================================== ========================= ==========
+
+[ 71.05%] ··· indexing.Take.time_take                                         ok
+[ 71.05%] ··· ========== =============
+                index                 
+              ---------- -------------
+                 int       4.36±0.3ms 
+               datetime   4.23±0.07ms 
+              ========== =============
+
+[ 71.49%] ··· ...g_engines.NumericEngineIndexing.time_get_loc                 ok
+[ 71.49%] ··· ======================================================================= ================ =============
+                                          engine_and_dtype                               index_type                 
+              ----------------------------------------------------------------------- ---------------- -------------
+                 (<class 'pandas._libs.index.Int64Engine'>, <class 'numpy.int64'>)     monotonic_incr    3.21±0.1μs 
+                 (<class 'pandas._libs.index.Int64Engine'>, <class 'numpy.int64'>)     monotonic_decr     288±20μs  
+                 (<class 'pandas._libs.index.Int64Engine'>, <class 'numpy.int64'>)     non_monotonic      279±30μs  
+                 (<class 'pandas._libs.index.Int32Engine'>, <class 'numpy.int32'>)     monotonic_incr     216±8μs   
+                 (<class 'pandas._libs.index.Int32Engine'>, <class 'numpy.int32'>)     monotonic_decr     254±30μs  
+                 (<class 'pandas._libs.index.Int32Engine'>, <class 'numpy.int32'>)     non_monotonic      252±30μs  
+                 (<class 'pandas._libs.index.Int16Engine'>, <class 'numpy.int16'>)     monotonic_incr     206±6μs   
+                 (<class 'pandas._libs.index.Int16Engine'>, <class 'numpy.int16'>)     monotonic_decr     211±6μs   
+                 (<class 'pandas._libs.index.Int16Engine'>, <class 'numpy.int16'>)     non_monotonic      211±10μs  
+                  (<class 'pandas._libs.index.Int8Engine'>, <class 'numpy.int8'>)      monotonic_incr     366±5μs   
+                  (<class 'pandas._libs.index.Int8Engine'>, <class 'numpy.int8'>)      monotonic_decr     189±3μs   
+                  (<class 'pandas._libs.index.Int8Engine'>, <class 'numpy.int8'>)      non_monotonic      194±10μs  
+                (<class 'pandas._libs.index.UInt64Engine'>, <class 'numpy.uint64'>)    monotonic_incr     595±30μs  
+                (<class 'pandas._libs.index.UInt64Engine'>, <class 'numpy.uint64'>)    monotonic_decr     289±30μs  
+                (<class 'pandas._libs.index.UInt64Engine'>, <class 'numpy.uint64'>)    non_monotonic      275±10μs  
+                (<class 'pandas._libs.index.UInt32Engine'>, <class 'numpy.uint32'>)    monotonic_incr     204±20μs  
+                (<class 'pandas._libs.index.UInt32Engine'>, <class 'numpy.uint32'>)    monotonic_decr     252±20μs  
+                (<class 'pandas._libs.index.UInt32Engine'>, <class 'numpy.uint32'>)    non_monotonic      239±10μs  
+                 (<class 'pandas._libs.index.UInt8Engine'>, <class 'numpy.uint8'>)     monotonic_incr     188±4μs   
+                 (<class 'pandas._libs.index.UInt8Engine'>, <class 'numpy.uint8'>)     monotonic_decr     197±10μs  
+                 (<class 'pandas._libs.index.UInt8Engine'>, <class 'numpy.uint8'>)     non_monotonic      195±5μs   
+               (<class 'pandas._libs.index.Float64Engine'>, <class 'numpy.float64'>)   monotonic_incr   3.03±0.03μs 
+               (<class 'pandas._libs.index.Float64Engine'>, <class 'numpy.float64'>)   monotonic_decr     272±8μs   
+               (<class 'pandas._libs.index.Float64Engine'>, <class 'numpy.float64'>)   non_monotonic      269±7μs   
+               (<class 'pandas._libs.index.Float32Engine'>, <class 'numpy.float32'>)   monotonic_incr     197±5μs   
+               (<class 'pandas._libs.index.Float32Engine'>, <class 'numpy.float32'>)   monotonic_decr     238±60μs  
+               (<class 'pandas._libs.index.Float32Engine'>, <class 'numpy.float32'>)   non_monotonic      217±20μs  
+              ======================================================================= ================ =============
+
+[ 71.93%] ··· ...ng_engines.ObjectEngineIndexing.time_get_loc                 ok
+[ 71.93%] ··· ================ =============
+                 index_type                 
+              ---------------- -------------
+               monotonic_incr    3.92±0.3μs 
+               monotonic_decr   4.16±0.07ms 
+               non_monotonic     4.13±0.4ms 
+              ================ =============
+
+[ 72.37%] ··· Setting up indexing:306                                         ok
+[ 72.37%] ··· indexing.MethodLookup.time_lookup_iloc                    342±20ns
+[ 72.81%] ··· indexing.MethodLookup.time_lookup_ix                      15.6±7μs
+[ 73.25%] ··· indexing.MethodLookup.time_lookup_loc                      326±5ns
+[ 73.68%] ··· Setting up indexing:244                                         ok
+[ 73.68%] ··· indexing.IntervalIndexing.time_getitem_list               235±40μs
+[ 74.12%] ··· indexing.IntervalIndexing.time_getitem_scalar           2.32±0.1ms
+[ 74.56%] ··· indexing.IntervalIndexing.time_loc_list                 2.39±0.1ms
+[ 75.00%] ··· indexing.IntervalIndexing.time_loc_scalar               2.97±0.8ms
+[ 75.00%] · For pandas commit ea2e26ae <master> (round 2/2):
+[ 75.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 75.44%] ··· ...riesIndex.time_frame_assign_timeseries_index           242±60μs
+[ 75.88%] ··· ...tegoricalIndexIndexing.time_get_indexer_list                 ok
+[ 75.88%] ··· ================ ============
+                   index                   
+              ---------------- ------------
+               monotonic_incr   20.4±0.6ms 
+               monotonic_decr   90.0±10ms  
+               non_monotonic     117±10ms  
+              ================ ============
+
+[ 76.32%] ··· ...CategoricalIndexIndexing.time_get_loc_scalar                 ok
+[ 76.32%] ··· ================ ==========
+                   index                 
+              ---------------- ----------
+               monotonic_incr   9.12±2μs 
+               monotonic_decr   292±10μs 
+               non_monotonic    256±60μs 
+              ================ ==========
+
+[ 76.75%] ··· ...goricalIndexIndexing.time_getitem_bool_array                 ok
+[ 76.75%] ··· ================ ============
+                   index                   
+              ---------------- ------------
+               monotonic_incr    191±50μs  
+               monotonic_decr    186±10μs  
+               non_monotonic    1.19±0.1ms 
+              ================ ============
+
+[ 77.19%] ··· ...g.CategoricalIndexIndexing.time_getitem_list                 ok
+[ 77.19%] ··· ================ =============
+                   index                    
+              ---------------- -------------
+               monotonic_incr    1.27±0.2ms 
+               monotonic_decr    1.28±0.2ms 
+               non_monotonic    1.16±0.05ms 
+              ================ =============
+
+[ 77.63%] ··· ...egoricalIndexIndexing.time_getitem_list_like                 ok
+[ 77.63%] ··· ================ ===========
+                   index                  
+              ---------------- -----------
+               monotonic_incr    45.5±5μs 
+               monotonic_decr   47.0±10μs 
+               non_monotonic     42.5±6μs 
+              ================ ===========
+
+[ 78.07%] ··· ...CategoricalIndexIndexing.time_getitem_scalar                 ok
+[ 78.07%] ··· ================ ============
+                   index                   
+              ---------------- ------------
+               monotonic_incr   4.90±0.9μs 
+               monotonic_decr   4.28±0.1μs 
+               non_monotonic    4.32±0.4μs 
+              ================ ============
+
+[ 78.51%] ··· ....CategoricalIndexIndexing.time_getitem_slice                 ok
+[ 78.51%] ··· ================ ==========
+                   index                 
+              ---------------- ----------
+               monotonic_incr   29.5±5μs 
+               monotonic_decr   27.4±2μs 
+               non_monotonic    26.9±6μs 
+              ================ ==========
+
+[ 78.95%] ··· indexing.ChainIndexing.time_chained_indexing                    ok
+[ 78.95%] ··· ====== ===========
+               mode             
+              ------ -----------
+               None   63.6±10ms 
+               warn   60.0±10ms 
+              ====== ===========
+
+[ 79.39%] ··· ...g.DataFrameNumericIndexing.time_bool_indexer          904±400μs
+[ 79.82%] ··· indexing.DataFrameNumericIndexing.time_iloc                108±3μs
+[ 80.26%] ··· ...xing.DataFrameNumericIndexing.time_iloc_dups          242±300μs
+[ 80.70%] ··· indexing.DataFrameNumericIndexing.time_loc               130±100μs
+[ 81.14%] ··· indexing.DataFrameNumericIndexing.time_loc_dups           3.70±3ms
+[ 81.58%] ··· ...ng.DataFrameStringIndexing.time_boolean_rows           273±50μs
+[ 82.02%] ··· ...FrameStringIndexing.time_boolean_rows_object          404±200μs
+[ 82.46%] ··· ....DataFrameStringIndexing.time_getitem_scalar          11.4±10μs
+[ 82.89%] ··· indexing.DataFrameStringIndexing.time_ix                  17.0±1μs
+[ 83.33%] ··· indexing.DataFrameStringIndexing.time_loc               8.11±0.6μs
+[ 83.77%] ··· ...eColumn.time_frame_getitem_single_column_int         2.18±0.4μs
+[ 84.21%] ··· ...olumn.time_frame_getitem_single_column_label        2.00±0.04μs
+[ 84.65%] ··· indexing.InsertColumns.time_assign_with_setitem           45.5±3ms
+[ 85.09%] ··· indexing.InsertColumns.time_insert                        55.2±5ms
+[ 85.53%] ··· indexing.MultiIndexing.time_frame_ix                   1.54±0.06ms
+[ 85.96%] ··· indexing.MultiIndexing.time_index_slice                 6.53±0.7ms
+[ 86.40%] ··· indexing.MultiIndexing.time_series_ix                  1.26±0.05ms
+[ 86.84%] ··· ...mericSeriesIndexing.time_getitem_label_slice                 ok
+[ 86.84%] ··· ============= ========================= ===========
+               index_dtype       index_structure                 
+              ------------- ------------------------- -----------
+                  string       unique_monotonic_inc    632±100μs 
+                  string     nonunique_monotonic_inc   720±100μs 
+                  string          non_monotonic         705±70μs 
+                 datetime      unique_monotonic_inc     249±40μs 
+                 datetime    nonunique_monotonic_inc   290±100μs 
+                 datetime         non_monotonic        190±200μs 
+                  period       unique_monotonic_inc     363±60μs 
+                  period     nonunique_monotonic_inc    375±60μs 
+                  period          non_monotonic         304±60μs 
+              ============= ========================= ===========
+
+[ 87.28%] ··· ...NumericSeriesIndexing.time_getitem_list_like                 ok
+[ 87.28%] ··· ============= ========================= ============
+               index_dtype       index_structure                  
+              ------------- ------------------------- ------------
+                  string       unique_monotonic_inc    3.52±0.6ms 
+                  string     nonunique_monotonic_inc    4.26±1ms  
+                  string          non_monotonic        2.90±0.2ms 
+                 datetime      unique_monotonic_inc     729±40μs  
+                 datetime    nonunique_monotonic_inc    742±50μs  
+                 datetime         non_monotonic         595±30μs  
+                  period       unique_monotonic_inc    6.07±0.2ms 
+                  period     nonunique_monotonic_inc   5.57±0.3ms 
+                  period          non_monotonic         805±50μs  
+              ============= ========================= ============
+
+[ 87.72%] ··· ...NumericSeriesIndexing.time_getitem_pos_slice                 ok
+[ 87.72%] ··· ============= ========================= ===========
+               index_dtype       index_structure                 
+              ------------- ------------------------- -----------
+                  string       unique_monotonic_inc     513±60μs 
+                  string     nonunique_monotonic_inc   539±100μs 
+                  string          non_monotonic         634±30μs 
+                 datetime      unique_monotonic_inc     217±20μs 
+                 datetime    nonunique_monotonic_inc    200±20μs 
+                 datetime         non_monotonic         145±7μs  
+                  period       unique_monotonic_inc     255±40μs 
+                  period     nonunique_monotonic_inc    287±30μs 
+                  period          non_monotonic         187±10μs 
+              ============= ========================= ===========
+
+[ 88.16%] ··· ...NonNumericSeriesIndexing.time_getitem_scalar                 ok
+[ 88.16%] ··· ============= ========================= ============
+               index_dtype       index_structure                  
+              ------------- ------------------------- ------------
+                  string       unique_monotonic_inc    8.52±0.9μs 
+                  string     nonunique_monotonic_inc    14.2±3μs  
+                  string          non_monotonic         8.34±2μs  
+                 datetime      unique_monotonic_inc     12.8±2μs  
+                 datetime    nonunique_monotonic_inc    15.6±2μs  
+                 datetime         non_monotonic         6.83±1μs  
+                  period       unique_monotonic_inc     66.8±5μs  
+                  period     nonunique_monotonic_inc    85.2±5μs  
+                  period          non_monotonic        35.8±10μs  
+              ============= ========================= ============
+
+[ 88.60%] ··· ...ing.NumericSeriesIndexing.time_getitem_array                 ok
+[ 88.60%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    3.97±0.7ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    170±20ms  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     153±30ms  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    156±10ms  
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     326±20ms  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    198±10ms  
+              ========================================== ========================= ============
+
+[ 89.04%] ··· ...NumericSeriesIndexing.time_getitem_list_like                 ok
+[ 89.04%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    4.45±0.1ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc   2.17±0.1ms 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     143±20ms  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   2.26±0.2ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     309±40ms  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   2.25±0.2ms 
+              ========================================== ========================= ============
+
+[ 89.47%] ··· ...ing.NumericSeriesIndexing.time_getitem_lists                 ok
+[ 89.47%] ··· ========================================== ========================= ==========
+                             index_dtype                      index_structure                
+              ------------------------------------------ ------------------------- ----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    27.8±1ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc   161±8ms  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    143±7ms  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   166±8ms  
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    305±80ms 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   188±10ms 
+              ========================================== ========================= ==========
+
+[ 89.91%] ··· ...ng.NumericSeriesIndexing.time_getitem_scalar                 ok
+[ 89.91%] ··· ========================================== ========================= ===========
+                             index_dtype                      index_structure                 
+              ------------------------------------------ ------------------------- -----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc     19.7±1μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    55.3±3μs 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    86.3±20μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   15.9±10ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     27.0±3μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    124±20μs 
+              ========================================== ========================= ===========
+
+[ 90.35%] ··· ...ing.NumericSeriesIndexing.time_getitem_slice                 ok
+[ 90.35%] ··· ========================================== ========================= ===========
+                             index_dtype                      index_structure                 
+              ------------------------------------------ ------------------------- -----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc     127±20μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    124±20μs 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     116±50μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   211±100μs 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     134±60μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   605±100μs 
+              ========================================== ========================= ===========
+
+[ 90.79%] ··· indexing.NumericSeriesIndexing.time_iloc_array                  ok
+[ 90.79%] ··· ========================================== ========================= ===========
+                             index_dtype                      index_structure                 
+              ------------------------------------------ ------------------------- -----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc     163±30μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    139±10μs 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    213±100μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   323±400μs 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    499±300μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   490±400μs 
+              ========================================== ========================= ===========
+
+[ 91.23%] ··· ...ng.NumericSeriesIndexing.time_iloc_list_like                 ok
+[ 91.23%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    123±300μs  
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    138±30μs  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     160±50μs  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    105±8μs   
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    81.3±50μs  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   75.6±200μs 
+              ========================================== ========================= ============
+
+[ 91.67%] ··· indexing.NumericSeriesIndexing.time_iloc_scalar                 ok
+[ 91.67%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    9.44±20μs  
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc   9.58±20μs  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    9.98±0.8μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    9.78±4μs  
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    8.99±0.7μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    9.52±3μs  
+              ========================================== ========================= ============
+
+[ 92.11%] ··· indexing.NumericSeriesIndexing.time_iloc_slice                  ok
+[ 92.11%] ··· ========================================== ========================= ===========
+                             index_dtype                      index_structure                 
+              ------------------------------------------ ------------------------- -----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    108±200μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    106±20μs 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    96.6±30μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   94.1±30μs 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     60.2±7μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    57.9±2μs 
+              ========================================== ========================= ===========
+
+[ 92.54%] ··· indexing.NumericSeriesIndexing.time_ix_array                    ok
+[ 92.54%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    3.04±0.2ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    154±50ms  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    3.12±0.3ms 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    152±8ms   
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     167±8ms   
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    177±7ms   
+              ========================================== ========================= ============
+
+[ 92.98%] ··· ...xing.NumericSeriesIndexing.time_ix_list_like                 ok
+[ 92.98%] ··· ========================================== ========================= =============
+                             index_dtype                      index_structure                   
+              ------------------------------------------ ------------------------- -------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    1.60±0.07ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    1.78±0.4ms 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     2.18±0.1ms 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc    1.84±0.1ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc      162±6ms   
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    2.06±0.4ms 
+              ========================================== ========================= =============
+
+[ 93.42%] ··· indexing.NumericSeriesIndexing.time_ix_scalar                   ok
+[ 93.42%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc     57.6±2μs  
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    257±20μs  
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     122±20μs  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   13.3±0.5ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     79.6±6μs  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    463±30μs  
+              ========================================== ========================= ============
+
+[ 93.86%] ··· indexing.NumericSeriesIndexing.time_ix_slice                    ok
+[ 93.86%] ··· ========================================== ========================= ==========
+                             index_dtype                      index_structure                
+              ------------------------------------------ ------------------------- ----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    176±10μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc   765±70μs 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    234±20μs 
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   32.1±7ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    147±20μs 
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   708±70μs 
+              ========================================== ========================= ==========
+
+[ 94.30%] ··· indexing.NumericSeriesIndexing.time_loc_array                   ok
+[ 94.30%] ··· ========================================== ========================= =============
+                             index_dtype                      index_structure                   
+              ------------------------------------------ ------------------------- -------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    2.77±0.08ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc     155±8ms   
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc      129±4ms   
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc     158±8ms   
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc      306±9ms   
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc     184±7ms   
+              ========================================== ========================= =============
+
+[ 94.74%] ··· ...ing.NumericSeriesIndexing.time_loc_list_like                 ok
+[ 94.74%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    1.75±0.1ms 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc   1.72±0.3ms 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     128±20ms  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   1.71±0.1ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     279±7ms   
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   1.88±0.2ms 
+              ========================================== ========================= ============
+
+[ 95.18%] ··· indexing.NumericSeriesIndexing.time_loc_scalar                  ok
+[ 95.18%] ··· ========================================== ========================= ============
+                             index_dtype                      index_structure                  
+              ------------------------------------------ ------------------------- ------------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    38.9±0.8μs 
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc    135±4μs   
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc     108±9μs   
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   15.5±0.6ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc     51.0±4μs  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc    252±10μs  
+              ========================================== ========================= ============
+
+[ 95.61%] ··· indexing.NumericSeriesIndexing.time_loc_slice                   ok
+[ 95.61%] ··· ========================================== ========================= ==========
+                             index_dtype                      index_structure                
+              ------------------------------------------ ------------------------- ----------
+                pandas.core.indexes.numeric.Int64Index      unique_monotonic_inc    125±8μs  
+                pandas.core.indexes.numeric.Int64Index    nonunique_monotonic_inc   526±20μs 
+               pandas.core.indexes.numeric.UInt64Index      unique_monotonic_inc    195±8μs  
+               pandas.core.indexes.numeric.UInt64Index    nonunique_monotonic_inc   28.6±2ms 
+               pandas.core.indexes.numeric.Float64Index     unique_monotonic_inc    105±7μs  
+               pandas.core.indexes.numeric.Float64Index   nonunique_monotonic_inc   489±30μs 
+              ========================================== ========================= ==========
+
+[ 96.05%] ··· indexing.Take.time_take                                         ok
+[ 96.05%] ··· ========== =============
+                index                 
+              ---------- -------------
+                 int       4.29±0.1ms 
+               datetime   4.21±0.07ms 
+              ========== =============
+
+[ 96.49%] ··· ...g_engines.NumericEngineIndexing.time_get_loc                 ok
+[ 96.49%] ··· ======================================================================= ================ =============
+                                          engine_and_dtype                               index_type                 
+              ----------------------------------------------------------------------- ---------------- -------------
+                 (<class 'pandas._libs.index.Int64Engine'>, <class 'numpy.int64'>)     monotonic_incr   3.11±0.09μs 
+                 (<class 'pandas._libs.index.Int64Engine'>, <class 'numpy.int64'>)     monotonic_decr     303±60μs  
+                 (<class 'pandas._libs.index.Int64Engine'>, <class 'numpy.int64'>)     non_monotonic      315±50μs  
+                 (<class 'pandas._libs.index.Int32Engine'>, <class 'numpy.int32'>)     monotonic_incr     225±20μs  
+                 (<class 'pandas._libs.index.Int32Engine'>, <class 'numpy.int32'>)     monotonic_decr     275±50μs  
+                 (<class 'pandas._libs.index.Int32Engine'>, <class 'numpy.int32'>)     non_monotonic      264±20μs  
+                 (<class 'pandas._libs.index.Int16Engine'>, <class 'numpy.int16'>)     monotonic_incr     208±20μs  
+                 (<class 'pandas._libs.index.Int16Engine'>, <class 'numpy.int16'>)     monotonic_decr     215±10μs  
+                 (<class 'pandas._libs.index.Int16Engine'>, <class 'numpy.int16'>)     non_monotonic      205±7μs   
+                  (<class 'pandas._libs.index.Int8Engine'>, <class 'numpy.int8'>)      monotonic_incr     368±6μs   
+                  (<class 'pandas._libs.index.Int8Engine'>, <class 'numpy.int8'>)      monotonic_decr     189±2μs   
+                  (<class 'pandas._libs.index.Int8Engine'>, <class 'numpy.int8'>)      non_monotonic      192±9μs   
+                (<class 'pandas._libs.index.UInt64Engine'>, <class 'numpy.uint64'>)    monotonic_incr     583±30μs  
+                (<class 'pandas._libs.index.UInt64Engine'>, <class 'numpy.uint64'>)    monotonic_decr     270±20μs  
+                (<class 'pandas._libs.index.UInt64Engine'>, <class 'numpy.uint64'>)    non_monotonic      278±10μs  
+                (<class 'pandas._libs.index.UInt32Engine'>, <class 'numpy.uint32'>)    monotonic_incr     203±10μs  
+                (<class 'pandas._libs.index.UInt32Engine'>, <class 'numpy.uint32'>)    monotonic_decr     248±20μs  
+                (<class 'pandas._libs.index.UInt32Engine'>, <class 'numpy.uint32'>)    non_monotonic      232±8μs   
+                 (<class 'pandas._libs.index.UInt8Engine'>, <class 'numpy.uint8'>)     monotonic_incr     189±3μs   
+                 (<class 'pandas._libs.index.UInt8Engine'>, <class 'numpy.uint8'>)     monotonic_decr     192±8μs   
+                 (<class 'pandas._libs.index.UInt8Engine'>, <class 'numpy.uint8'>)     non_monotonic      188±5μs   
+               (<class 'pandas._libs.index.Float64Engine'>, <class 'numpy.float64'>)   monotonic_incr   3.02±0.02μs 
+               (<class 'pandas._libs.index.Float64Engine'>, <class 'numpy.float64'>)   monotonic_decr     282±40μs  
+               (<class 'pandas._libs.index.Float64Engine'>, <class 'numpy.float64'>)   non_monotonic      269±8μs   
+               (<class 'pandas._libs.index.Float32Engine'>, <class 'numpy.float32'>)   monotonic_incr     200±6μs   
+               (<class 'pandas._libs.index.Float32Engine'>, <class 'numpy.float32'>)   monotonic_decr     231±60μs  
+               (<class 'pandas._libs.index.Float32Engine'>, <class 'numpy.float32'>)   non_monotonic      244±60μs  
+              ======================================================================= ================ =============
+
+[ 96.93%] ··· ...ng_engines.ObjectEngineIndexing.time_get_loc                 ok
+[ 96.93%] ··· ================ =============
+                 index_type                 
+              ---------------- -------------
+               monotonic_incr    3.82±0.2μs 
+               monotonic_decr   4.16±0.08ms 
+               non_monotonic     4.24±0.2ms 
+              ================ =============
+
+[ 97.37%] ··· Setting up indexing:306                                         ok
+[ 97.37%] ··· indexing.MethodLookup.time_lookup_iloc                    328±20ns
+[ 97.81%] ··· indexing.MethodLookup.time_lookup_ix                      10.7±5μs
+[ 98.25%] ··· indexing.MethodLookup.time_lookup_loc                      325±5ns
+[ 98.68%] ··· Setting up indexing:244                                         ok
+[ 98.68%] ··· indexing.IntervalIndexing.time_getitem_list               235±30μs
+[ 99.12%] ··· indexing.IntervalIndexing.time_getitem_scalar           2.26±0.1ms
+[ 99.56%] ··· indexing.IntervalIndexing.time_loc_list                 2.48±0.2ms
+[100.00%] ··· indexing.IntervalIndexing.time_loc_scalar               2.42±0.6ms
+
+BENCHMARKS NOT SIGNIFICANTLY CHANGED.

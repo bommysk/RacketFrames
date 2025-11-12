@@ -1,0 +1,392 @@
+#lang typed/racket
+
+(require "../main.rkt")
+
+(require typed/db)
+
+;******************
+;data-frame-mix
+;******************
+(define columns-mix
+  (list
+   (cons 'integer-col (new-ISeries (list 1 2 3 4)
+                                   #:index (build-index-from-list (list 'a 'b 'c 'd))))
+   (cons 'categorical-col (new-CSeries (vector 'hello 'world 'fizz 'buzz)
+                                       #:index (build-index-from-list (list 'a 'b 'c 'd)))))
+  )
+
+; create new data-frame-mix
+(define data-frame-mix (new-data-frame columns-mix))
+
+(data-frame-write-delim data-frame-mix)
+
+; no schema
+(define salary-data-frame-csv-no-schema (load-csv-file "../sample-csv/salary_date.csv" #:schema #f))
+
+(data-frame-head salary-data-frame-csv-no-schema)
+
+(print salary-data-frame-csv-no-schema)
+
+(displayln "DataFrame List of Column Names")
+(data-frame-names salary-data-frame-csv-no-schema)
+
+(displayln "DataFrame Dimensions")
+(data-frame-dim salary-data-frame-csv-no-schema)
+
+(displayln "DataFrame Description")
+(show-data-frame-description (data-frame-description salary-data-frame-csv-no-schema))
+
+(displayln "DataFrame Remove")
+(data-frame-head (data-frame-remove salary-data-frame-csv-no-schema (list 'first 'age)))
+
+(displayln "DataFrame Project")
+(data-frame-head (data-frame-project salary-data-frame-csv-no-schema (list 'first 'last 'dollar)))
+
+(displayln "DataFrame Replace")
+(data-frame-head (data-frame-replace salary-data-frame-csv-no-schema (cons 'salary (new-CSeries (make-vector 200 '$0.00)))))
+
+(displayln "DataFrame Replace Non Existent Column")
+(data-frame-head (data-frame-replace salary-data-frame-csv-no-schema (cons 'dollar (new-CSeries (make-vector 200 '$0.00)))))
+
+(displayln "DataFrame Extend")
+(data-frame-head (data-frame-extend salary-data-frame-csv-no-schema (cons 'state (new-CSeries (make-vector 200 'CA)))))
+
+(displayln "DataFrame Operations")
+(define columns-integer-1
+  (list 
+   (cons 'col1 (new-ISeries (list 1 2 3 4)))
+   (cons 'col2 (new-ISeries (list 5 6 7 8)))
+   (cons 'col3 (new-ISeries (list 9 10 11 12)))
+   (cons 'col4 (new-ISeries (list 21 22 23 24)))))
+
+(define columns-integer-2
+  (list 
+   (cons 'col1 (new-ISeries (list 1 2 3 4)))
+   (cons 'col2 (new-ISeries (list 25 26 27 28)))
+   (cons 'col3 (new-ISeries (list 29 30 31 32)))
+   (cons 'col4 (new-ISeries (list 1 2 3 4)))))
+
+; create new data-frame-integer-1
+(define data-frame-integer-1 (new-data-frame columns-integer-1))
+
+; create new data-frame-integer-2
+(define data-frame-integer-2 (new-data-frame columns-integer-2))
+
+(displayln "Sample DataFrames")
+(data-frame-write-delim data-frame-integer-1)
+
+(data-frame-write-delim data-frame-integer-2)
+(display "\n")
+
+(displayln "data-frame+")
+(data-frame-write-delim (data-frame+ data-frame-integer-1 data-frame-integer-2))
+(display "\n")
+
+(displayln "data-frame-")
+(data-frame-write-delim (data-frame- data-frame-integer-1 data-frame-integer-2))
+(display "\n")
+
+(displayln "data-frame*")
+(data-frame-write-delim (data-frame* data-frame-integer-1 data-frame-integer-2))
+(display "\n")
+
+(displayln "data-frame/")
+(data-frame-write-delim (data-frame/ data-frame-integer-1 data-frame-integer-2))
+(display "\n")
+
+(displayln "data-frame%")
+(data-frame-write-delim (data-frame% data-frame-integer-1 data-frame-integer-2))
+(display "\n")
+
+(displayln "data-frame-r")
+(data-frame-write-delim (data-frame-r data-frame-integer-1 data-frame-integer-2))
+(display "\n")
+
+
+(displayln "DataFrame Join Operations")
+(define columns-integer
+  (list 
+   (cons 'col1 (new-ISeries (list 1 2 3 4)))
+   (cons 'col2 (new-ISeries (list 5 6 7 8)))
+   (cons 'col3 (new-ISeries (list 9 10 11 12)))))
+
+(define columns-categorical
+  (list 
+   (cons 'col1 (new-CSeries (list 'a 'b 'c 'd 'e)))
+   (cons 'col2 (new-CSeries (list 'e 'f 'g 'h 'i)))
+   (cons 'col3 (new-CSeries (list 'j 'k 'l 'm 'n)))))
+
+; create new data-frame-integer
+(define data-frame-integer (new-data-frame columns-integer))
+
+; create new data-frame-categorical
+(define data-frame-categorical (new-data-frame columns-categorical))
+
+(displayln "DataFrame Left Join")
+(data-frame-write-delim (data-frame-join-left data-frame-integer data-frame-categorical))
+(display "\n")
+
+(displayln "DataFrame Right Join")
+(data-frame-write-delim (data-frame-join-right data-frame-integer-1 data-frame-integer-2 #:on (list 'col1)))
+(display "\n")
+
+(displayln "DataFrame Right Join")
+(data-frame-write-delim (data-frame-join-right data-frame-integer-1 data-frame-integer-2 #:on (list 'col2)))
+(display "\n")
+
+(define columns-mixed-5
+  (list 
+   (cons 'col1 (new-ISeries (list 1 2 3 4)))
+   (cons 'col2 (new-CSeries (vector 'a 'b 'c 'd)))
+   (cons 'col3 (new-ISeries (list 21 22 23 24)))))
+
+(define columns-mixed-6
+  (list 
+   (cons 'col1 (new-ISeries (list 11 21 31 41)))
+   (cons 'col2 (new-CSeries (vector 'a 'b 'g 'd)))
+   (cons 'col3 (new-ISeries (list 22 22 23 24)))))
+
+; create new data-frame-mixed-5
+(define data-frame-mixed-5 (new-data-frame columns-mixed-5))
+
+; create new data-frame-mixed-6
+(define data-frame-mixed-6 (new-data-frame columns-mixed-6))'
+
+(displayln "DataFrame Mixed")
+(data-frame-write-delim data-frame-mixed-5)
+
+(displayln "DataFrame Mixed")
+(data-frame-write-delim data-frame-mixed-6)
+
+(displayln "DataFrame Inner Join")
+(data-frame-write-delim (data-frame-join-inner data-frame-mixed-5  data-frame-mixed-6 #:on (list 'col2)))
+
+(display "\n")
+
+(displayln "DataFrame Outer Join")
+(data-frame-write-delim (data-frame-join-outer data-frame-mixed-5  data-frame-mixed-6 #:on (list 'col2)))
+
+(displayln "DataFrame iloc")
+
+(define columns-integer-labeled
+  (list 
+   (cons 'col1 (new-ISeries (list 1 2 3 4)
+                            #:index (build-index-from-list (list 'a 'b 'c 'd))))
+   (cons 'col2 (new-ISeries (list 5 6 7 8)
+                            #:index (build-index-from-list (list 'e 'f 'g 'h))))
+   (cons 'col3 (new-ISeries (list 9 10 11 12)
+                            #:index (build-index-from-list (list 'i 'j 'k 'l))))))
+
+; create new data-frame-integer
+(define data-frame-integer-labeled (new-data-frame columns-integer-labeled #:index (build-index-from-list (list 'a 'b 'c 'd))))
+
+(data-frame-write-delim data-frame-integer-labeled)
+
+(displayln "data-frame-loc")
+(data-frame-write-delim
+ (assert (data-frame-loc data-frame-integer-labeled (list 'i 'k) (list 'col3)) DataFrame?)
+)
+
+(define columns-integer-labeled-2
+  (list 
+   (cons 'col1 (new-ISeries (list 1 2 3 4)
+                            #:index (build-index-from-list (list 'a 'b 'c 'd))))
+   (cons 'col2 (new-ISeries (list 5 6 7 8)
+                            #:index (build-index-from-list (list 'a 'b 'c 'd))))
+   (cons 'col3 (new-ISeries (list 9 10 11 12)
+                            #:index (build-index-from-list (list 'a 'b 'c 'd))))))
+
+; create new data-frame-integer
+(define data-frame-integer-labeled-2 (new-data-frame columns-integer-labeled-2 #:index (build-index-from-list (list 'a 'b 'c 'd))))
+
+(displayln "data-frame-loc-2")
+(data-frame-write-delim
+ (assert (data-frame-loc data-frame-integer-labeled-2 (list 'b 'c 'd) (list 'col2 'col3)) DataFrame?))
+
+(set! data-frame-integer-labeled (data-frame-set-index data-frame-integer-labeled (list 'a 'b 'c 'd)))
+
+(data-frame-write-delim
+ (assert (data-frame-loc data-frame-integer-labeled (list 'b 'c 'd) (list 'col2 'col3)) DataFrame?))
+
+(data-frame-write-delim
+ (assert (data-frame-iloc data-frame-integer-labeled (list 1 2 3) (list 0 1)) DataFrame?))
+
+(println "Hash list")
+(hash->list (LabelIndex-index data-frame-integer-labeled))
+
+(series-data (assert (data-frame-iloc data-frame-integer-labeled (list 1 2 3) 1) Series?))
+
+(series-data (assert (data-frame-iloc data-frame-integer-labeled 3 1) Series?))
+
+(data-frame-write-delim
+ (assert (data-frame-iloc-label data-frame-integer-labeled (list 1 2 3) (list 'col1 'col2)) DataFrame?))
+
+(series-data (assert (data-frame-iloc-label data-frame-integer-labeled 1 (list 'col1 'col2)) Series?))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Dataframe Load Test Cases;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define salary-date-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                       (ColumnInfo 'age 'IntegerSeries) (ColumnInfo 'dollar 'CategoricalSeries)
+                                       (ColumnInfo 'phone 'CategoricalSeries) (ColumnInfo 'join_date 'DatetimeSeries))))
+
+(define salary-no-date-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                       (ColumnInfo 'age 'IntegerSeries) (ColumnInfo 'dollar 'CategoricalSeries)
+                                       (ColumnInfo 'phone 'CategoricalSeries))))
+
+(define salary-datetime-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                       (ColumnInfo 'age 'IntegerSeries) (ColumnInfo 'dollar 'CategoricalSeries)
+                                       (ColumnInfo 'phone 'CategoricalSeries) (ColumnInfo 'join_datetime 'DatetimeSeries))))
+
+(define random-demographic-schema (Schema #t (list (ColumnInfo 'first 'CategoricalSeries) (ColumnInfo 'last 'CategoricalSeries)
+                                                   (ColumnInfo 'gender 'CategoricalSeries) (ColumnInfo 'yn 'CategoricalSeries)
+                                                   (ColumnInfo 'char 'GenericSeries) (ColumnInfo 'float 'NumericSeries))))
+
+; read csv
+(define salary-data-frame-csv-schema (load-csv-file "../sample-csv/salary_date.csv" #:schema salary-date-schema))
+
+(data-frame-head salary-data-frame-csv-schema)
+
+(define salary-no-date-data-frame-csv-schema (load-csv-file "../sample-csv/salary_no_date.csv" #:schema salary-no-date-schema))
+
+(data-frame-head salary-no-date-data-frame-csv-schema)
+
+(define salary-datetime-data-frame-csv-schema (load-csv-file "../sample-csv/salary_datetime.csv" #:schema salary-datetime-schema))
+
+(data-frame-head salary-datetime-data-frame-csv-schema)
+
+(define salary-datetime-date-data-frame-csv-schema (load-csv-file "../sample-csv/salary_datetime_date.csv" #:schema salary-datetime-schema))
+
+(data-frame-head salary-datetime-date-data-frame-csv-schema)
+
+
+; read delimited
+(define random-demographic-data-frame-delimited (load-delimited-file "../sample-csv/random_demographic.csv" "|" #:schema random-demographic-schema))
+
+(data-frame-head random-demographic-data-frame-delimited)
+
+(series-data (data-frame-series-ref random-demographic-data-frame-delimited 'char))
+
+; no schema
+(define random-demographic-data-frame-delimited-no-schema (load-delimited-file "../sample-csv/random_demographic.csv" "|" #:schema #f))
+
+(data-frame-head random-demographic-data-frame-delimited-no-schema)
+
+(define data-frame-from-sql-genres (data-frame-from-sql (sqlite3-connect #:database "db/chinook.db") #f "SELECT * FROM genres" empty))
+
+(data-frame-head data-frame-from-sql-genres)
+
+(define data-frame-from-sql-customers (data-frame-from-sql (sqlite3-connect #:database "db/chinook.db") #f "SELECT * FROM customers" empty))
+
+(data-frame-head data-frame-from-sql-customers)
+
+(define data-frame-nba-csv (load-csv-file "../sample-csv/nbaallelo.csv" #:schema #f))
+
+(data-frame-head data-frame-nba-csv)
+
+(define nba-csv-schema (get-schema "../sample-csv/nbaallelo.csv" ","))
+
+(Schema-headers nba-csv-schema)
+(Schema-SeriesTypes nba-csv-schema)
+
+; series constructors
+(define int-series (new-series (list 1 2 3 4 5 6 6 6 6 6 6)))
+(define gen-series (new-series (vector 'a 1 2 'c 'd 5.6)))
+
+(iseries-groupby (assert int-series ISeries?))
+;(iseries-groupby (assert int-series ISeries?) #:by-value #t)
+
+(series-iref int-series 3)
+(series-print int-series)
+
+(series-iref gen-series 5)
+(series-print gen-series)
+
+(define int-series-with-index (new-series (list 1 2 3 4 5 6) #:index (list 'a 'b 'c 'd 'e 'f)))
+(define gen-series-with-index (new-series (vector 'a 1 2 'c 'd 5.6) #:index (list 6 5 4 3 2 1)))
+
+;(iseries-groupby (assert int-series-with-index ISeries?))
+
+(series-index-ref int-series-with-index 'e)
+(series-print int-series-with-index)
+
+(series-index-ref gen-series-with-index 5)
+(series-print gen-series-with-index)
+
+; dataframe constructors
+(define data-frame-from-hash (new-data-frame (hash 'a (list 1 2 3 7 8) 'b (list 3 5 6 10 10) 'c (list 3.4 5.5 6.7 4.0 95.6) 'd (list 'fizz 'buzz 'baz 'fizz 'fizz))))
+
+(show-data-frame-description (data-frame-description data-frame-from-hash))
+
+(define data-frame-from-hash-vector (new-data-frame (hash 'a '#(1 2 3) 'b '#(3 5 6) 'c '#(3.4 5.5 6.7))))
+
+(show-data-frame-description (data-frame-description data-frame-from-hash-vector))
+
+(data-frame-head data-frame-from-hash)
+
+; has empty Footnote column
+(define employment-df (load-csv-file "total_employment_by_economic_activity.csv" #:schema #f))
+
+(println "TOTAL EMPLOYMENT DATAFRAME")
+(data-frame-head employment-df)
+
+(show-data-frame-description (data-frame-description employment-df))
+
+(define employment-df-filtered (data-frame-column-filter-not employment-df (lambda ([sex : Any]) (eq? (assert sex symbol?) '|Total men and women|)) 'Sex))
+
+(define employment-df-filtered-men (data-frame-column-filter employment-df-filtered (lambda ([sex : Any]) (eq? (assert sex symbol?) 'Men)) 'Sex))
+(define employment-df-filtered-women (data-frame-column-filter employment-df-filtered (lambda ([sex : Any]) (eq? (assert sex symbol?) 'Women)) 'Sex))
+
+(define max-by-country-area-df (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered (list 'Country_Area 'Year 'Sex 'Value)) (list 'Country_Area 'Sex))))
+
+(define max-by-country-area-df-men (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered-men (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+
+(define max-by-country-area-df-women (apply-agg-data-frame 'max (data-frame-groupby (data-frame-project employment-df-filtered-women (list 'Country_Area 'Year 'Value)) (list 'Country_Area))))
+
+(data-frame-head max-by-country-area-df-men)
+(data-frame-head max-by-country-area-df-women)
+
+(data-frame-head max-by-country-area-df)
+;(series-filter (series-data (data-frame-series-ref max-by-country-area-df 'Value)))
+
+(show-data-frame-description (data-frame-description max-by-country-area-df))
+
+;(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
+
+;(series-print (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?))
+
+;(println "HIGHEST VALUE FOR JAMAICA")
+;(series-loc (assert (data-frame-loc max-by-country-area-df 'Jamaica (list 'Value 'Year)) Series?) 'Value)
+
+(data-frame-write-delim data-frame-from-hash)
+(data-frame-groupby data-frame-from-hash (list 'd))
+(data-frame-write-delim (apply-agg-data-frame 'sum (data-frame-groupby data-frame-from-hash (list 'd))))
+(data-frame-loc (apply-agg-data-frame 'sum (data-frame-groupby data-frame-from-hash (list 'd))) 'fizz (list 'b))
+(data-frame-write-delim (apply-agg-data-frame 'mean (data-frame-groupby data-frame-from-hash (list 'd))))
+(seq->columns (hash 'a (list 1 2 3 7 8) 'b (list 3 5 6 10 10) 'c (list 3.4 5.5 6.7 4.0 95.6) 'd (list 'fizz 'buzz 'baz 'fizz 'fizz) 'e (list 'fizz 3 'baz 'fizz 'fizz)) #:index (list 'fizz 'buzz 'baz 'fizz 'fizz))
+
+(series-print (new-series (list 1 2 3) #:index (build-multi-index-from-list (list (list 'a 'b 'c) (list ':5 5 5)))))
+
+(series-loc (new-series (list 1 2 3) #:index (build-multi-index-from-list (list (list 'a 'b 'c) (list ':5 5 5)))) 'b::5::)
+(series-loc (new-series (list 1 2 3) #:index (build-multi-index-from-list (list (list 'a 'b 'c) (list ':5 5 5)))) 'a:::5::)
+
+(data-frame-write-delim (data-frame-apply (apply-agg-data-frame 'mean (data-frame-groupby data-frame-from-hash (list 'd))) (lambda ([val : Any]) (add1 (assert val number?)))))
+
+(series-print (series-filter (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?)))))
+
+(series-print (series-filter (new-series (list 1 2 3.2 4 5.8)) (lambda ([x : GenericType]) (> (assert x flonum?) 2))))
+
+(data-frame-write-delim data-frame-from-hash)
+(data-frame-write-delim (data-frame-column-filter data-frame-from-hash (lambda ([x : GenericType]) (= (assert x real?) 10)) 'b))
+(data-frame-write-delim (data-frame-column-filter-not data-frame-from-hash (lambda ([x : GenericType]) (= (assert x real?) 10)) 'b))
+
+(index-idxes (get-series-index (new-series (list 0 1 2 3) #:index (list 'b 'a 'b 'c))))
+
+(data-frame-series-ref data-frame-from-hash 'b)
+
+(series-data-idxes-from-predicate (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?))))
+
+(get-series-index (series-filter (new-series (list 1 2 3 4 5) #:index (list 'a 'b 'c 'd 'e)) (lambda ([x : GenericType]) (even? (assert x fixnum?)))))
+
+(iseries-print (new-ISeries (list 0 3 8 2 3 4 5) #:index (list 'a 'b 'c 'd 'e 'f 'g)))
+(iseries-print (iseries-sort (new-ISeries (list 0 3 8 2 3 4 5) #:index (list 'a 'b 'c 'd 'e 'f 'g))))

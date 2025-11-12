@@ -1,0 +1,5 @@
+integer-col,float-col,categorical-col
+1,1.5,hello
+2,2.5,world
+3,3.5,fizz
+4,4.5,buzz

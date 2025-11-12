@@ -1,0 +1,428 @@
+· Creating environments
+· Discovering benchmarks
+· Running 60 total benchmarks (2 commits * 1 environments * 30 benchmarks)
+[  0.00%] · For pandas commit ea2e26ae <master> (round 1/2):
+[  0.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[  0.83%] ··· Running (join_merge.Align.time_series_align_int64_index--)...........
+[ 10.00%] ··· Running (join_merge.I8Merge.time_i8merge--).
+[ 10.83%] ··· Running (join_merge.Join.time_join_dataframe_index_multi--)..........
+[ 19.17%] ··· Running (join_merge.MergeAsof.time_by_object--)..
+[ 20.83%] ··· Running (join_merge.MergeAsof.time_on_int--)..
+[ 22.50%] ··· Running (join_merge.MergeAsof.time_on_uint64--)...
+[ 25.00%] ··· Running (join_merge.MergeOrdered.time_merge_ordered--).
+[ 25.00%] · For pandas commit ea2e26ae <master> (round 1/2):
+[ 25.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 25.83%] ··· Running (join_merge.Align.time_series_align_int64_index--)............
+[ 35.83%] ··· Running (join_merge.Join.time_join_dataframe_index_multi--)..........
+[ 44.17%] ··· Running (join_merge.MergeAsof.time_by_object--)..
+[ 45.83%] ··· Running (join_merge.MergeAsof.time_on_int--)..
+[ 47.50%] ··· Running (join_merge.MergeAsof.time_on_uint64--)...
+[ 50.00%] ··· Running (join_merge.MergeOrdered.time_merge_ordered--).
+[ 50.00%] · For pandas commit ea2e26ae <master> (round 2/2):
+[ 50.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 50.83%] ··· join_merge.Align.time_series_align_int64_index             126±5ms
+[ 51.67%] ··· ...merge.Align.time_series_align_left_monotonic            112±3ms
+[ 52.50%] ··· join_merge.Append.time_append_homogenous                  379±10μs
+[ 53.33%] ··· join_merge.Append.time_append_mixed                    1.27±0.03ms
+[ 54.17%] ··· join_merge.Concat.time_concat_empty_left                        ok
+[ 54.17%] ··· ====== =========
+               axis           
+              ------ ---------
+                0     183±7μs 
+                1     206±3μs 
+              ====== =========
+
+[ 55.00%] ··· join_merge.Concat.time_concat_empty_right                       ok
+[ 55.00%] ··· ====== =========
+               axis           
+              ------ ---------
+                0     204±6μs 
+                1     209±8μs 
+              ====== =========
+
+[ 55.83%] ··· join_merge.Concat.time_concat_mixed_ndims                       ok
+[ 55.83%] ··· ====== =========
+               axis           
+              ------ ---------
+                0     246±6μs 
+                1     613±9μs 
+              ====== =========
+
+[ 56.67%] ··· join_merge.Concat.time_concat_series                            ok
+[ 56.67%] ··· ====== ============
+               axis              
+              ------ ------------
+                0     19.5±0.5ms 
+                1      105±7ms   
+              ====== ============
+
+[ 57.50%] ··· join_merge.Concat.time_concat_small_frames                      ok
+[ 57.50%] ··· ====== ============
+               axis              
+              ------ ------------
+                0     44.0±0.7ms 
+                1     28.8±0.6ms 
+              ====== ============
+
+[ 58.33%] ··· join_merge.ConcatDataFrames.time_c_ordered                      ok
+[ 58.33%] ··· ====== ========== ===========
+              --          ignore_index     
+              ------ ----------------------
+               axis     True       False   
+              ====== ========== ===========
+                0     70.4±4ms   77.8±10ms 
+                1     126±6ms     124±7ms  
+              ====== ========== ===========
+
+[ 59.17%] ··· join_merge.ConcatDataFrames.time_f_ordered                      ok
+[ 59.17%] ··· ====== ========== ============
+              --           ignore_index     
+              ------ -----------------------
+               axis     True       False    
+              ====== ========== ============
+                0     100±3ms     101±3ms   
+                1     41.1±1ms   41.2±0.5ms 
+              ====== ========== ============
+
+[ 60.00%] ··· join_merge.I8Merge.time_i8merge                                 ok
+[ 60.00%] ··· ======= ==========
+                how             
+              ------- ----------
+               inner   872±30ms 
+               outer   879±20ms 
+                left   899±40ms 
+               right   866±20ms 
+              ======= ==========
+
+[ 60.83%] ··· join_merge.Join.time_join_dataframe_index_multi                 ok
+[ 60.83%] ··· ======= ============
+                sort              
+              ------- ------------
+                True   20.5±0.5ms 
+               False    18.1±2ms  
+              ======= ============
+
+[ 61.67%] ··· ...join_dataframe_index_shuffle_key_bigger_sort                 ok
+[ 61.67%] ··· ======= ============
+                sort              
+              ------- ------------
+                True    13.5±2ms  
+               False   12.3±0.2ms 
+              ======= ============
+
+[ 62.50%] ··· ....time_join_dataframe_index_single_key_bigger                 ok
+[ 62.50%] ··· ======= ==========
+                sort            
+              ------- ----------
+                True   12.0±1ms 
+               False   13.0±1ms 
+              ======= ==========
+
+[ 63.33%] ··· ...n.time_join_dataframe_index_single_key_small                 ok
+[ 63.33%] ··· ======= ============
+                sort              
+              ------- ------------
+                True   7.98±0.1ms 
+               False   12.1±0.5ms 
+              ======= ============
+
+[ 64.17%] ··· join_merge.JoinIndex.time_left_outer_join_index         2.09±0.05s
+[ 65.00%] ··· ...rge.JoinNonUnique.time_join_non_unique_equal            311±2μs
+[ 65.83%] ··· join_merge.Merge.time_merge_2intkey                             ok
+[ 65.83%] ··· ======= ============
+                sort              
+              ------- ------------
+                True   29.4±0.7ms 
+               False    14.2±2ms  
+              ======= ============
+
+[ 66.67%] ··· ...erge.Merge.time_merge_dataframe_integer_2key                 ok
+[ 66.67%] ··· ======= ============
+                sort              
+              ------- ------------
+                True   13.8±0.1ms 
+               False   7.43±0.1ms 
+              ======= ============
+
+[ 67.50%] ··· ...merge.Merge.time_merge_dataframe_integer_key                 ok
+[ 67.50%] ··· ======= =============
+                sort               
+              ------- -------------
+                True   2.54±0.04ms 
+               False   2.15±0.02ms 
+              ======= =============
+
+[ 68.33%] ··· join_merge.MergeAsof.time_by_int                                ok
+[ 68.33%] ··· =========== ========== ==========
+              --                tolerance      
+              ----------- ---------------------
+               direction     None        5     
+              =========== ========== ==========
+                backward   76.6±2ms   76.4±3ms 
+                forward    153±3ms    174±10ms 
+                nearest    211±6ms    213±4ms  
+              =========== ========== ==========
+
+[ 69.17%] ··· join_merge.MergeAsof.time_by_object                             ok
+[ 69.17%] ··· =========== ========= ==========
+              --               tolerance      
+              ----------- --------------------
+               direction     None       5     
+              =========== ========= ==========
+                backward   111±3ms   103±3ms  
+                forward    192±5ms   194±3ms  
+                nearest    245±7ms   268±20ms 
+              =========== ========= ==========
+
+[ 70.00%] ··· join_merge.MergeAsof.time_multiby                               ok
+[ 70.00%] ··· =========== ========== ==========
+              --                tolerance      
+              ----------- ---------------------
+               direction     None        5     
+              =========== ========== ==========
+                backward   776±30ms   773±30ms 
+                forward    871±50ms   928±30ms 
+                nearest    954±30ms   975±50ms 
+              =========== ========== ==========
+
+[ 70.83%] ··· join_merge.MergeAsof.time_on_int                                ok
+[ 70.83%] ··· =========== ========== ==========
+              --                tolerance      
+              ----------- ---------------------
+               direction     None        5     
+              =========== ========== ==========
+                backward   17.5±1ms   19.5±1ms 
+                forward    19.6±1ms   19.6±1ms 
+                nearest    22.1±2ms   23.8±1ms 
+              =========== ========== ==========
+
+[ 71.67%] ··· join_merge.MergeAsof.time_on_int32                              ok
+[ 71.67%] ··· =========== ========== ============
+              --                 tolerance       
+              ----------- -----------------------
+               direction     None         5      
+              =========== ========== ============
+                backward   18.4±1ms   17.1±0.7ms 
+                forward    21.2±3ms    20.4±1ms  
+                nearest    23.2±5ms    29.4±6ms  
+              =========== ========== ============
+
+[ 72.50%] ··· join_merge.MergeAsof.time_on_uint64                             ok
+[ 72.50%] ··· =========== ============ ============
+              --                  tolerance        
+              ----------- -------------------------
+               direction      None          5      
+              =========== ============ ============
+                backward    21.0±4ms     22.1±6ms  
+                forward    18.3±0.7ms    18.7±1ms  
+                nearest    21.5±0.8ms   21.6±0.6ms 
+              =========== ============ ============
+
+[ 73.33%] ··· join_merge.MergeCategoricals.time_merge_cat                273±5ms
+[ 74.17%] ··· join_merge.MergeCategoricals.time_merge_object             709±7ms
+[ 75.00%] ··· join_merge.MergeOrdered.time_merge_ordered                80.7±1ms
+[ 75.00%] · For pandas commit ea2e26ae <master> (round 2/2):
+[ 75.00%] ·· Benchmarking conda-py3.6-Cython-matplotlib-numexpr-numpy-odfpy-openpyxl-pytables-pytest-scipy-sqlalchemy-xlrd-xlsxwriter-xlwt
+[ 75.83%] ··· join_merge.Align.time_series_align_int64_index             123±6ms
+[ 76.67%] ··· ...merge.Align.time_series_align_left_monotonic            112±3ms
+[ 77.50%] ··· join_merge.Append.time_append_homogenous                   381±7μs
+[ 78.33%] ··· join_merge.Append.time_append_mixed                    1.28±0.05ms
+[ 79.17%] ··· join_merge.Concat.time_concat_empty_left                        ok
+[ 79.17%] ··· ====== =========
+               axis           
+              ------ ---------
+                0     185±8μs 
+                1     205±3μs 
+              ====== =========
+
+[ 80.00%] ··· join_merge.Concat.time_concat_empty_right                       ok
+[ 80.00%] ··· ====== =========
+               axis           
+              ------ ---------
+                0     196±8μs 
+                1     204±5μs 
+              ====== =========
+
+[ 80.83%] ··· join_merge.Concat.time_concat_mixed_ndims                       ok
+[ 80.83%] ··· ====== ==========
+               axis            
+              ------ ----------
+                0     248±9μs  
+                1     616±10μs 
+              ====== ==========
+
+[ 81.67%] ··· join_merge.Concat.time_concat_series                            ok
+[ 81.67%] ··· ====== ============
+               axis              
+              ------ ------------
+                0     19.1±0.6ms 
+                1      103±4ms   
+              ====== ============
+
+[ 82.50%] ··· join_merge.Concat.time_concat_small_frames                      ok
+[ 82.50%] ··· ====== ============
+               axis              
+              ------ ------------
+                0      43.4±2ms  
+                1     28.4±0.9ms 
+              ====== ============
+
+[ 83.33%] ··· join_merge.ConcatDataFrames.time_c_ordered                      ok
+[ 83.33%] ··· ====== ========== ==========
+              --          ignore_index    
+              ------ ---------------------
+               axis     True      False   
+              ====== ========== ==========
+                0     69.5±3ms   71.3±5ms 
+                1     123±5ms    125±5ms  
+              ====== ========== ==========
+
+[ 84.17%] ··· join_merge.ConcatDataFrames.time_f_ordered                      ok
+[ 84.17%] ··· ====== ========== ============
+              --           ignore_index     
+              ------ -----------------------
+               axis     True       False    
+              ====== ========== ============
+                0     99.2±2ms    99.8±1ms  
+                1     40.5±1ms   41.3±0.6ms 
+              ====== ========== ============
+
+[ 85.00%] ··· join_merge.I8Merge.time_i8merge                                 ok
+[ 85.00%] ··· ======= ==========
+                how             
+              ------- ----------
+               inner   869±10ms 
+               outer   873±10ms 
+                left   883±20ms 
+               right   857±20ms 
+              ======= ==========
+
+[ 85.83%] ··· join_merge.Join.time_join_dataframe_index_multi                 ok
+[ 85.83%] ··· ======= ============
+                sort              
+              ------- ------------
+                True   20.3±0.6ms 
+               False   17.6±0.7ms 
+              ======= ============
+
+[ 86.67%] ··· ...join_dataframe_index_shuffle_key_bigger_sort                 ok
+[ 86.67%] ··· ======= ============
+                sort              
+              ------- ------------
+                True    11.6±2ms  
+               False   12.5±0.4ms 
+              ======= ============
+
+[ 87.50%] ··· ....time_join_dataframe_index_single_key_bigger                 ok
+[ 87.50%] ··· ======= ============
+                sort              
+              ------- ------------
+                True    11.2±1ms  
+               False   12.7±0.7ms 
+              ======= ============
+
+[ 88.33%] ··· ...n.time_join_dataframe_index_single_key_small                 ok
+[ 88.33%] ··· ======= ============
+                sort              
+              ------- ------------
+                True   7.98±0.1ms 
+               False   11.9±0.4ms 
+              ======= ============
+
+[ 89.17%] ··· join_merge.JoinIndex.time_left_outer_join_index         2.05±0.06s
+[ 90.00%] ··· ...rge.JoinNonUnique.time_join_non_unique_equal            312±2μs
+[ 90.83%] ··· join_merge.Merge.time_merge_2intkey                             ok
+[ 90.83%] ··· ======= ============
+                sort              
+              ------- ------------
+                True   29.7±0.7ms 
+               False   14.2±0.9ms 
+              ======= ============
+
+[ 91.67%] ··· ...erge.Merge.time_merge_dataframe_integer_2key                 ok
+[ 91.67%] ··· ======= ============
+                sort              
+              ------- ------------
+                True   13.8±0.1ms 
+               False   7.31±0.2ms 
+              ======= ============
+
+[ 92.50%] ··· ...merge.Merge.time_merge_dataframe_integer_key                 ok
+[ 92.50%] ··· ======= =============
+                sort               
+              ------- -------------
+                True   2.56±0.05ms 
+               False   2.15±0.02ms 
+              ======= =============
+
+[ 93.33%] ··· join_merge.MergeAsof.time_by_int                                ok
+[ 93.33%] ··· =========== ========== ==========
+              --                tolerance      
+              ----------- ---------------------
+               direction     None        5     
+              =========== ========== ==========
+                backward   76.7±3ms   78.1±3ms 
+                forward    153±3ms    163±10ms 
+                nearest    218±6ms    213±5ms  
+              =========== ========== ==========
+
+[ 94.17%] ··· join_merge.MergeAsof.time_by_object                             ok
+[ 94.17%] ··· =========== ========= ==========
+              --               tolerance      
+              ----------- --------------------
+               direction     None       5     
+              =========== ========= ==========
+                backward   108±4ms   104±3ms  
+                forward    192±5ms   198±20ms 
+                nearest    244±8ms   250±20ms 
+              =========== ========= ==========
+
+[ 95.00%] ··· join_merge.MergeAsof.time_multiby                               ok
+[ 95.00%] ··· =========== ========== ==========
+              --                tolerance      
+              ----------- ---------------------
+               direction     None        5     
+              =========== ========== ==========
+                backward   772±20ms   762±30ms 
+                forward    864±30ms   889±40ms 
+                nearest    948±30ms   951±30ms 
+              =========== ========== ==========
+
+[ 95.83%] ··· join_merge.MergeAsof.time_on_int                                ok
+[ 95.83%] ··· =========== ============ ==========
+              --                 tolerance       
+              ----------- -----------------------
+               direction      None         5     
+              =========== ============ ==========
+                backward    18.0±1ms    18.6±2ms 
+                forward    19.3±0.8ms   19.7±1ms 
+                nearest     22.0±1ms    24.3±2ms 
+              =========== ============ ==========
+
+[ 96.67%] ··· join_merge.MergeAsof.time_on_int32                              ok
+[ 96.67%] ··· =========== ============ ============
+              --                  tolerance        
+              ----------- -------------------------
+               direction      None          5      
+              =========== ============ ============
+                backward   18.7±0.9ms   17.1±0.6ms 
+                forward     19.9±2ms     19.9±1ms  
+                nearest     23.0±4ms     26.6±5ms  
+              =========== ============ ============
+
+[ 97.50%] ··· join_merge.MergeAsof.time_on_uint64                             ok
+[ 97.50%] ··· =========== ============ ============
+              --                  tolerance        
+              ----------- -------------------------
+               direction      None          5      
+              =========== ============ ============
+                backward    20.7±3ms     19.2±4ms  
+                forward    18.3±0.9ms    19.0±1ms  
+                nearest    21.5±0.9ms   21.8±0.9ms 
+              =========== ============ ============
+
+[ 98.33%] ··· join_merge.MergeCategoricals.time_merge_cat                268±5ms
+[ 99.17%] ··· join_merge.MergeCategoricals.time_merge_object             704±7ms
+[100.00%] ··· join_merge.MergeOrdered.time_merge_ordered                80.9±2ms
+
+BENCHMARKS NOT SIGNIFICANTLY CHANGED.
