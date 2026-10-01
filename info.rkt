@@ -2,7 +2,8 @@
 
 (define collection 'multi)
 
-(define deps (list "base"
+(define deps (list "scribble-lib"
+                   "base"
                    "math-lib"
                    "plot-gui-lib"
                    "plot-lib"
@@ -10,5 +11,6 @@
                    "typed-racket-lib"
                    "typed-racket-more"))
 
-(define build-deps (list "racket-doc"
+(define build-deps (list "typed-racket-doc"
+                         "racket-doc"
                          "scribble-lib"))
